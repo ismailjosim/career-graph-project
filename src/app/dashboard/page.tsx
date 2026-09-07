@@ -1,13 +1,44 @@
 "use client";
 
+import { useState } from "react";
 import { useJobApplications, useMonthlyStats } from "@/hooks/useApi";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { Briefcase, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Briefcase, CheckCircle, XCircle, Clock, X, Plus } from "lucide-react";
 import Link from "next/link";
 
+const USER_ID = "demo-user";
+
+interface AddApplicationForm {
+  jobTitle: string;
+  company: string;
+  description: string;
+  jobLink: string;
+  fitScore: string;
+  notes: string;
+  status: string;
+  salary: string;
+  location: string;
+  employmentType: string;
+}
+
 export default function DashboardPage() {
-  const { applications, loading: appLoading } = useJobApplications();
+  const { applications, loading: appLoading, createApplication, fetchApplications } = useJobApplications();
   const { stats, loading: statsLoading } = useMonthlyStats();
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<AddApplicationForm>({
+    jobTitle: "",
+    company: "",
+    description: "",
+    jobLink: "",
+    fitScore: "",
+    notes: "",
+    status: "applied",
+    salary: "",
+    location: "",
+    employmentType: "",
+  });
 
   const StatCard = ({
     title,
@@ -54,6 +85,52 @@ export default function DashboardPage() {
     },
   ];
 
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const submissionData = {
+        ...formData,
+        fitScore: formData.fitScore ? parseInt(formData.fitScore) : undefined,
+        resumeUsed: "default-resume",
+      };
+
+      await createApplication(submissionData);
+      setFormData({
+        jobTitle: "",
+        company: "",
+        description: "",
+        jobLink: "",
+        fitScore: "",
+        notes: "",
+        status: "applied",
+        salary: "",
+        location: "",
+        employmentType: "",
+      });
+      setShowModal(false);
+      await fetchApplications();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create application");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (statsLoading || appLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -74,12 +151,13 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-2">Track your job applications and progress</p>
           </div>
-          <Link
-            href="/applications/new"
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
+            <Plus className="w-5 h-5" />
             Add Application
-          </Link>
+          </button>
         </div>
 
         {/* Stats Grid */}
@@ -218,6 +296,214 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">Add Job Application</h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700">{error}</p>
+                </div>
+              )}
+
+              {/* Job Title & Company Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Job Title *
+                  </label>
+                  <input
+                    type="text"
+                    name="jobTitle"
+                    value={formData.jobTitle}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="e.g., Senior Frontend Developer"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company *
+                  </label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="e.g., Google"
+                  />
+                </div>
+              </div>
+
+              {/* Location & Employment Type Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="e.g., San Francisco, CA"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Employment Type
+                  </label>
+                  <select
+                    name="employmentType"
+                    value={formData.employmentType}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  >
+                    <option value="">Select type</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="internship">Internship</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Salary & Fit Score Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Salary Range
+                  </label>
+                  <input
+                    type="text"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="e.g., $100k - $150k"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fit Score (0-100)
+                  </label>
+                  <input
+                    type="number"
+                    name="fitScore"
+                    value={formData.fitScore}
+                    onChange={handleChange}
+                    min="0"
+                    max="100"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    placeholder="e.g., 85"
+                  />
+                </div>
+              </div>
+
+              {/* Job Link */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Job Link
+                </label>
+                <input
+                  type="url"
+                  name="jobLink"
+                  value={formData.jobLink}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="https://..."
+                />
+              </div>
+
+              {/* Job Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Job Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Paste the job description here..."
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  placeholder="Add any notes about this application..."
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="applied">Applied</option>
+                  <option value="interview_scheduled">Interview Scheduled</option>
+                  <option value="interviewed">Interviewed</option>
+                  <option value="offer_received">Offer Received</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="withdrawn">Withdrawn</option>
+                </select>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex gap-3 pt-6 border-t border-gray-200">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 font-medium"
+                >
+                  {loading ? "Creating..." : "Create Application"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 bg-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-400 transition font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
