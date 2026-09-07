@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Sidebar } from "@/components/sidebar";
+import { ArrowLeft, Plus, Trash2, ExternalLink, Heart } from "lucide-react";
 
 const USER_ID = "demo-user";
 
@@ -112,220 +113,231 @@ export default function WishlistPage() {
     }
   };
 
-  const handleMoveToApplications = async (item: WishlistItem) => {
-    try {
-      // Create a new job application
-      const appResponse = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": USER_ID,
-        },
-        body: JSON.stringify({
-          jobTitle: item.title,
-          company: item.company,
-          description: item.description,
-          jobLink: item.link,
-          resumeUsed: "default-resume",
-          notes: item.notes,
-          status: "applied",
-        }),
-      });
-
-      if (appResponse.ok) {
-        // Delete from wishlist
-        await handleDeleteItem(item._id);
-      }
-    } catch (error) {
-      console.error("Error moving to applications:", error);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "saved":
+        return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
+      case "reviewing":
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300";
+      case "decided":
+        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300";
+      default:
+        return "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300";
     }
   };
 
-  const statusColors = {
-    saved: "bg-blue-100 text-blue-800",
-    reviewing: "bg-yellow-100 text-yellow-800",
-    decided: "bg-green-100 text-green-800",
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard">
-              <ArrowLeft className="w-6 h-6 text-gray-600 hover:text-gray-900" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Job Wishlist</h1>
-              <p className="text-gray-600">Save and review interesting job posts</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            <Plus className="w-5 h-5" />
-            Add Job
-          </button>
-        </div>
+    <div className="flex min-h-screen bg-gradient-premium dark:bg-gradient-premium-dark">
+      <Sidebar />
 
-        {/* Add Form */}
-        {showForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Job Post</h2>
-            <form onSubmit={handleAddItem}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      {/* Main Content */}
+      <main className="flex-1 lg:ml-64">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 animate-fade-in">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </Link>
+              <div>
+                <h1 className="section-title flex items-center gap-2">
+                  <Heart className="w-6 h-6 text-red-500" />
+                  Job Wishlist
+                </h1>
+                <p className="section-subtitle">
+                  Save and review interesting job posts before applying
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="btn-primary shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              <Plus className="w-5 h-5" />
+              Add Job
+            </button>
+          </div>
+
+          {/* Add Form */}
+          {showForm && (
+            <div className="card p-6 mb-8 animate-fade-in">
+              <h2 className="font-bold text-slate-900 dark:text-slate-100 mb-6">
+                Add New Job Post
+              </h2>
+              <form onSubmit={handleAddItem} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Job Title *"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
+                    required
+                    className="input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Company *"
+                    value={formData.company}
+                    onChange={(e) =>
+                      setFormData({ ...formData, company: e.target.value })
+                    }
+                    required
+                    className="input"
+                  />
+                </div>
                 <input
-                  type="text"
-                  placeholder="Job Title *"
-                  value={formData.title}
+                  type="url"
+                  placeholder="Job Link *"
+                  value={formData.link}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({ ...formData, link: e.target.value })
                   }
                   required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="input"
                 />
-                <input
-                  type="text"
-                  placeholder="Company *"
-                  value={formData.company}
+                <textarea
+                  placeholder="Job Description"
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({ ...formData, company: e.target.value })
+                    setFormData({ ...formData, description: e.target.value })
                   }
-                  required
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  className="input"
                 />
-              </div>
-              <input
-                type="url"
-                placeholder="Job Link *"
-                value={formData.link}
-                onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
-              />
-              <textarea
-                placeholder="Job Description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
-              />
-              <textarea
-                placeholder="Notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
-              />
-              <div className="flex gap-4">
-                <button
-                  type="submit"
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                  Save Job
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="bg-gray-300 text-gray-900 px-6 py-2 rounded-lg hover:bg-gray-400 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Jobs Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading wishlist...</p>
-            </div>
-          </div>
-        ) : wishlist.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 text-lg">
-              No jobs saved yet. Add interesting job posts to your wishlist!
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {wishlist.map((item) => (
-              <div key={item._id} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-                    <p className="text-gray-600">{item.company}</p>
-                  </div>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                      statusColors[item.status]
-                    }`}
+                <textarea
+                  placeholder="Notes (why you're interested)"
+                  value={formData.notes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
+                  rows={2}
+                  className="input"
+                />
+                <div className="flex gap-3">
+                  <button type="submit" className="btn-primary flex-1">
+                    Save Job
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="btn-secondary flex-1"
                   >
-                    {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                  </span>
+                    Cancel
+                  </button>
                 </div>
+              </form>
+            </div>
+          )}
 
-                {item.description && (
-                  <p className="text-gray-700 mb-4 line-clamp-2">
-                    {item.description}
-                  </p>
-                )}
-
-                {item.notes && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
-                    <p className="text-sm text-yellow-800">{item.notes}</p>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                  <div className="flex gap-3">
-                    <select
-                      value={item.status}
-                      onChange={(e) =>
-                        handleStatusChange(item._id, e.target.value)
-                      }
-                      className="px-3 py-1 border border-gray-300 rounded text-sm"
-                    >
-                      <option value="saved">Saved</option>
-                      <option value="reviewing">Reviewing</option>
-                      <option value="decided">Decided</option>
-                    </select>
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      View Post
-                    </a>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMoveToApplications(item)}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      onClick={() => handleDeleteItem(item._id)}
-                      className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+          {/* Jobs Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Loading wishlist...
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ) : wishlist.length === 0 ? (
+            <div className="card p-12 text-center">
+              <Heart className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-600 dark:text-slate-400">
+                No jobs saved yet. Add interesting job posts to get started!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              {wishlist.map((item) => (
+                <div
+                  key={item._id}
+                  className="card p-6 group hover:shadow-lg transition-all"
+                >
+                  <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+                            {item.title}
+                          </h3>
+                          <p className="text-slate-600 dark:text-slate-400">
+                            {item.company}
+                          </p>
+                        </div>
+                        <span
+                          className={`badge text-xs whitespace-nowrap ${getStatusColor(
+                            item.status
+                          )}`}
+                        >
+                          {item.status.charAt(0).toUpperCase() +
+                            item.status.slice(1)}
+                        </span>
+                      </div>
+
+                      {item.description && (
+                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
+                      )}
+
+                      {item.notes && (
+                        <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 mb-4">
+                          <p className="text-sm text-slate-700 dark:text-slate-300">
+                            💡 {item.notes}
+                          </p>
+                        </div>
+                      )}
+
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Saved {new Date(item.savedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="w-full md:w-auto flex flex-col gap-2">
+                      <select
+                        value={item.status}
+                        onChange={(e) =>
+                          handleStatusChange(item._id, e.target.value)
+                        }
+                        className="input text-sm"
+                      >
+                        <option value="saved">Saved</option>
+                        <option value="reviewing">Reviewing</option>
+                        <option value="decided">Decided</option>
+                      </select>
+
+                      <div className="flex gap-2">
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 btn-outline justify-center"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          View Post
+                        </a>
+                        <button
+                          onClick={() => handleDeleteItem(item._id)}
+                          className="p-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
