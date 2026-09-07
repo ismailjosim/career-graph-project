@@ -1,8 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 * {
   @apply transition-colors duration-200;
@@ -157,11 +155,6 @@ html {
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out;
-}
-
-/* Scrollbar smooth behavior */
-html {
-  scroll-behavior: smooth;
 }
 
 /* Custom utility for gradient backgrounds */
