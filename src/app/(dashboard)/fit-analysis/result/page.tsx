@@ -18,53 +18,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { StoredAnalysisPayload } from "@/interfaces/fit-analysis";
 import { useSession } from "@/lib/auth-client";
-
-interface ResumeAdjustment {
-  section: string;
-  issue: string;
-  suggestion: string;
-  impact: "high" | "medium" | "low";
-}
-
-interface FitAnalysisResponse {
-  fitScore: number;
-  verdict: {
-    decision:
-      | "strongly_recommended"
-      | "recommended"
-      | "proceed_with_caution"
-      | "not_recommended";
-    badge: string;
-    rationale: string;
-  };
-  scoreBreakdown: {
-    skillsMatch: number;
-    experienceMatch: number;
-    requirementsMatch: number;
-  };
-  executiveSummary: string;
-  strengths: string[];
-  missingSkills: string[];
-  resumeAdjustments: ResumeAdjustment[];
-  interviewTips: string[];
-}
-
-interface StoredAnalysisPayload {
-  result: FitAnalysisResponse;
-  meta?: {
-    jobTitle?: string;
-    company?: string;
-    savedResumeId?: string;
-  };
-  jobInput?: {
-    title?: string;
-    company?: string;
-    description?: string;
-    link?: string;
-  };
-  analyzedAt?: string;
-}
 
 export default function FitAnalysisResultPage() {
   const router = useRouter();
@@ -312,7 +267,7 @@ export default function FitAnalysisResultPage() {
           </div>
 
           {/* Large Circular / Metric Gauge */}
-          <div className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md shrink-0 min-w-[180px] w-full sm:w-auto">
+          <div className="flex flex-col items-center justify-center p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md shrink-0 min-w-45 w-full sm:w-auto">
             <div className="text-6xl sm:text-7xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-baseline">
               {result.fitScore}
               <span className="text-3xl text-blue-600 dark:text-blue-400 font-bold ml-1">
