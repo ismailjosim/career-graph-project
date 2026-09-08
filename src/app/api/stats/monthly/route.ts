@@ -17,41 +17,47 @@ export async function GET(request: NextRequest) {
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
 
-    // Try to get cached stats first
+    // Fetch all applications for this user
+    const applications = await JobApplication.find({ userId });
+
+    const totalApplications = applications.length;
+    const responsesReceived = applications.filter(
+      (app) =>
+        app.status === "interview_scheduled" ||
+        app.status === "interviewed" ||
+        app.status === "offer_received" ||
+        app.responseType === "positive" ||
+        Boolean(app.responseAt),
+    ).length;
+    const rejections = applications.filter(
+      (app) => app.status === "rejected" || app.responseType === "negative",
+    ).length;
+    const interviews = applications.filter(
+      (app) =>
+        app.status === "interview_scheduled" || app.status === "interviewed",
+    ).length;
+    const offers = applications.filter(
+      (app) => app.status === "offer_received",
+    ).length;
+
+    // Persist or update current month stats in MongoDB
     let stats = await MonthlyStats.findOne({
       userId,
       year,
       month,
     });
 
-    // If not cached, calculate from applications
-    if (!stats) {
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0);
-
-      const applications = await JobApplication.find({
-        userId,
-        appliedAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
+    if (stats) {
+      Object.assign(stats, {
+        totalApplications,
+        responsesReceived,
+        rejections,
+        interviews,
+        offers,
+        updatedAt: new Date(),
       });
-
-      const totalApplications = applications.length;
-      const responsesReceived = applications.filter(
-        (app) => app.responseAt,
-      ).length;
-      const rejections = applications.filter(
-        (app) => app.status === "rejected",
-      ).length;
-      const interviews = applications.filter(
-        (app) =>
-          app.status === "interview_scheduled" || app.status === "interviewed",
-      ).length;
-      const offers = applications.filter(
-        (app) => app.status === "offer_received",
-      ).length;
-
+      await stats.save();
+    } else {
       stats = new MonthlyStats({
         userId,
         year,
@@ -62,7 +68,6 @@ export async function GET(request: NextRequest) {
         interviews,
         offers,
       });
-
       await stats.save();
     }
 
@@ -90,24 +95,19 @@ export async function POST(request: NextRequest) {
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
 
-    // Recalculate stats
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
-
-    const applications = await JobApplication.find({
-      userId,
-      appliedAt: {
-        $gte: startDate,
-        $lte: endDate,
-      },
-    });
+    const applications = await JobApplication.find({ userId });
 
     const totalApplications = applications.length;
     const responsesReceived = applications.filter(
-      (app) => app.responseAt,
+      (app) =>
+        app.status === "interview_scheduled" ||
+        app.status === "interviewed" ||
+        app.status === "offer_received" ||
+        app.responseType === "positive" ||
+        Boolean(app.responseAt),
     ).length;
     const rejections = applications.filter(
-      (app) => app.status === "rejected",
+      (app) => app.status === "rejected" || app.responseType === "negative",
     ).length;
     const interviews = applications.filter(
       (app) =>

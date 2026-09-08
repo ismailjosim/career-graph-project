@@ -1,21 +1,28 @@
 "use client";
 
 import {
+  Award,
+  BarChart3,
   Briefcase,
   CheckCircle,
   Clock,
+  ExternalLink,
+  LineChart,
   Plus,
+  TrendingDown,
   TrendingUp,
   X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -45,10 +52,13 @@ export default function DashboardPage() {
     createApplication,
     fetchApplications,
   } = useJobApplications();
-  const { stats, loading: statsLoading } = useMonthlyStats();
+  const { refreshStats } = useMonthlyStats();
+
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chartView, setChartView] = useState<"metrics" | "timeline">("metrics");
+
   const [formData, setFormData] = useState<AddApplicationForm>({
     jobTitle: "",
     company: "",
@@ -62,63 +72,186 @@ export default function DashboardPage() {
     employmentType: "",
   });
 
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-    color,
-    trend,
-  }: {
-    title: string;
-    value: number;
-    icon: React.ComponentType<{ className: string }>;
-    color: string;
-    trend?: number;
-  }) => (
-    <div className="stat-card group">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="stat-label">{title}</p>
-          <p className="stat-value">{value}</p>
-          {trend !== undefined && (
-            <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mt-2">
-              <TrendingUp className="w-3 h-3 inline mr-1" />
-              {trend > 0 ? "+" : ""}
-              {trend}% this month
-            </p>
-          )}
-        </div>
-        <div
-          className={`${color} p-3 rounded-xl text-white group-hover:scale-110 transition-transform`}
-        >
-          <Icon className="w-6 h-6" />
-        </div>
-      </div>
-    </div>
-  );
+  // Calculate live dynamic metrics from applications in real time
+  const metrics = useMemo(() => {
+    const total = applications.length;
 
-  const chartData = [
-    {
-      name: "Total",
-      applications: stats?.totalApplications || 0,
-    },
-    {
-      name: "Responses",
-      applications: stats?.responsesReceived || 0,
-    },
-    {
-      name: "Rejections",
-      applications: stats?.rejections || 0,
-    },
-    {
-      name: "Interviews",
-      applications: stats?.interviews || 0,
-    },
-    {
-      name: "Offers",
-      applications: stats?.offers || 0,
-    },
-  ];
+    // Positive responses include interviews, offers, and positive responses
+    const positiveResponses = applications.filter(
+      (app) =>
+        app.status === "interview_scheduled" ||
+        app.status === "interviewed" ||
+        app.status === "offer_received" ||
+        app.responseType === "positive",
+    ).length;
+
+    const rejections = applications.filter(
+      (app) => app.status === "rejected" || app.responseType === "negative",
+    ).length;
+
+    const interviews = applications.filter(
+      (app) =>
+        app.status === "interview_scheduled" || app.status === "interviewed",
+    ).length;
+
+    const offers = applications.filter(
+      (app) => app.status === "offer_received",
+    ).length;
+
+    const appliedOnly = applications.filter(
+      (app) => app.status === "applied",
+    ).length;
+
+    const totalResponded = positiveResponses + rejections;
+    const responseRate =
+      total > 0 ? Math.round((totalResponded / total) * 100) : 0;
+    const interviewRate =
+      total > 0 ? Math.round((interviews / total) * 100) : 0;
+    const offerRate = total > 0 ? Math.round((offers / total) * 100) : 0;
+
+    // Month-over-month trend calculation
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const thisMonthApps = applications.filter((app) => {
+      const d = new Date(app.appliedAt);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+    const lastMonth = lastMonthDate.getMonth();
+    const lastMonthYear = lastMonthDate.getFullYear();
+
+    const lastMonthApps = applications.filter((app) => {
+      const d = new Date(app.appliedAt);
+      return d.getMonth() === lastMonth && d.getFullYear() === lastMonthYear;
+    });
+
+    const calcTrend = (current: number, prev: number) => {
+      if (prev === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - prev) / prev) * 100);
+    };
+
+    const trends = {
+      total: calcTrend(thisMonthApps.length, lastMonthApps.length),
+      responses: calcTrend(
+        thisMonthApps.filter((a) =>
+          [
+            "interview_scheduled",
+            "interviewed",
+            "offer_received",
+            "rejected",
+          ].includes(a.status),
+        ).length,
+        lastMonthApps.filter((a) =>
+          [
+            "interview_scheduled",
+            "interviewed",
+            "offer_received",
+            "rejected",
+          ].includes(a.status),
+        ).length,
+      ),
+      rejections: calcTrend(
+        thisMonthApps.filter((a) => a.status === "rejected").length,
+        lastMonthApps.filter((a) => a.status === "rejected").length,
+      ),
+      interviews: calcTrend(
+        thisMonthApps.filter(
+          (a) =>
+            a.status === "interview_scheduled" || a.status === "interviewed",
+        ).length,
+        lastMonthApps.filter(
+          (a) =>
+            a.status === "interview_scheduled" || a.status === "interviewed",
+        ).length,
+      ),
+    };
+
+    return {
+      total,
+      positiveResponses,
+      rejections,
+      interviews,
+      offers,
+      appliedOnly,
+      responseRate,
+      interviewRate,
+      offerRate,
+      trends,
+      thisMonthTotal: thisMonthApps.length,
+    };
+  }, [applications]);
+
+  // Chart data 1: Current Metric Breakdown
+  const metricsChartData = useMemo(() => {
+    return [
+      {
+        name: "Total",
+        applications: metrics.total,
+        fill: "#3b82f6", // Blue
+      },
+      {
+        name: "Responses",
+        applications: metrics.positiveResponses,
+        fill: "#10b981", // Emerald
+      },
+      {
+        name: "Rejections",
+        applications: metrics.rejections,
+        fill: "#f43f5e", // Rose
+      },
+      {
+        name: "Interviews",
+        applications: metrics.interviews,
+        fill: "#f59e0b", // Amber
+      },
+      {
+        name: "Offers",
+        applications: metrics.offers,
+        fill: "#8b5cf6", // Purple
+      },
+    ];
+  }, [metrics]);
+
+  // Chart data 2: 6-Month Timeline Performance
+  const timelineChartData = useMemo(() => {
+    const months = [];
+    const now = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mIndex = d.getMonth();
+      const yVal = d.getFullYear();
+      const monthLabel = d.toLocaleString("default", { month: "short" });
+
+      const monthApps = applications.filter((app) => {
+        const appDate = new Date(app.appliedAt);
+        return appDate.getMonth() === mIndex && appDate.getFullYear() === yVal;
+      });
+
+      const applied = monthApps.length;
+      const responses = monthApps.filter(
+        (a) =>
+          a.status === "interview_scheduled" ||
+          a.status === "interviewed" ||
+          a.status === "offer_received",
+      ).length;
+      const offers = monthApps.filter(
+        (a) => a.status === "offer_received",
+      ).length;
+
+      months.push({
+        name: monthLabel,
+        applied,
+        responses,
+        offers,
+      });
+    }
+
+    return months;
+  }, [applications]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -147,7 +280,7 @@ export default function DashboardPage() {
         description: formData.description || undefined,
         jobLink: formData.jobLink || undefined,
         fitScore: formData.fitScore
-          ? parseInt(formData.fitScore, 10)
+          ? Number.parseInt(formData.fitScore, 10)
           : undefined,
         notes: formData.notes || undefined,
         status: formData.status as JobApplication["status"],
@@ -174,6 +307,7 @@ export default function DashboardPage() {
       });
       setShowModal(false);
       await fetchApplications();
+      await refreshStats();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create application",
@@ -183,13 +317,60 @@ export default function DashboardPage() {
     }
   };
 
-  if (statsLoading || appLoading) {
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    color,
+    trend,
+  }: {
+    title: string;
+    value: number;
+    icon: React.ComponentType<{ className: string }>;
+    color: string;
+    trend?: number;
+  }) => {
+    const isPositive = (trend ?? 0) >= 0;
     return (
-      <div className="flex items-center justify-center min-h-screen bg-linear-premium dark:bg-linear-premium-dark">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-800 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">
-            Loading your dashboard...
+      <div className="stat-card group hover:scale-[1.02] transition-transform">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="stat-label">{title}</p>
+            <p className="stat-value mt-1">{value}</p>
+            {trend !== undefined && (
+              <p
+                className={`text-xs font-semibold mt-2 flex items-center gap-1 ${
+                  isPositive
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-rose-600 dark:text-rose-400"
+                }`}
+              >
+                {isPositive ? (
+                  <TrendingUp className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" />
+                )}
+                <span>{trend > 0 ? `+${trend}%` : `${trend}%`} this month</span>
+              </p>
+            )}
+          </div>
+          <div
+            className={`${color} p-3 rounded-2xl text-white shadow-md group-hover:scale-110 transition-transform`}
+          >
+            <Icon className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (appLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin mx-auto" />
+          <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+            Loading your job tracker dashboard...
           </p>
         </div>
       </div>
@@ -197,210 +378,420 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="w-full space-y-10 animate-fade-in">
+    <div className="w-full space-y-8 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="animate-fade-in">
-          <h1 className="section-title">Welcome back! 👋</h1>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="section-title flex items-center gap-2.5">
+            Dashboard Overview
+            {metrics.total > 0 && (
+              <span className="badge-primary text-xs font-semibold px-2.5 py-0.5">
+                {metrics.total} {metrics.total === 1 ? "Job" : "Jobs"} Tracked
+              </span>
+            )}
+          </h1>
           <p className="section-subtitle">
-            Track your job search progress and manage applications
+            Real-time insights into your job hunt pipeline and interview success
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn-primary shadow-lg hover:shadow-xl animate-slide-in"
-        >
-          <Plus className="w-5 h-5" />
-          Add Application
-        </button>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="btn-primary flex-1 md:flex-initial shadow-lg hover:shadow-xl cursor-pointer"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Application</span>
+          </button>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      {/* Top 4 Real-time Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard
           title="Total Applications"
-          value={stats?.totalApplications || 0}
+          value={metrics.total}
           icon={Briefcase}
-          color="bg-linear-to-br from-blue-600 to-blue-700"
-          trend={12}
+          color="bg-linear-to-br from-blue-600 to-indigo-600"
+          trend={metrics.trends.total}
         />
         <StatCard
           title="Positive Responses"
-          value={stats?.responsesReceived || 0}
+          value={metrics.positiveResponses}
           icon={CheckCircle}
-          color="bg-linear-to-br from-emerald-500 to-emerald-600"
-          trend={8}
+          color="bg-linear-to-br from-emerald-500 to-teal-600"
+          trend={metrics.trends.responses}
         />
         <StatCard
           title="Rejections"
-          value={stats?.rejections || 0}
+          value={metrics.rejections}
           icon={XCircle}
-          color="bg-linear-to-br from-red-500 to-red-600"
-          trend={-2}
+          color="bg-linear-to-br from-rose-500 to-red-600"
+          trend={metrics.trends.rejections}
         />
         <StatCard
           title="Interviews"
-          value={stats?.interviews || 0}
+          value={metrics.interviews}
           icon={Clock}
-          color="bg-linear-to-br from-amber-500 to-amber-600"
-          trend={15}
+          color="bg-linear-to-br from-amber-500 to-orange-600"
+          trend={metrics.trends.interviews}
         />
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        {/* Bar Chart */}
-        <div className="lg:col-span-2 card p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-              Monthly Performance
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Your application metrics at a glance
-            </p>
+      {/* Performance Charts & Quick Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Interactive Chart Card */}
+        <div className="lg:col-span-2 card p-6 flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-blue-600" />
+                <span>Monthly Performance</span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {chartView === "metrics"
+                  ? "Breakdown across total pipeline stages"
+                  : "Application activity over the last 6 months"}
+              </p>
+            </div>
+
+            {/* View Mode Toggle Button */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setChartView("metrics")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  chartView === "metrics"
+                    ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>By Metric</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartView("timeline")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  chartView === "timeline"
+                    ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <LineChart className="w-3.5 h-3.5" />
+                <span>Timeline</span>
+              </button>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="currentColor"
-                opacity={0.1}
-              />
-              <XAxis dataKey="name" stroke="currentColor" opacity={0.5} />
-              <YAxis stroke="currentColor" opacity={0.5} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme === "dark" ? "#1e293b" : "#f8fafc",
-                  border: "1px solid",
-                  borderColor: theme === "dark" ? "#334155" : "#e2e8f0",
-                  borderRadius: "0.75rem",
-                }}
-              />
-              <Bar
-                dataKey="applications"
-                fill="#3b82f6"
-                radius={[8, 8, 0, 0]}
-                isAnimationActive
-              />
-            </BarChart>
-          </ResponsiveContainer>
+
+          <div className="h-70 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              {chartView === "metrics" ? (
+                <BarChart
+                  data={metricsChartData}
+                  margin={{ top: 10, right: 10, left: -15, bottom: 10 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-slate-800"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="currentColor"
+                    className="text-slate-500 dark:text-slate-400 text-xs"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    stroke="currentColor"
+                    className="text-slate-500 dark:text-slate-400 text-xs"
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    cursor={{
+                      fill: theme === "dark" ? "#1e293b50" : "#f1f5f980",
+                    }}
+                    contentStyle={{
+                      backgroundColor: theme === "dark" ? "#0f172a" : "#ffffff",
+                      borderColor: theme === "dark" ? "#334155" : "#e2e8f0",
+                      borderRadius: "0.75rem",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                  <Bar
+                    dataKey="applications"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={600}
+                  >
+                    {metricsChartData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              ) : (
+                <BarChart
+                  data={timelineChartData}
+                  margin={{ top: 10, right: 10, left: -15, bottom: 10 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-slate-800"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    stroke="currentColor"
+                    className="text-slate-500 dark:text-slate-400 text-xs"
+                    tickLine={false}
+                  />
+                  <YAxis
+                    stroke="currentColor"
+                    className="text-slate-500 dark:text-slate-400 text-xs"
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: theme === "dark" ? "#0f172a" : "#ffffff",
+                      borderColor: theme === "dark" ? "#334155" : "#e2e8f0",
+                      borderRadius: "0.75rem",
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
+                  />
+                  <Bar
+                    dataKey="applied"
+                    name="Applications"
+                    fill="#3b82f6"
+                    radius={[6, 6, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="responses"
+                    name="Responses"
+                    fill="#10b981"
+                    radius={[6, 6, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="offers"
+                    name="Offers"
+                    fill="#8b5cf6"
+                    radius={[6, 6, 0, 0]}
+                  />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="card p-6 flex flex-col gap-4">
-          <h3 className="font-bold text-slate-900 dark:text-slate-100">
-            Quick Insights
-          </h3>
-          <div className="space-y-4 flex-1">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                Response Rate
-              </p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-                {stats?.totalApplications
-                  ? Math.round(
-                      ((stats.responsesReceived || 0) /
-                        stats.totalApplications) *
-                        100,
-                    )
-                  : 0}
-                %
-              </p>
+        {/* Quick Insights Card */}
+        <div className="card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-500" />
+                <span>Quick Insights</span>
+              </h3>
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Live Stats
+              </span>
             </div>
-            <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                Success Rate
-              </p>
-              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-                {stats?.totalApplications
-                  ? Math.round(
-                      ((stats.interviews || 0) / stats.totalApplications) * 100,
-                    )
-                  : 0}
-                %
-              </p>
+
+            <div className="space-y-4">
+              {/* Response Rate */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-750">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    Response Rate
+                  </span>
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                    {metrics.responseRate}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-linear-to-r from-blue-600 to-indigo-600 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(metrics.responseRate, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                  {metrics.positiveResponses + metrics.rejections} of{" "}
+                  {metrics.total} employers replied
+                </p>
+              </div>
+
+              {/* Interview Conversion Rate */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-750">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    Interview Rate
+                  </span>
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                    {metrics.interviewRate}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-linear-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(metrics.interviewRate, 100)}%`,
+                    }}
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                  {metrics.interviews} interviews secured
+                </p>
+              </div>
+
+              {/* Offer Rate */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-750">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    Offer Rate
+                  </span>
+                  <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                    {metrics.offerRate}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-linear-to-r from-purple-500 to-indigo-600 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(metrics.offerRate, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                  {metrics.offers} job{" "}
+                  {metrics.offers === 1 ? "offer" : "offers"} received
+                </p>
+              </div>
             </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-200/70 dark:border-slate-700/70 flex items-center justify-between text-xs">
+            <span className="text-slate-500 dark:text-slate-400">Status</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Active Tracker
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Applications Table */}
+      {/* Recent Applications Table */}
       <div className="card overflow-hidden">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="font-bold text-slate-900 dark:text-slate-100">
-            Recent Applications
-          </h2>
-        </div>
-        {applications.length === 0 ? (
-          <div className="p-12 text-center">
-            <Briefcase className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-600 dark:text-slate-400">
-              No applications yet. Start by adding your first one!
+        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h2 className="font-bold text-lg text-slate-900 dark:text-slate-100">
+              Recent Applications
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Latest applications in your pipeline
             </p>
+          </div>
+
+          <Link
+            href="/applications"
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+          >
+            <span>View All</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {applications.length === 0 ? (
+          <div className="p-12 text-center space-y-3">
+            <Briefcase className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h3 className="font-bold text-slate-800 dark:text-slate-200">
+              No applications tracked yet
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              Start tracking your job search journey by adding your first
+              application.
+            </p>
+            <div className="pt-2 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="btn-primary text-sm py-2 px-4 shadow-sm cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add First Job</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+              <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-left font-semibold">
                     Job Title
                   </th>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-left font-semibold">
                     Company
                   </th>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-left font-semibold">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-left font-semibold">
                     Fit Score
                   </th>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-left font-semibold">
                     Applied
                   </th>
-                  <th className="px-6 py-4 text-left font-semibold text-slate-900 dark:text-slate-100">
+                  <th className="px-6 py-3.5 text-right font-semibold">
                     Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {applications.slice(0, 10).map((app) => (
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {applications.slice(0, 6).map((app) => (
                   <tr
                     key={app._id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">
+                    <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">
                       {app.jobTitle}
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300 font-medium">
                       {app.company}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="badge-primary text-xs">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          app.status === "offer_received"
+                            ? "bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50"
+                            : app.status === "interview_scheduled" ||
+                                app.status === "interviewed"
+                              ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50"
+                              : app.status === "rejected"
+                                ? "bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50"
+                                : "bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50"
+                        }`}
+                      >
                         {app.status?.replace("_", " ").toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
                       {app.fitScore ? (
-                        <span className="font-medium text-blue-600 dark:text-blue-400">
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">
                           {app.fitScore}%
                         </span>
                       ) : (
-                        "N/A"
+                        <span className="text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
                       {new Date(app.appliedAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-right">
                       <Link
                         href={`/applications/${app._id}`}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-xs hover:underline"
                       >
-                        View
+                        Details →
                       </Link>
                     </td>
                   </tr>
@@ -411,40 +802,39 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Add Application Modal */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content animate-fade-in">
             {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900">
+            <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
               <div>
-                <h2 className="section-title">Add Job Application</h2>
-                <p className="section-subtitle">
-                  Fill in the job details below
+                <h2 className="section-title text-xl">Add Job Application</h2>
+                <p className="section-subtitle text-xs">
+                  Fill in the details to update your charts and tracking metrics
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               >
-                <X className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
               </button>
             </div>
 
             {/* Modal Body */}
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {error && (
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
-                  <p className="text-red-700 dark:text-red-400 font-medium">
-                    {error}
-                  </p>
+                <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-rose-700 dark:text-rose-300 text-sm">
+                  {error}
                 </div>
               )}
 
-              {/* Job Title & Company Row */}
+              {/* Job Title & Company */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Job Title *
                   </label>
                   <input
@@ -454,11 +844,11 @@ export default function DashboardPage() {
                     onChange={handleChange}
                     required
                     className="input"
-                    placeholder="e.g., Senior Frontend Developer"
+                    placeholder="e.g., Senior Full Stack Engineer"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Company *
                   </label>
                   <input
@@ -468,15 +858,15 @@ export default function DashboardPage() {
                     onChange={handleChange}
                     required
                     className="input"
-                    placeholder="e.g., Google"
+                    placeholder="e.g., Stripe"
                   />
                 </div>
               </div>
 
-              {/* Location & Employment Type Row */}
+              {/* Location & Employment Type */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Location
                   </label>
                   <input
@@ -485,11 +875,11 @@ export default function DashboardPage() {
                     value={formData.location}
                     onChange={handleChange}
                     className="input"
-                    placeholder="e.g., San Francisco, CA"
+                    placeholder="e.g., Remote / New York"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Employment Type
                   </label>
                   <select
@@ -507,23 +897,30 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Salary & Fit Score Row */}
+              {/* Status & Fit Score */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Salary Range
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Status *
                   </label>
-                  <input
-                    type="text"
-                    name="salary"
-                    value={formData.salary}
+                  <select
+                    name="status"
+                    value={formData.status}
                     onChange={handleChange}
                     className="input"
-                    placeholder="e.g., $100k - $150k"
-                  />
+                  >
+                    <option value="applied">Applied</option>
+                    <option value="interview_scheduled">
+                      Interview Scheduled
+                    </option>
+                    <option value="interviewed">Interviewed</option>
+                    <option value="offer_received">Offer Received 🎉</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="withdrawn">Withdrawn</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                     Fit Score (0-100)
                   </label>
                   <input
@@ -534,44 +931,44 @@ export default function DashboardPage() {
                     min="0"
                     max="100"
                     className="input"
-                    placeholder="e.g., 85"
+                    placeholder="e.g., 92"
                   />
                 </div>
               </div>
 
-              {/* Job Link */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Job Link
-                </label>
-                <input
-                  type="url"
-                  name="jobLink"
-                  value={formData.jobLink}
-                  onChange={handleChange}
-                  className="input"
-                  placeholder="https://..."
-                />
-              </div>
-
-              {/* Job Description */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Job Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={3}
-                  className="input"
-                  placeholder="Paste the job description here..."
-                />
+              {/* Salary Range & Job Link */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Salary Range
+                  </label>
+                  <input
+                    type="text"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., $140,000 - $170,000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                    Job Link
+                  </label>
+                  <input
+                    type="url"
+                    name="jobLink"
+                    value={formData.jobLink}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="https://..."
+                  />
+                </div>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                   Notes
                 </label>
                 <textarea
@@ -580,40 +977,18 @@ export default function DashboardPage() {
                   onChange={handleChange}
                   rows={2}
                   className="input"
-                  placeholder="Add any notes about this application..."
+                  placeholder="Notes about interview rounds, referral, or benefits..."
                 />
               </div>
 
-              {/* Status */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="input"
-                >
-                  <option value="applied">Applied</option>
-                  <option value="interview_scheduled">
-                    Interview Scheduled
-                  </option>
-                  <option value="interviewed">Interviewed</option>
-                  <option value="offer_received">Offer Received</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="withdrawn">Withdrawn</option>
-                </select>
-              </div>
-
               {/* Modal Footer */}
-              <div className="flex gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 btn-primary disabled:opacity-50"
                 >
-                  {loading ? "Creating..." : "Create Application"}
+                  {loading ? "Adding..." : "Add Application"}
                 </button>
                 <button
                   type="button"

@@ -9,6 +9,7 @@ export const resumeSchema = z.object({
   fileUrl: z.string().url(),
   uploadedAt: z.date().default(() => new Date()),
   isDefault: z.boolean().default(false),
+  rawText: z.string().optional(),
 });
 
 export type Resume = z.infer<typeof resumeSchema>;

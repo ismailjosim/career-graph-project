@@ -17,6 +17,7 @@ const resumeSchema = new mongoose.Schema<IResume>(
     fileUrl: { type: String, required: true },
     uploadedAt: { type: Date, default: Date.now },
     isDefault: { type: Boolean, default: false },
+    rawText: { type: String },
   },
   { timestamps: true },
 );
