@@ -1,24 +1,32 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSession } from "@/lib/auth-client";
 import type { JobApplication, MonthlyStats } from "@/lib/validation";
 
 const API_BASE_URL = "/api";
-const USER_ID = "demo-user"; // Replace with actual user ID from auth
 
 export function useJobApplications() {
+  const { data: session, isPending } = useSession();
+  const userId = session?.user?.id;
+
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  const fetchApplications = useCallback(async () => {
+    if (!userId) {
+      if (!isPending) setLoading(false);
+      return;
+    }
 
-  const fetchApplications = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/applications`, {
-        headers: { "x-user-id": USER_ID },
+        headers: { "x-user-id": userId },
       });
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) throw new Error("Failed to fetch applications");
       const data = await response.json();
       setApplications(data);
@@ -28,17 +36,29 @@ export function useJobApplications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, isPending]);
 
-  const createApplication = async (app: Omit<JobApplication, "_id">) => {
+  useEffect(() => {
+    if (userId) {
+      fetchApplications();
+    } else if (!isPending) {
+      setLoading(false);
+    }
+  }, [fetchApplications, userId, isPending]);
+
+  const createApplication = async (
+    app: Omit<JobApplication, "_id" | "userId" | "appliedAt">,
+  ) => {
+    if (!userId) throw new Error("Authentication required");
+
     try {
       const response = await fetch(`${API_BASE_URL}/applications`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": USER_ID,
+          "x-user-id": userId,
         },
-        body: JSON.stringify(app),
+        body: JSON.stringify({ ...app, userId }),
       });
       if (!response.ok) throw new Error("Failed to create application");
       const newApp = await response.json();
@@ -49,19 +69,26 @@ export function useJobApplications() {
     }
   };
 
-  const updateApplication = async (id: string, updates: Partial<JobApplication>) => {
+  const updateApplication = async (
+    id: string,
+    updates: Partial<JobApplication>,
+  ) => {
+    if (!userId) throw new Error("Authentication required");
+
     try {
       const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": USER_ID,
+          "x-user-id": userId,
         },
         body: JSON.stringify(updates),
       });
       if (!response.ok) throw new Error("Failed to update application");
       const updated = await response.json();
-      setApplications(applications.map((app) => (app._id === id ? updated : app)));
+      setApplications(
+        applications.map((app) => (app._id === id ? updated : app)),
+      );
       return updated;
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unknown error");
@@ -69,10 +96,12 @@ export function useJobApplications() {
   };
 
   const deleteApplication = async (id: string) => {
+    if (!userId) throw new Error("Authentication required");
+
     try {
       const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
         method: "DELETE",
-        headers: { "x-user-id": USER_ID },
+        headers: { "x-user-id": userId },
       });
       if (!response.ok) throw new Error("Failed to delete application");
       setApplications(applications.filter((app) => app._id !== id));
@@ -93,20 +122,28 @@ export function useJobApplications() {
 }
 
 export function useMonthlyStats() {
+  const { data: session, isPending } = useSession();
+  const userId = session?.user?.id;
+
   const [stats, setStats] = useState<MonthlyStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  const fetchStats = useCallback(async () => {
+    if (!userId) {
+      if (!isPending) setLoading(false);
+      return;
+    }
 
-  const fetchStats = async () => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/stats/monthly`, {
-        headers: { "x-user-id": USER_ID },
+        headers: { "x-user-id": userId },
       });
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
       if (!response.ok) throw new Error("Failed to fetch stats");
       const data = await response.json();
       setStats(data);
@@ -116,13 +153,23 @@ export function useMonthlyStats() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, isPending]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchStats();
+    } else if (!isPending) {
+      setLoading(false);
+    }
+  }, [fetchStats, userId, isPending]);
 
   const refreshStats = async () => {
+    if (!userId) return;
+
     try {
       const response = await fetch(`${API_BASE_URL}/stats/monthly`, {
         method: "POST",
-        headers: { "x-user-id": USER_ID },
+        headers: { "x-user-id": userId },
       });
       if (!response.ok) throw new Error("Failed to refresh stats");
       const data = await response.json();

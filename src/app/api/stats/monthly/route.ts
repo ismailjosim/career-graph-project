@@ -1,18 +1,17 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { JobApplication, MonthlyStats } from "@/lib/models";
-import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
-    const userId = request.headers.get("x-user-id");
+    const user = await getSessionUser();
+    const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return unauthorizedResponse();
     }
+
+    await connectDB();
 
     const now = new Date();
     const year = now.getFullYear();
@@ -40,16 +39,17 @@ export async function GET(request: NextRequest) {
 
       const totalApplications = applications.length;
       const responsesReceived = applications.filter(
-        (app) => app.responseAt
+        (app) => app.responseAt,
       ).length;
       const rejections = applications.filter(
-        (app) => app.status === "rejected"
+        (app) => app.status === "rejected",
       ).length;
       const interviews = applications.filter(
-        (app) => app.status === "interview_scheduled" || app.status === "interviewed"
+        (app) =>
+          app.status === "interview_scheduled" || app.status === "interviewed",
       ).length;
       const offers = applications.filter(
-        (app) => app.status === "offer_received"
+        (app) => app.status === "offer_received",
       ).length;
 
       stats = new MonthlyStats({
@@ -71,22 +71,20 @@ export async function GET(request: NextRequest) {
     console.error("Error fetching monthly stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch monthly stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-
-    const userId = request.headers.get("x-user-id");
+    const user = await getSessionUser();
+    const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return unauthorizedResponse();
     }
+
+    await connectDB();
 
     const now = new Date();
     const year = now.getFullYear();
@@ -106,16 +104,17 @@ export async function POST(request: NextRequest) {
 
     const totalApplications = applications.length;
     const responsesReceived = applications.filter(
-      (app) => app.responseAt
+      (app) => app.responseAt,
     ).length;
     const rejections = applications.filter(
-      (app) => app.status === "rejected"
+      (app) => app.status === "rejected",
     ).length;
     const interviews = applications.filter(
-      (app) => app.status === "interview_scheduled" || app.status === "interviewed"
+      (app) =>
+        app.status === "interview_scheduled" || app.status === "interviewed",
     ).length;
     const offers = applications.filter(
-      (app) => app.status === "offer_received"
+      (app) => app.status === "offer_received",
     ).length;
 
     let stats = await MonthlyStats.findOne({
@@ -153,7 +152,7 @@ export async function POST(request: NextRequest) {
     console.error("Error calculating monthly stats:", error);
     return NextResponse.json(
       { error: "Failed to calculate monthly stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

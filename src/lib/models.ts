@@ -1,8 +1,15 @@
 import mongoose from "mongoose";
-import type { Resume, CoverLetter, Wishlist, JobApplication, JobMarket, MonthlyStats } from "@/lib/validation";
+import type {
+  CoverLetter as ICoverLetter,
+  JobApplication as IJobApplication,
+  JobMarket as IJobMarket,
+  MonthlyStats as IMonthlyStats,
+  Resume as IResume,
+  Wishlist as IWishlist,
+} from "@/lib/validation";
 
 // Resume Model
-const resumeSchema = new mongoose.Schema<Resume>(
+const resumeSchema = new mongoose.Schema<IResume>(
   {
     userId: { type: String, required: true, index: true },
     name: { type: String, required: true },
@@ -11,15 +18,14 @@ const resumeSchema = new mongoose.Schema<Resume>(
     uploadedAt: { type: Date, default: Date.now },
     isDefault: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Resume =
-  mongoose.models.Resume ||
-  mongoose.model<Resume>("Resume", resumeSchema);
+  mongoose.models.Resume || mongoose.model<IResume>("Resume", resumeSchema);
 
 // Cover Letter Model
-const coverLetterSchema = new mongoose.Schema<CoverLetter>(
+const coverLetterSchema = new mongoose.Schema<ICoverLetter>(
   {
     userId: { type: String, required: true, index: true },
     title: { type: String, required: true },
@@ -27,15 +33,15 @@ const coverLetterSchema = new mongoose.Schema<CoverLetter>(
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const CoverLetter =
   mongoose.models.CoverLetter ||
-  mongoose.model<CoverLetter>("CoverLetter", coverLetterSchema);
+  mongoose.model<ICoverLetter>("CoverLetter", coverLetterSchema);
 
 // Job Market Model
-const jobMarketSchema = new mongoose.Schema<JobMarket>(
+const jobMarketSchema = new mongoose.Schema<IJobMarket>(
   {
     userId: { type: String, required: true, index: true },
     title: { type: String, required: true },
@@ -49,15 +55,15 @@ const jobMarketSchema = new mongoose.Schema<JobMarket>(
     },
     savedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const JobMarket =
   mongoose.models.JobMarket ||
-  mongoose.model<JobMarket>("JobMarket", jobMarketSchema);
+  mongoose.model<IJobMarket>("JobMarket", jobMarketSchema);
 
 // Wishlist Model
-const wishlistSchema = new mongoose.Schema<Wishlist>(
+const wishlistSchema = new mongoose.Schema<IWishlist>(
   {
     userId: { type: String, required: true, index: true },
     jobMarketId: String,
@@ -73,15 +79,15 @@ const wishlistSchema = new mongoose.Schema<Wishlist>(
       default: "saved",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Wishlist =
   mongoose.models.Wishlist ||
-  mongoose.model<Wishlist>("Wishlist", wishlistSchema);
+  mongoose.model<IWishlist>("Wishlist", wishlistSchema);
 
 // Job Application Model
-const jobApplicationSchema = new mongoose.Schema<JobApplication>(
+const jobApplicationSchema = new mongoose.Schema<IJobApplication>(
   {
     userId: { type: String, required: true, index: true },
     jobTitle: { type: String, required: true },
@@ -117,7 +123,7 @@ const jobApplicationSchema = new mongoose.Schema<JobApplication>(
       enum: ["full-time", "part-time", "contract", "internship"],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Create indexes for efficient queries
@@ -125,10 +131,10 @@ jobApplicationSchema.index({ userId: 1, appliedAt: -1 });
 
 export const JobApplication =
   mongoose.models.JobApplication ||
-  mongoose.model<JobApplication>("JobApplication", jobApplicationSchema);
+  mongoose.model<IJobApplication>("JobApplication", jobApplicationSchema);
 
 // Monthly Stats Model
-const monthlyStatsSchema = new mongoose.Schema<MonthlyStats>(
+const monthlyStatsSchema = new mongoose.Schema<IMonthlyStats>(
   {
     userId: { type: String, required: true, index: true },
     year: { type: Number, required: true },
@@ -140,11 +146,11 @@ const monthlyStatsSchema = new mongoose.Schema<MonthlyStats>(
     offers: { type: Number, default: 0 },
     updatedAt: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 monthlyStatsSchema.index({ userId: 1, year: 1, month: 1 }, { unique: true });
 
 export const MonthlyStats =
   mongoose.models.MonthlyStats ||
-  mongoose.model<MonthlyStats>("MonthlyStats", monthlyStatsSchema);
+  mongoose.model<IMonthlyStats>("MonthlyStats", monthlyStatsSchema);

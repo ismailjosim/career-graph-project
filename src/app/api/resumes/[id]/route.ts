@@ -1,22 +1,21 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
+import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 import { resumeSchema } from "@/lib/validation";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await connectDB();
-
-    const userId = request.headers.get("x-user-id");
+    const user = await getSessionUser();
+    const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return unauthorizedResponse();
     }
+
+    await connectDB();
 
     const { id } = await params;
     const resume = await Resume.findOne({
@@ -25,10 +24,7 @@ export async function GET(
     });
 
     if (!resume) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
 
     return NextResponse.json(resume);
@@ -36,25 +32,23 @@ export async function GET(
     console.error("Error fetching resume:", error);
     return NextResponse.json(
       { error: "Failed to fetch resume" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await connectDB();
-
-    const userId = request.headers.get("x-user-id");
+    const user = await getSessionUser();
+    const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return unauthorizedResponse();
     }
+
+    await connectDB();
 
     const { id } = await params;
     const body = await request.json();
@@ -65,10 +59,7 @@ export async function PUT(
     });
 
     if (!resume) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
 
     const validatedData = resumeSchema.partial().parse(body);
@@ -76,35 +67,34 @@ export async function PUT(
     await resume.save();
 
     return NextResponse.json(resume);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating resume:", error);
-    if (error.name === "ZodError") {
+    const err = error as { name?: string; errors?: unknown };
+    if (err.name === "ZodError") {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
-        { status: 400 }
+        { error: "Validation error", details: err.errors },
+        { status: 400 },
       );
     }
     return NextResponse.json(
       { error: "Failed to update resume" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await connectDB();
-
-    const userId = request.headers.get("x-user-id");
+    const user = await getSessionUser();
+    const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      );
+      return unauthorizedResponse();
     }
+
+    await connectDB();
 
     const { id } = await params;
     const result = await Resume.deleteOne({
@@ -113,10 +103,7 @@ export async function DELETE(
     });
 
     if (result.deletedCount === 0) {
-      return NextResponse.json(
-        { error: "Resume not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
 
     return NextResponse.json({ message: "Resume deleted successfully" });
@@ -124,7 +111,7 @@ export async function DELETE(
     console.error("Error deleting resume:", error);
     return NextResponse.json(
       { error: "Failed to delete resume" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

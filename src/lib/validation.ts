@@ -50,9 +50,7 @@ export const wishlistSchema = z.object({
   link: z.string().url("Must be a valid URL"),
   notes: z.string().optional(),
   savedAt: z.date().default(() => new Date()),
-  status: z
-    .enum(["saved", "reviewing", "decided"])
-    .default("saved"),
+  status: z.enum(["saved", "reviewing", "decided"]).default("saved"),
 });
 
 export type Wishlist = z.infer<typeof wishlistSchema>;
@@ -81,9 +79,7 @@ export const jobApplicationSchema = z.object({
     .default("applied"),
   appliedAt: z.date().default(() => new Date()),
   responseAt: z.date().optional(),
-  responseType: z
-    .enum(["positive", "negative", "pending"])
-    .optional(),
+  responseType: z.enum(["positive", "negative", "pending"]).optional(),
   salary: z.string().optional(),
   location: z.string().optional(),
   employmentType: z
