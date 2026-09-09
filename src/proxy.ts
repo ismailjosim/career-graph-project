@@ -15,6 +15,12 @@ export function proxy(request: NextRequest) {
 
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isVerifyOtpRoute = pathname.startsWith("/verify-otp");
+
+  // Allow verify-otp without redirect loop
+  if (isVerifyOtpRoute) {
+    return NextResponse.next();
+  }
 
   // Redirect authenticated user away from login/register to dashboard
   if (sessionCookie && isAuthRoute) {
@@ -36,8 +42,8 @@ export const config = {
     /*
      * Match application paths:
      * - Root (/)
-     * - Dashboard & features (/dashboard, /applications, /resumes, /cover-letters, /fit-analysis, /wishlist, /job-market, /users)
-     * - Auth routes (/login, /register)
+     * - Dashboard & features (/dashboard, /applications, /resumes, /cover-letters, /fit-analysis, /ats-checker, /wishlist, /job-market, /users, /profile, /settings)
+     * - Auth routes (/login, /register, /verify-otp)
      *
      * Excludes:
      * - Static files (_next, favicon, icons, images, etc.)
@@ -54,7 +60,9 @@ export const config = {
     "/job-market/:path*",
     "/users/:path*",
     "/profile/:path*",
+    "/settings/:path*",
     "/login",
     "/register",
+    "/verify-otp",
   ],
 };

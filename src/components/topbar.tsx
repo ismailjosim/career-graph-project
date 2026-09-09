@@ -52,6 +52,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     subtitle:
       "Manage your professional information, resumes, and cover letters",
   },
+  "/settings": {
+    title: "Account Settings",
+    subtitle: "Manage your password, profile details, and account security",
+  },
 };
 
 function LiveDateTimeDisplay() {

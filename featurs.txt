@@ -2,7 +2,7 @@
 
 
 
-for authentication after register using email and password user need to verify via OTP verification. If he/she logged in using social login (Google, GitHub) then no need to verify via OTP verification. and make a settings page for user to change password, update profile information. 
+
 
 remove all environment keys from full project. url, api keys only can be accessible from environment variable file .env/.env.local
 

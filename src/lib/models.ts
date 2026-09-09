@@ -178,3 +178,33 @@ monthlyStatsSchema.index({ userId: 1, year: 1, month: 1 }, { unique: true });
 export const MonthlyStats =
   mongoose.models.MonthlyStats ||
   mongoose.model<IMonthlyStats>("MonthlyStats", monthlyStatsSchema);
+
+// OTP Verification Model
+export interface IOtpVerification {
+  email: string;
+  otp: string;
+  expiresAt: Date;
+  attempts: number;
+  createdAt: Date;
+}
+
+const otpVerificationSchema = new mongoose.Schema<IOtpVerification>(
+  {
+    email: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+    otp: { type: String, required: true },
+    expiresAt: { type: Date, required: true, index: { expires: 0 } },
+    attempts: { type: Number, default: 0 },
+    createdAt: { type: Date, default: Date.now },
+  },
+  { timestamps: true },
+);
+
+export const OtpVerification =
+  mongoose.models.OtpVerification ||
+  mongoose.model<IOtpVerification>("OtpVerification", otpVerificationSchema);

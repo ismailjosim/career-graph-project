@@ -65,8 +65,20 @@ function RegisterForm() {
       if (res.error) {
         setError(res.error.message || "Failed to create account");
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Automatically dispatch verification code to email
+        try {
+          await fetch("/api/auth/otp/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+        } catch (otpErr) {
+          console.warn("Failed to dispatch initial OTP:", otpErr);
+        }
+
+        router.push(
+          `/verify-otp?email=${encodeURIComponent(email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        );
       }
     } catch (err) {
       setError(

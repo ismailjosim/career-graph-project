@@ -11,6 +11,7 @@ import {
   LogIn,
   LogOut,
   Moon,
+  Settings,
   Sun,
   User,
   Users,
@@ -70,6 +71,11 @@ const menuItems = [
     icon: User,
     label: "Profile",
     href: "/profile",
+  },
+  {
+    icon: Settings,
+    label: "Settings",
+    href: "/settings",
   },
 ];
 

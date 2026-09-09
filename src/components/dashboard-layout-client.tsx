@@ -1,6 +1,6 @@
 "use client";
 
-import { Ban, LogOut } from "lucide-react";
+import { Ban, KeyRound, LogOut } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
@@ -38,6 +38,8 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
 
   const [userStatus, setUserStatus] = useState<string>("active");
   const [isBlocked, setIsBlocked] = useState(false);
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -64,6 +66,19 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
             setIsBlocked(true);
             return;
           }
+
+          // Email OTP verification check
+          // If registered via email/password and unverified, redirect to OTP verification
+          if (u.emailVerified === false) {
+            setIsUnverified(true);
+            setUnverifiedEmail(u.email || "");
+            router.push(
+              `/verify-otp?email=${encodeURIComponent(u.email || "")}&callbackUrl=${encodeURIComponent(pathname)}`,
+            );
+            return;
+          }
+
+          setIsUnverified(false);
 
           // New User Onboarding Redirection
           // After a new user logs in, if profile is incomplete, navigate to /profile to update information
@@ -150,6 +165,57 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
               className="btn-outline w-full py-2.5 text-xs inline-flex items-center justify-center gap-2 cursor-pointer text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900"
             >
               <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Unverified Email Protection Screen
+  if (isUnverified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
+        <div className="card p-8 sm:p-10 max-w-md w-full text-center space-y-5 border-2 border-indigo-200 dark:border-indigo-900/60 bg-white dark:bg-slate-900 shadow-xl rounded-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto shadow-inner">
+            <KeyRound className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              Email Verification Required
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Please verify your email address to unlock full access to Career
+              Graph and your documents.
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 font-medium">
+            Account: {unverifiedEmail || "your email"}
+          </div>
+
+          <div className="space-y-2.5 pt-2">
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/verify-otp?email=${encodeURIComponent(unverifiedEmail)}&callbackUrl=${encodeURIComponent(pathname)}`,
+                )
+              }
+              className="btn-primary w-full py-2.5 text-xs inline-flex items-center justify-center gap-2 cursor-pointer font-bold"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>Enter 6-Digit Verification Code</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="btn-outline w-full py-2 text-xs inline-flex items-center justify-center gap-2 cursor-pointer text-slate-600 dark:text-slate-400"
+            >
+              <LogOut className="w-3.5 h-3.5" />
               <span>Sign Out</span>
             </button>
           </div>
