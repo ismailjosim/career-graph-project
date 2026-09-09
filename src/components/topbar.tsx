@@ -38,6 +38,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Job Fit Analysis",
     subtitle: "Analyze alignment between your resume and job requirements",
   },
+  "/users": {
+    title: "User Management",
+    subtitle: "Manage system accounts, access roles, and platform permissions",
+  },
 };
 
 function LiveDateTimeDisplay() {

@@ -124,3 +124,24 @@ export const monthlyStatsSchema = z.object({
 });
 
 export type MonthlyStats = z.infer<typeof monthlyStatsSchema>;
+
+// User Roles & Management Schemas
+export const USER_ROLES = [
+  "super_admin",
+  "admin",
+  "job_seeker",
+  "recruiter",
+  "employer",
+] as const;
+
+export type UserRole = (typeof USER_ROLES)[number];
+
+export const updateUserRoleSchema = z.object({
+  role: z.enum(USER_ROLES),
+});
+
+export const updateUserProfileSchema = z.object({
+  name: z.string().min(1, "Name is required").optional(),
+  email: z.string().email("Invalid email address").optional(),
+  role: z.enum(USER_ROLES).optional(),
+});

@@ -2,11 +2,14 @@
 
 import {
   AlertCircle,
+  Briefcase,
+  Building2,
   Eye,
   EyeOff,
   Lock,
   Mail,
   User,
+  UserCheck,
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +27,9 @@ function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"job_seeker" | "recruiter" | "employer">(
+    "job_seeker",
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,10 +51,15 @@ function RegisterForm() {
     setLoading(true);
 
     try {
-      const res = await signUp.email({
+      const res = await (
+        signUp.email as unknown as (
+          args: Record<string, unknown>,
+        ) => Promise<{ error?: { message?: string } }>
+      )({
         name,
         email,
         password,
+        role,
       });
 
       if (res.error) {
@@ -188,6 +199,52 @@ function RegisterForm() {
               placeholder="Repeat your password"
               className="input pl-11"
             />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+            I am registering as a
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => setRole("job_seeker")}
+              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+                role === "job_seeker"
+                  ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
+                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            >
+              <Briefcase className="w-4 h-4" />
+              <span>Job Seeker</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRole("recruiter")}
+              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+                role === "recruiter"
+                  ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
+                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>Recruiter</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRole("employer")}
+              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+                role === "employer"
+                  ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
+                  : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Employer</span>
+            </button>
           </div>
         </div>
 

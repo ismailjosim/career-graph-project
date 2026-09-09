@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  Users,
   X,
   Zap,
 } from "lucide-react";
@@ -65,6 +66,22 @@ export function Sidebar() {
   const { isCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
+
+  const userRole = (session?.user as unknown as Record<string, unknown>)?.role;
+  const isAdmin = userRole === "admin" || userRole === "super_admin";
+
+  const allMenuItems = [
+    ...menuItems,
+    ...(isAdmin
+      ? [
+          {
+            icon: Users,
+            label: "Users",
+            href: "/users",
+          },
+        ]
+      : []),
+  ];
 
   const handleLogout = async () => {
     try {
@@ -158,7 +175,7 @@ export function Sidebar() {
               : "overflow-y-auto overflow-x-hidden"
           }`}
         >
-          {menuItems.map((item) => {
+          {allMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href ||
