@@ -3,6 +3,7 @@
 import {
   BookOpen,
   Briefcase,
+  FileCheck,
   FileText,
   Globe,
   Heart,
@@ -59,6 +60,11 @@ const menuItems = [
     icon: Zap,
     label: "Fit Analysis",
     href: "/fit-analysis",
+  },
+  {
+    icon: FileCheck,
+    label: "ATS Checker",
+    href: "/ats-checker",
   },
   {
     icon: User,

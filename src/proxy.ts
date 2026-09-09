@@ -49,6 +49,7 @@ export const config = {
     "/resumes/:path*",
     "/cover-letters/:path*",
     "/fit-analysis/:path*",
+    "/ats-checker/:path*",
     "/wishlist/:path*",
     "/job-market/:path*",
     "/users/:path*",

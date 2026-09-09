@@ -38,6 +38,11 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Job Fit Analysis",
     subtitle: "Analyze alignment between your resume and job requirements",
   },
+  "/ats-checker": {
+    title: "ATS Resume Checker",
+    subtitle:
+      "Enterprise Applicant Tracking System audit with downloadable reports",
+  },
   "/users": {
     title: "User Management",
     subtitle: "Manage system accounts, access roles, and platform permissions",
