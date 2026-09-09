@@ -3,12 +3,15 @@ import {
   Briefcase,
   ChevronDown,
   ChevronUp,
+  Coins,
   FileSpreadsheet,
   FileText,
   Loader2,
   Sparkles,
   Upload,
 } from "lucide-react";
+import Link from "next/link";
+import { useTokens } from "@/context/tokens-context";
 import type { AtsInputMode, AtsTargetJob, SavedResumeOption } from "./types";
 
 interface AtsInputCardProps {
@@ -54,6 +57,7 @@ export function AtsInputCard({
   error,
   onSubmit,
 }: AtsInputCardProps) {
+  const { tokens } = useTokens();
   return (
     <div className="card p-6 sm:p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
       <div>
@@ -318,12 +322,52 @@ export function AtsInputCard({
         </div>
       )}
 
+      {/* Token Notice / Insufficient Warning */}
+      {tokens < 10 ? (
+        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-2.5">
+            <Coins className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <span className="font-bold">Insufficient Token Balance</span>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                You have <strong>{tokens} tokens</strong>, but an ATS audit
+                requires <strong>10 tokens</strong>.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/pricing"
+            className="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-1.5 transition-colors shrink-0"
+          >
+            <span>Top Up Tokens</span>
+          </Link>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between text-xs px-1 text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Coins className="w-3.5 h-3.5 text-amber-500" />
+            <span>
+              Audit cost:{" "}
+              <strong className="text-slate-700 dark:text-slate-300">
+                10 tokens
+              </strong>
+            </span>
+          </span>
+          <span className="font-medium">
+            Your balance:{" "}
+            <strong className="text-slate-700 dark:text-slate-300">
+              {tokens} tokens
+            </strong>
+          </span>
+        </div>
+      )}
+
       {/* Submit Action */}
       <div>
         <button
           type="button"
           onClick={onSubmit}
-          disabled={analyzing}
+          disabled={analyzing || tokens < 10}
           className="btn-primary w-full py-3 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
         >
           {analyzing ? (

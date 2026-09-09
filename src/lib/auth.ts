@@ -2,7 +2,11 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/job-tracker";
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  throw new Error("Please define the MONGODB_URI environment variable");
+}
 
 // Maintain a cached MongoClient across hot reloads in development
 let client: MongoClient;
@@ -24,7 +28,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const mongoClient = new MongoClient(uri);
-const db = mongoClient.db("job-tracker");
+const db = mongoClient.db();
 
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
@@ -57,6 +61,16 @@ export const auth = betterAuth({
         defaultValue: false,
         required: false,
       },
+      tokens: {
+        type: "number",
+        defaultValue: 50,
+        required: false,
+      },
+      verifiedBonusGiven: {
+        type: "boolean",
+        defaultValue: false,
+        required: false,
+      },
     },
   },
   emailAndPassword: {
@@ -72,11 +86,6 @@ export const auth = betterAuth({
       ),
     },
   },
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    "428f5221b34a654ec9d9bcfe969446d1b7a2d109dcb4e8ec6b51079549f3e4ef",
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000",
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL,
 });

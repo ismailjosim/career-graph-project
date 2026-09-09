@@ -18,6 +18,7 @@ export interface ManagedUser {
   linkedin?: string;
   experience?: string;
   education?: string;
+  tokens?: number;
   isProfileComplete?: boolean;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -53,6 +54,7 @@ export interface UsersTableProps {
   onDeleteUser: (user: ManagedUser) => void;
   onChangeStatus?: (user: ManagedUser, newStatus: UserStatus) => Promise<void>;
   onToggleVerify?: (user: ManagedUser) => Promise<void>;
+  onAdjustTokens?: (user: ManagedUser) => void;
 }
 
 export interface ViewUserModalProps {
@@ -63,6 +65,7 @@ export interface ViewUserModalProps {
   onEditUser?: (user: ManagedUser) => void;
   onChangeStatus?: (user: ManagedUser, newStatus: UserStatus) => Promise<void>;
   onToggleVerify?: (user: ManagedUser) => Promise<void>;
+  onAdjustTokens?: (user: ManagedUser) => void;
 }
 
 export interface EditUserModalProps {

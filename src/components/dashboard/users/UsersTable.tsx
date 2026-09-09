@@ -4,6 +4,7 @@ import {
   Briefcase,
   Building2,
   CheckCircle2,
+  Coins,
   Crown,
   Eye,
   Pencil,
@@ -24,6 +25,7 @@ export function UsersTable({
   onDeleteUser,
   onChangeStatus,
   onToggleVerify,
+  onAdjustTokens,
 }: UsersTableProps) {
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -137,6 +139,7 @@ export function UsersTable({
             <tr>
               <th className="px-5 py-3.5">User</th>
               <th className="px-4 py-3.5">Role</th>
+              <th className="px-4 py-3.5">Tokens</th>
               <th className="px-4 py-3.5">Account Status</th>
               <th className="px-4 py-3.5 hidden md:table-cell">
                 Email Verified
@@ -198,6 +201,19 @@ export function UsersTable({
                       <RoleIcon className="w-3.5 h-3.5" />
                       <span>{roleMeta.label}</span>
                     </span>
+                  </td>
+
+                  {/* Token Balance */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => onAdjustTokens?.(user)}
+                      title="Click to adjust user tokens"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/25 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                    >
+                      <Coins className="w-3.5 h-3.5 text-amber-500" />
+                      <span className="font-mono">{user.tokens ?? 50}</span>
+                    </button>
                   </td>
 
                   {/* Account Status with Dropdown Change */}
@@ -306,6 +322,17 @@ export function UsersTable({
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
+
+                      {onAdjustTokens && (
+                        <button
+                          type="button"
+                          onClick={() => onAdjustTokens(user)}
+                          className="p-2 rounded-lg text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition cursor-pointer"
+                          title="Adjust User Tokens"
+                        >
+                          <Coins className="w-4 h-4" />
+                        </button>
+                      )}
 
                       <button
                         type="button"

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { TokenTransaction, type TokenTransactionType } from "@/lib/models";
 import type { UserRole, UserStatus } from "@/lib/validation";
 
 export interface AuthenticatedUser {
@@ -13,6 +14,8 @@ export interface AuthenticatedUser {
   image?: string | null;
   role: UserRole;
   status: UserStatus;
+  tokens: number;
+  verifiedBonusGiven?: boolean;
   phone?: string;
   location?: string;
   headline?: string;
@@ -73,6 +76,13 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
       // Fallback to session details
     }
 
+    const rawTokens =
+      typeof dbDetails.tokens === "number"
+        ? dbDetails.tokens
+        : typeof (session.user as Record<string, unknown>).tokens === "number"
+          ? ((session.user as Record<string, unknown>).tokens as number)
+          : 50;
+
     return {
       ...session.user,
       ...dbDetails,
@@ -85,6 +95,8 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
           : session.user.emailVerified,
       role,
       status,
+      tokens: rawTokens,
+      verifiedBonusGiven: Boolean(dbDetails.verifiedBonusGiven),
     } as AuthenticatedUser;
   } catch (error) {
     console.error("Failed to get session:", error);
@@ -173,5 +185,159 @@ export async function ensureSuperAdminExists() {
     }
   } catch (err) {
     console.error("Error checking super_admin presence:", err);
+  }
+}
+
+function getUserQuery(id: string): Record<string, unknown> {
+  try {
+    return {
+      $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }],
+    };
+  } catch {
+    return {
+      $or: [{ _id: id }, { id: id }],
+    };
+  }
+}
+
+/**
+ * Atomically deduct tokens from a user's balance and records the transaction.
+ * Returns { success: false } if user has insufficient tokens.
+ */
+export async function deductUserTokens({
+  userId,
+  amount,
+  type,
+  description,
+  packageId,
+  metadata,
+}: {
+  userId: string;
+  amount: number;
+  type: TokenTransactionType;
+  description: string;
+  packageId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<{ success: boolean; newBalance: number; error?: string }> {
+  try {
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
+    if (!db) {
+      return { success: false, newBalance: 0, error: "Database unavailable" };
+    }
+
+    const userCollection = db.collection<Record<string, unknown>>("user");
+    const query = getUserQuery(userId);
+    const user = await userCollection.findOne(query);
+
+    if (!user) {
+      return { success: false, newBalance: 0, error: "User not found" };
+    }
+
+    const currentTokens = typeof user.tokens === "number" ? user.tokens : 50;
+
+    if (currentTokens < amount) {
+      return {
+        success: false,
+        newBalance: currentTokens,
+        error: `Insufficient tokens. Required: ${amount}, available: ${currentTokens}`,
+      };
+    }
+
+    const newBalance = currentTokens - amount;
+
+    await userCollection.updateOne(query, {
+      $set: { tokens: newBalance, updatedAt: new Date() },
+    });
+
+    try {
+      await TokenTransaction.create({
+        userId,
+        amount: -amount,
+        balanceAfter: newBalance,
+        type,
+        description,
+        packageId,
+        metadata,
+        createdAt: new Date(),
+      });
+    } catch (txErr) {
+      console.error("Failed to log token deduction transaction:", txErr);
+    }
+
+    return { success: true, newBalance };
+  } catch (err) {
+    console.error("deductUserTokens error:", err);
+    return {
+      success: false,
+      newBalance: 0,
+      error: err instanceof Error ? err.message : "Failed to deduct tokens",
+    };
+  }
+}
+
+/**
+ * Atomically grant/add tokens to a user's account and records the transaction.
+ */
+export async function grantUserTokens({
+  userId,
+  amount,
+  type,
+  description,
+  packageId,
+  metadata,
+}: {
+  userId: string;
+  amount: number;
+  type: TokenTransactionType;
+  description: string;
+  packageId?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<{ success: boolean; newBalance: number; error?: string }> {
+  try {
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
+    if (!db) {
+      return { success: false, newBalance: 0, error: "Database unavailable" };
+    }
+
+    const userCollection = db.collection<Record<string, unknown>>("user");
+    const query = getUserQuery(userId);
+    const user = await userCollection.findOne(query);
+
+    if (!user) {
+      return { success: false, newBalance: 0, error: "User not found" };
+    }
+
+    const currentTokens = typeof user.tokens === "number" ? user.tokens : 50;
+    const newBalance = currentTokens + amount;
+
+    await userCollection.updateOne(query, {
+      $set: { tokens: newBalance, updatedAt: new Date() },
+    });
+
+    try {
+      await TokenTransaction.create({
+        userId,
+        amount,
+        balanceAfter: newBalance,
+        type,
+        description,
+        packageId,
+        metadata,
+        createdAt: new Date(),
+      });
+    } catch (txErr) {
+      console.error("Failed to log token grant transaction:", txErr);
+    }
+
+    return { success: true, newBalance };
+  } catch (err) {
+    console.error("grantUserTokens error:", err);
+    return {
+      success: false,
+      newBalance: 0,
+      error: err instanceof Error ? err.message : "Failed to grant tokens",
+    };
   }
 }

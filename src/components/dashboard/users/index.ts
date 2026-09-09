@@ -1,3 +1,4 @@
+export * from "./AdjustTokensModal";
 export * from "./EditUserModal";
 export * from "./types";
 export * from "./UsersAccessDenied";

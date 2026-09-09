@@ -33,6 +33,8 @@ export async function GET() {
         experience: user.experience || "",
         education: user.education || "",
         isProfileComplete: Boolean(user.isProfileComplete),
+        tokens: typeof user.tokens === "number" ? user.tokens : 50,
+        verifiedBonusGiven: Boolean(user.verifiedBonusGiven),
         isAdmin: user.role === "admin" || user.role === "super_admin",
         isSuperAdmin: user.role === "super_admin",
       },

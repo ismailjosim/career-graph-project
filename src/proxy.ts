@@ -61,6 +61,7 @@ export const config = {
     "/users/:path*",
     "/profile/:path*",
     "/settings/:path*",
+    "/pricing/:path*",
     "/login",
     "/register",
     "/verify-otp",

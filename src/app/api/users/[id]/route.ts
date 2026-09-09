@@ -71,6 +71,7 @@ export async function GET(
         linkedin: user.linkedin || "",
         experience: user.experience || "",
         education: user.education || "",
+        tokens: typeof user.tokens === "number" ? user.tokens : 50,
         isProfileComplete: Boolean(user.isProfileComplete),
         createdAt: user.createdAt || new Date(),
         updatedAt: user.updatedAt || new Date(),

@@ -1,10 +1,6 @@
-import { MongoClient } from "mongodb";
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { OtpVerification } from "@/lib/models";
-
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/job-tracker";
+import { OtpVerification, TokenTransaction } from "@/lib/models";
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,33 +72,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // OTP is valid! Mark user as verified in MongoDB
-    const client = new MongoClient(MONGODB_URI);
-    try {
-      await client.connect();
-      const db = client.db();
-      const userCollection = db.collection("user");
-
-      const updateResult = await userCollection.updateOne(
-        { email: normalizedEmail },
-        {
-          $set: {
-            emailVerified: true,
-            updatedAt: new Date(),
-          },
-        },
+    // OTP is valid! Mark user as verified in MongoDB and reward 20 bonus tokens
+    const mongooseConn = await connectDB();
+    const db = mongooseConn.connection.db;
+    if (!db) {
+      return NextResponse.json(
+        { error: "Database connection unavailable" },
+        { status: 500 },
       );
+    }
+    const userCollection = db.collection("user");
+    const user = await userCollection.findOne({ email: normalizedEmail });
 
-      // Clean up used OTP record
-      await OtpVerification.deleteOne({ email: normalizedEmail });
+    const bonusGiven = Boolean(user?.verifiedBonusGiven);
+    const tokensToAdd = bonusGiven ? 0 : 20;
+    const currentTokens = typeof user?.tokens === "number" ? user.tokens : 50;
+    const newTokens = currentTokens + tokensToAdd;
 
-      if (updateResult.matchedCount === 0) {
-        console.warn(
-          `[OTP Verify] Verified code, but no user record with email ${normalizedEmail} found yet.`,
-        );
-      }
-    } finally {
-      await client.close().catch(() => {});
+    const updateResult = await userCollection.updateOne(
+      { email: normalizedEmail },
+      {
+        $set: {
+          emailVerified: true,
+          verifiedBonusGiven: true,
+          tokens: newTokens,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    // Clean up used OTP record
+    await OtpVerification.deleteOne({ email: normalizedEmail });
+
+    if (tokensToAdd > 0 && user) {
+      await TokenTransaction.create({
+        userId: user._id.toString(),
+        amount: 20,
+        balanceAfter: newTokens,
+        type: "email_verification_bonus",
+        description: "Email verification reward (+20 free tokens)",
+        createdAt: new Date(),
+      }).catch((e) => console.error("Error creating TokenTransaction:", e));
+    }
+
+    if (updateResult.matchedCount === 0) {
+      console.warn(
+        `[OTP Verify] Verified code, but no user record with email ${normalizedEmail} found yet.`,
+      );
     }
 
     return NextResponse.json({

@@ -105,6 +105,7 @@ export async function GET(request: NextRequest) {
       headline: (u.headline as string) || "",
       phone: (u.phone as string) || "",
       location: (u.location as string) || "",
+      tokens: typeof u.tokens === "number" ? u.tokens : 50,
       isProfileComplete: Boolean(u.isProfileComplete),
       createdAt: u.createdAt || new Date(),
       updatedAt: u.updatedAt || new Date(),

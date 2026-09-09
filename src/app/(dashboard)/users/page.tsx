@@ -1,8 +1,11 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 import {
+  AdjustTokensModal,
   EditUserModal,
+  type ManagedUser,
   UsersAccessDenied,
   UsersFeedbackBanner,
   UsersHeader,
@@ -45,7 +48,10 @@ export default function UsersPage() {
     handleDeleteUser,
     feedback,
     dismissFeedback,
+    refreshUsers,
   } = useUsersManager();
+
+  const [adjustingUser, setAdjustingUser] = useState<ManagedUser | null>(null);
 
   // 1. Loading Session state
   if (isPending) {
@@ -115,6 +121,7 @@ export default function UsersPage() {
             onDeleteUser={handleDeleteUser}
             onChangeStatus={handleChangeStatus}
             onToggleVerify={handleToggleVerify}
+            onAdjustTokens={(u) => setAdjustingUser(u)}
           />
 
           {/* Pagination Controls */}
@@ -140,6 +147,10 @@ export default function UsersPage() {
         }}
         onChangeStatus={handleChangeStatus}
         onToggleVerify={handleToggleVerify}
+        onAdjustTokens={(u) => {
+          handleCloseViewModal();
+          setAdjustingUser(u);
+        }}
       />
 
       {/* Edit User Modal */}
@@ -149,6 +160,16 @@ export default function UsersPage() {
         user={editingUser}
         currentUserRole={currentUserRole}
         onSave={handleSaveUser}
+      />
+
+      {/* Adjust Tokens Modal */}
+      <AdjustTokensModal
+        isOpen={Boolean(adjustingUser)}
+        user={adjustingUser}
+        onClose={() => setAdjustingUser(null)}
+        onSuccess={() => {
+          refreshUsers();
+        }}
       />
     </div>
   );

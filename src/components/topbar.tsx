@@ -1,8 +1,16 @@
 "use client";
 
-import { Clock, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import {
+  Clock,
+  Coins,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTokens } from "@/context/tokens-context";
 import { useSidebar } from "./sidebar-context";
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
@@ -42,6 +50,11 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "ATS Resume Checker",
     subtitle:
       "Enterprise Applicant Tracking System audit with downloadable reports",
+  },
+  "/pricing": {
+    title: "Token Packages & Pricing",
+    subtitle:
+      "Upgrade your token balance to power AI resume audits and cover letters",
   },
   "/users": {
     title: "User Management",
@@ -109,6 +122,7 @@ function LiveDateTimeDisplay() {
 export function TopBar() {
   const pathname = usePathname();
   const { isCollapsed, toggleCollapse, toggleMobile } = useSidebar();
+  const { tokens } = useTokens();
 
   // Match title or check nested routes
   let currentMeta = pageTitles[pathname] || {
@@ -161,8 +175,31 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Right side: Live Date & Time Display */}
-      <div className="flex items-center shrink-0 ml-2">
+      {/* Right side: Token Balance Pill & Live Date & Time Display */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+        <Link
+          href="/pricing"
+          title="View Token Balance & Packages"
+          className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 hover:from-amber-500/20 hover:via-yellow-500/20 hover:to-amber-500/20 border border-amber-500/30 dark:border-amber-400/30 text-amber-700 dark:text-amber-300 shadow-xs hover:shadow-sm transition-all group cursor-pointer"
+        >
+          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+            <Coins className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex flex-col text-left leading-none">
+            <div className="flex items-center gap-1">
+              <span className="text-xs sm:text-sm font-bold tracking-tight font-mono text-slate-900 dark:text-white">
+                {tokens}
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300">
+                Tokens
+              </span>
+            </div>
+            <span className="text-[9px] font-medium text-amber-600/80 dark:text-amber-400/80 hidden md:inline">
+              + Get More
+            </span>
+          </div>
+        </Link>
+
         <LiveDateTimeDisplay />
       </div>
     </header>

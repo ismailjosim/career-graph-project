@@ -23,9 +23,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://careergraphtracker.vercel.app",
-  ),
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL
+    ? new URL(process.env.NEXT_PUBLIC_APP_URL)
+    : undefined,
   title: {
     default: "Career Graph - Job Application Tracker",
     template: "%s | Career Graph",

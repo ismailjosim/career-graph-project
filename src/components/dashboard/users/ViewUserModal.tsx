@@ -8,6 +8,7 @@ import {
   Calendar,
   Check,
   CheckCircle2,
+  Coins,
   Copy,
   Crown,
   ExternalLink,
@@ -35,6 +36,7 @@ export function ViewUserModal({
   onEditUser,
   onChangeStatus,
   onToggleVerify,
+  onAdjustTokens,
 }: ViewUserModalProps) {
   const [copied, setCopied] = useState(false);
 
@@ -391,6 +393,32 @@ export function ViewUserModal({
                 </span>
               </p>
             </div>
+
+            {/* Token Balance Card */}
+            <div className="p-3 rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20 col-span-1 sm:col-span-2 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider block">
+                    Token Balance
+                  </span>
+                  <p className="text-sm font-extrabold font-mono text-slate-900 dark:text-white">
+                    {user.tokens ?? 50} Tokens
+                  </p>
+                </div>
+              </div>
+              {onAdjustTokens && (
+                <button
+                  type="button"
+                  onClick={() => onAdjustTokens(user)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Adjust Tokens
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -405,6 +433,17 @@ export function ViewUserModal({
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Full Profile & Resumes</span>
             </Link>
+
+            {onAdjustTokens && (
+              <button
+                type="button"
+                onClick={() => onAdjustTokens(user)}
+                className="btn-outline py-2 px-3 text-xs inline-flex items-center gap-1.5 cursor-pointer text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+              >
+                <Coins className="w-3.5 h-3.5" />
+                <span>Tokens</span>
+              </button>
+            )}
 
             {canEdit && onEditUser && (
               <button

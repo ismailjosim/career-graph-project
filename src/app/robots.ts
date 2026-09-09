@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://careergraph.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
 
   return {
     rules: [
@@ -11,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/"],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: baseUrl ? `${baseUrl}/sitemap.xml` : "/sitemap.xml",
   };
 }

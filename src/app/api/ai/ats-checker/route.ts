@@ -1,7 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
-import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
+import {
+  deductUserTokens,
+  getSessionUser,
+  unauthorizedResponse,
+} from "@/lib/server-auth";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -43,6 +47,22 @@ export async function POST(request: NextRequest) {
     const userId = user?.id || request.headers.get("x-user-id");
     if (!userId) {
       return unauthorizedResponse();
+    }
+
+    const ATS_TOKEN_COST = 10;
+    const currentTokens = typeof user?.tokens === "number" ? user.tokens : 50;
+
+    if (currentTokens < ATS_TOKEN_COST) {
+      return NextResponse.json(
+        {
+          error: `Insufficient tokens. ATS Resume Audit requires ${ATS_TOKEN_COST} tokens, but your balance is ${currentTokens}.`,
+          code: "INSUFFICIENT_TOKENS",
+          requiredTokens: ATS_TOKEN_COST,
+          currentTokens,
+          redirect: "/pricing",
+        },
+        { status: 402 },
+      );
     }
 
     await connectDB();
@@ -458,10 +478,24 @@ The JSON must adhere precisely to this schema:
       ),
     };
 
+    // Deduct ATS check tokens (10 tokens)
+    const deduction = await deductUserTokens({
+      userId,
+      amount: ATS_TOKEN_COST,
+      type: "ats_check",
+      description: `ATS Resume Audit (${resumeTitle})`,
+      metadata: {
+        score: overallScore,
+        targetRole: targetJob?.title || "General",
+      },
+    });
+
     return NextResponse.json({
       success: true,
       resumeTitle,
       result: normalizedResult,
+      tokensDeducted: ATS_TOKEN_COST,
+      remainingTokens: deduction.newBalance,
       analyzedAt: new Date().toISOString(),
     });
   } catch (err) {

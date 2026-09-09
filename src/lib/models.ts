@@ -208,3 +208,93 @@ const otpVerificationSchema = new mongoose.Schema<IOtpVerification>(
 export const OtpVerification =
   mongoose.models.OtpVerification ||
   mongoose.model<IOtpVerification>("OtpVerification", otpVerificationSchema);
+
+// Token Package Model
+export interface ITokenPackage {
+  _id?: string;
+  name: string;
+  tokens: number;
+  price: number; // in USD
+  description: string;
+  badge?: string;
+  features: string[];
+  isPopular?: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const tokenPackageSchema = new mongoose.Schema<ITokenPackage>(
+  {
+    name: { type: String, required: true, trim: true },
+    tokens: { type: Number, required: true, min: 1 },
+    price: { type: Number, required: true, min: 0 },
+    description: { type: String, default: "" },
+    badge: { type: String, default: "" },
+    features: { type: [String], default: [] },
+    isPopular: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
+    sortOrder: { type: Number, default: 0 },
+  },
+  { timestamps: true },
+);
+
+export const TokenPackage =
+  mongoose.models.TokenPackage ||
+  mongoose.model<ITokenPackage>("TokenPackage", tokenPackageSchema);
+
+// Token Transaction Model
+export type TokenTransactionType =
+  | "signup_bonus"
+  | "email_verification_bonus"
+  | "package_purchase"
+  | "admin_grant"
+  | "ats_check"
+  | "cover_letter"
+  | "fit_analysis";
+
+export interface ITokenTransaction {
+  _id?: string;
+  userId: string;
+  amount: number; // positive (credit) or negative (debit)
+  balanceAfter: number;
+  type: TokenTransactionType;
+  description: string;
+  packageId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: Date;
+}
+
+const tokenTransactionSchema = new mongoose.Schema<ITokenTransaction>(
+  {
+    userId: { type: String, required: true, index: true },
+    amount: { type: Number, required: true },
+    balanceAfter: { type: Number, required: true },
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        "signup_bonus",
+        "email_verification_bonus",
+        "package_purchase",
+        "admin_grant",
+        "ats_check",
+        "cover_letter",
+        "fit_analysis",
+      ],
+      index: true,
+    },
+    description: { type: String, default: "" },
+    packageId: { type: String },
+    metadata: { type: mongoose.Schema.Types.Mixed },
+    createdAt: { type: Date, default: Date.now, index: true },
+  },
+  { timestamps: true },
+);
+
+tokenTransactionSchema.index({ userId: 1, createdAt: -1 });
+
+export const TokenTransaction =
+  mongoose.models.TokenTransaction ||
+  mongoose.model<ITokenTransaction>("TokenTransaction", tokenTransactionSchema);
