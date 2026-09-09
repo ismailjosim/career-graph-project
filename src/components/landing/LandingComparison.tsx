@@ -12,11 +12,11 @@ export function LandingComparison() {
         "Unified Curated Directory with 1-click tracking & Google Favicons",
     },
     {
-      feature: "ATS Keyword Verification",
+      feature: "ATS Keyword & Format Audit",
       traditional:
-        "Guessing whether your resume will pass initial robot filtering",
+        "Paying $50/month on Jobscan or guessing why automated filters reject you",
       careerGraph:
-        "Instant 0-100% ATS score + identified missing keywords & proofs",
+        "4-Pillar AI audit (Formatting, Keywords, Impact, Structure) + Word/PDF export",
     },
     {
       feature: "Job Data Entry",
@@ -28,7 +28,7 @@ export function LandingComparison() {
     {
       feature: "Cover Letter Customization",
       traditional:
-        "Generic, robotic copy-paste templates that recruiters ignore",
+        "Generic, robotic copy-paste templates that recruiters immediately ignore",
       careerGraph:
         "Role-specific letters weaving your real accomplishments & metrics",
     },
@@ -38,6 +38,13 @@ export function LandingComparison() {
         "Clunky Excel or Notion spreadsheets that quickly get out of date",
       careerGraph:
         "Dynamic Kanban workflow with interview schedules & salary stats",
+    },
+    {
+      feature: "Pricing & Billing Model",
+      traditional:
+        "$30–$50/mo auto-renewing subscriptions that bill you even after you find a job",
+      careerGraph:
+        "Fair Pay-as-you-go tokens from $5 (~$0.10/scan). 70 Free welcome tokens. Never expire.",
     },
     {
       feature: "Role-Based Governance",

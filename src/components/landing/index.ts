@@ -6,5 +6,6 @@ export { LandingHero } from "./LandingHero";
 export { LandingMarketplaceGrid } from "./LandingMarketplaceGrid";
 export { LandingNavbar } from "./LandingNavbar";
 export { LandingPipelinePreview } from "./LandingPipelinePreview";
+export { LandingPricing } from "./LandingPricing";
 export { LandingRolesSection } from "./LandingRolesSection";
 export { LandingTestimonials } from "./LandingTestimonials";

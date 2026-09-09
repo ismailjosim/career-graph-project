@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowRight, Globe2, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Coins,
+  Globe2,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 
 export function LandingCta() {
@@ -50,18 +57,18 @@ export function LandingCta() {
             </div>
 
             {/* Guarantees */}
-            <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-300">
+              <span className="flex items-center gap-1.5">
+                <Coins className="w-4 h-4 text-amber-400" />
+                50 Free Tokens on Signup + 20 on OTP
+              </span>
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                No credit card required
+                No credit card required • Tokens never expire
               </span>
               <span className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-400" />
-                Instant setup in &lt; 30 seconds
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
-                Free during public launch
+                <Zap className="w-4 h-4 text-cyan-400" />
+                Instant ATS Scan & Cover Letter Gen
               </span>
             </div>
           </div>

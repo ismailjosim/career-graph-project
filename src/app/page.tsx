@@ -8,6 +8,7 @@ import {
   LandingMarketplaceGrid,
   LandingNavbar,
   LandingPipelinePreview,
+  LandingPricing,
   LandingRolesSection,
   LandingTestimonials,
 } from "@/components/landing";
@@ -15,7 +16,7 @@ import {
 export const metadata: Metadata = {
   title: "Career Graph - AI Job Marketplace & Autonomous Application Tracker",
   description:
-    "Discover high-fit roles across top tech marketplaces. Run automated ATS resume fit scores, extract job data with 1 click, and craft tailored cover letters in seconds.",
+    "Discover high-fit roles, run 4-pillar ATS resume checks, generate custom cover letters, and track applications with our fair pay-as-you-go token economy. 50 free tokens on signup.",
 };
 
 export default function HomePage() {
@@ -43,6 +44,9 @@ export default function HomePage() {
 
         {/* Role-Based Workflows (Seeker, Recruiter, Employer, Admin) */}
         <LandingRolesSection />
+
+        {/* Transparent Pay-As-You-Go Pricing & Token Economy */}
+        <LandingPricing />
 
         {/* Social Proof & Testimonials */}
         <LandingTestimonials />

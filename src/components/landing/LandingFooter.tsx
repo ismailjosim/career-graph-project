@@ -45,6 +45,14 @@ export function LandingFooter() {
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
+                  href="/ats-checker"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium text-emerald-600 dark:text-emerald-400"
+                >
+                  ATS Resume Checker ✨
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/fit-analysis"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
@@ -84,6 +92,14 @@ export function LandingFooter() {
               Platform
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <Link
+                  href="#pricing"
+                  className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors font-medium text-amber-600 dark:text-amber-400"
+                >
+                  Pricing & Token Packs 🪙
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/job-market"

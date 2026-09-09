@@ -2,6 +2,7 @@
 
 import {
   ArrowRight,
+  FileCheck,
   Globe2,
   MapPin,
   Search,
@@ -48,13 +49,18 @@ export function LandingHero() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Top Announcement Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium shadow-xs mb-8 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors">
-          <span className="flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
-          <span className="font-semibold">AI Job Platform 2.0</span>
+        <Link
+          href="#pricing"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium shadow-xs mb-8 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
+        >
+          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold">
+            New: ATS Resume Checker + 50 Free Tokens
+          </span>
           <span className="text-slate-400 dark:text-slate-600">•</span>
-          <span>Deep ATS Scoring, Smart URL Parser & Custom Cover Letters</span>
+          <span>4-Pillar Scan, Word/PDF Export & Custom Cover Letters</span>
           <ArrowRight className="w-3.5 h-3.5 ml-0.5 text-blue-500" />
-        </div>
+        </Link>
 
         {/* Primary Marketplace Headline */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-[1.12]">
@@ -154,20 +160,30 @@ export function LandingHero() {
         </div>
 
         {/* Action CTAs */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+          <Link
+            href="/ats-checker"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-white bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02]"
+          >
+            <FileCheck className="w-4 h-4 text-emerald-100" />
+            <span>Check Resume ATS Score</span>
+            <span className="px-2 py-0.5 rounded-md bg-white/20 text-[11px] font-bold">
+              Free
+            </span>
+          </Link>
           <Link
             href="/fit-analysis"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-white bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-md shadow-slate-900/10 transition-all hover:scale-[1.02]"
           >
             <Sparkles className="w-4 h-4 text-blue-400 dark:text-blue-600" />
-            <span>Try AI Job Fit Analyzer</span>
+            <span>AI Job Fit Analyzer</span>
           </Link>
           <Link
             href="/job-market"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 shadow-xs transition-all hover:scale-[1.02]"
           >
             <Globe2 className="w-4 h-4 text-indigo-500" />
-            <span>Browse Job Marketplace Directory</span>
+            <span>Browse Job Marketplace</span>
           </Link>
         </div>
 

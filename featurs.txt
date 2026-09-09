@@ -1,1 +1,7 @@
 search online and find how others professional are managing pricing section and make it more user friendly also effective costing for both service provider and user. for example how should it cost to generate a resume/ cover letter and things like that. analysis all the features and how much should cost AI to generate it. (cover letter, job analysis, ats checker, etc) after that revalidate the pricing table costing and token usages 
+
+Job Portal: here user will see all the platform posted job created by recruiters. and user can apply for the job through this platform. and each application will cost some tokens. based on how many requirements the job has. also there will be a job search bar where user can search for jobs.
+
+Job Detail Page: here user will see the full job description, company information, salary range, location, etc. and there will be a button to apply for the job. also there will be a button to save the job. and there will be a button to share the job. also there will be a button to create cover letter for the job. also there will be a button to make resume tailored for the job.
+
+admin can can post job from others platform (linked in, indeed, etc) to this platform. a form to post the job.56746 
