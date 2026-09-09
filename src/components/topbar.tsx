@@ -42,6 +42,11 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "User Management",
     subtitle: "Manage system accounts, access roles, and platform permissions",
   },
+  "/profile": {
+    title: "User Profile",
+    subtitle:
+      "Manage your professional information, resumes, and cover letters",
+  },
 };
 
 function LiveDateTimeDisplay() {

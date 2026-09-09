@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { CoverLetter, JobApplication, Resume } from "@/lib/models";
 import { forbiddenResponse, requireAdminUser } from "@/lib/server-auth";
 import { updateUserProfileSchema } from "@/lib/validation";
 
@@ -42,16 +43,60 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const targetUserId = user._id.toString();
+
+    // Concurrently fetch user's documents and stats
+    const [resumes, coverLetters, totalApplications] = await Promise.all([
+      Resume.find({ userId: targetUserId }).sort({ uploadedAt: -1 }).lean(),
+      CoverLetter.find({ userId: targetUserId }).sort({ updatedAt: -1 }).lean(),
+      JobApplication.countDocuments({ userId: targetUserId }),
+    ]);
+
     return NextResponse.json({
-      id: user._id.toString(),
-      _id: user._id.toString(),
-      name: user.name || "Unnamed User",
-      email: user.email,
-      emailVerified: Boolean(user.emailVerified),
-      image: user.image || null,
-      role: user.role || "job_seeker",
-      createdAt: user.createdAt || new Date(),
-      updatedAt: user.updatedAt || new Date(),
+      user: {
+        id: user._id.toString(),
+        _id: user._id.toString(),
+        name: user.name || "Unnamed User",
+        email: user.email,
+        emailVerified: Boolean(user.emailVerified),
+        image: user.image || null,
+        role: user.role || "job_seeker",
+        status: user.status || "active",
+        phone: user.phone || "",
+        location: user.location || "",
+        headline: user.headline || "",
+        bio: user.bio || "",
+        skills: user.skills || [],
+        website: user.website || "",
+        linkedin: user.linkedin || "",
+        experience: user.experience || "",
+        education: user.education || "",
+        isProfileComplete: Boolean(user.isProfileComplete),
+        createdAt: user.createdAt || new Date(),
+        updatedAt: user.updatedAt || new Date(),
+      },
+      stats: {
+        totalResumes: resumes.length,
+        totalCoverLetters: coverLetters.length,
+        totalApplications,
+      },
+      resumes: resumes.map((r: Record<string, unknown>) => ({
+        id: String(r._id),
+        _id: String(r._id),
+        name: r.name,
+        fileName: r.fileName,
+        fileUrl: r.fileUrl,
+        isDefault: Boolean(r.isDefault),
+        uploadedAt: r.uploadedAt,
+      })),
+      coverLetters: coverLetters.map((cl: Record<string, unknown>) => ({
+        id: String(cl._id),
+        _id: String(cl._id),
+        title: cl.title,
+        content: cl.content,
+        createdAt: cl.createdAt,
+        updatedAt: cl.updatedAt,
+      })),
     });
   } catch (error) {
     console.error("Error fetching user:", error);
@@ -142,6 +187,37 @@ export async function PUT(
       );
     }
 
+    // 5. Account Status Safeguards
+    if (validatedData.status) {
+      // Cannot deactivate or block the Super Admin
+      if (
+        targetUserRole === "super_admin" &&
+        validatedData.status !== "active"
+      ) {
+        return forbiddenResponse(
+          "The system Super Admin cannot be deactivated or blocked.",
+        );
+      }
+
+      // Cannot deactivate or block self
+      if (targetUserId === operator.id && validatedData.status !== "active") {
+        return forbiddenResponse(
+          "You cannot deactivate or block your own account.",
+        );
+      }
+
+      // Regular admin cannot change status of other admins
+      if (
+        targetUserRole === "admin" &&
+        operator.role !== "super_admin" &&
+        validatedData.status !== "active"
+      ) {
+        return forbiddenResponse(
+          "Only the Super Admin can change the status of Admin accounts.",
+        );
+      }
+    }
+
     // Prepare update payload
     const updatePayload: Record<string, unknown> = {
       updatedAt: new Date(),
@@ -149,11 +225,46 @@ export async function PUT(
     if (validatedData.name) updatePayload.name = validatedData.name;
     if (validatedData.email) updatePayload.email = validatedData.email;
     if (validatedData.role) updatePayload.role = validatedData.role;
+    if (validatedData.status) updatePayload.status = validatedData.status;
+    if (validatedData.emailVerified !== undefined) {
+      updatePayload.emailVerified = validatedData.emailVerified;
+    }
+    if (validatedData.phone !== undefined)
+      updatePayload.phone = validatedData.phone;
+    if (validatedData.location !== undefined)
+      updatePayload.location = validatedData.location;
+    if (validatedData.headline !== undefined)
+      updatePayload.headline = validatedData.headline;
+    if (validatedData.bio !== undefined) updatePayload.bio = validatedData.bio;
+    if (validatedData.skills !== undefined) {
+      updatePayload.skills = Array.isArray(validatedData.skills)
+        ? validatedData.skills
+        : validatedData.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+    if (validatedData.website !== undefined)
+      updatePayload.website = validatedData.website;
+    if (validatedData.linkedin !== undefined)
+      updatePayload.linkedin = validatedData.linkedin;
+    if (validatedData.experience !== undefined)
+      updatePayload.experience = validatedData.experience;
+    if (validatedData.education !== undefined)
+      updatePayload.education = validatedData.education;
+    if (validatedData.isProfileComplete !== undefined) {
+      updatePayload.isProfileComplete = validatedData.isProfileComplete;
+    }
 
     await userCollection.updateOne(
       { _id: targetUser._id },
       { $set: updatePayload },
     );
+
+    // If user was blocked, immediately invalidate their sessions
+    if (validatedData.status === "blocked") {
+      await db.collection("session").deleteMany({ userId: targetUserId });
+    }
 
     const updatedUser = await userCollection.findOne({ _id: targetUser._id });
 
@@ -163,7 +274,18 @@ export async function PUT(
       name: updatedUser?.name,
       email: updatedUser?.email,
       role: updatedUser?.role || "job_seeker",
+      status: updatedUser?.status || "active",
       emailVerified: Boolean(updatedUser?.emailVerified),
+      phone: updatedUser?.phone || "",
+      location: updatedUser?.location || "",
+      headline: updatedUser?.headline || "",
+      bio: updatedUser?.bio || "",
+      skills: updatedUser?.skills || [],
+      website: updatedUser?.website || "",
+      linkedin: updatedUser?.linkedin || "",
+      experience: updatedUser?.experience || "",
+      education: updatedUser?.education || "",
+      isProfileComplete: Boolean(updatedUser?.isProfileComplete),
       updatedAt: updatedUser?.updatedAt,
     });
   } catch (error) {

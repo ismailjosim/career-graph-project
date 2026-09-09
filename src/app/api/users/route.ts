@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
     const role = searchParams.get("role") || "all";
+    const status = searchParams.get("status") || "all";
     const page = Math.max(1, Number(searchParams.get("page")) || 1);
     const limit = Math.max(
       1,
@@ -37,6 +38,10 @@ export async function GET(request: NextRequest) {
 
     if (role && role !== "all") {
       query.role = role;
+    }
+
+    if (status && status !== "all") {
+      query.status = status;
     }
 
     if (search) {
@@ -52,7 +57,7 @@ export async function GET(request: NextRequest) {
         .limit(limit)
         .toArray(),
       userCollection.countDocuments(query),
-      userCollection.find({}, { projection: { role: 1 } }).toArray(),
+      userCollection.find({}, { projection: { role: 1, status: 1 } }).toArray(),
     ]);
 
     // Aggregate counts for all role tabs
@@ -65,12 +70,26 @@ export async function GET(request: NextRequest) {
       employer: 0,
     };
 
+    const statusCounts: Record<string, number> = {
+      all: allUsersForCounts.length,
+      active: 0,
+      inactive: 0,
+      blocked: 0,
+    };
+
     for (const u of allUsersForCounts) {
       const r = (u.role as UserRole) || "job_seeker";
       if (roleCounts[r] !== undefined) {
         roleCounts[r]++;
       } else {
         roleCounts.job_seeker++;
+      }
+
+      const s = (u.status as string) || "active";
+      if (statusCounts[s] !== undefined) {
+        statusCounts[s]++;
+      } else {
+        statusCounts.active++;
       }
     }
 
@@ -82,6 +101,11 @@ export async function GET(request: NextRequest) {
       emailVerified: Boolean(u.emailVerified),
       image: u.image || null,
       role: (u.role as UserRole) || "job_seeker",
+      status: (u.status as string) || "active",
+      headline: (u.headline as string) || "",
+      phone: (u.phone as string) || "",
+      location: (u.location as string) || "",
+      isProfileComplete: Boolean(u.isProfileComplete),
       createdAt: u.createdAt || new Date(),
       updatedAt: u.updatedAt || new Date(),
     }));
@@ -95,6 +119,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(totalFiltered / limit) || 1,
       },
       roleCounts,
+      statusCounts,
       currentUserRole: authResult.user.role,
       currentUserId: authResult.user.id,
     });

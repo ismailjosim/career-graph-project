@@ -1,6 +1,6 @@
 
 
-Add a page to check resume ATS like a professional ATS app using AI. user can download overall feedback as pdf or word format.
+
 
 for authentication after register using email and password user need to verify via OTP verification. If he/she logged in using social login (Google, GitHub) then no need to verify via OTP verification. and make a settings page for user to change password, update profile information. 
 

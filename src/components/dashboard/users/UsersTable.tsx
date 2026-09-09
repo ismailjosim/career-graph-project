@@ -1,14 +1,18 @@
 import {
+  AlertTriangle,
+  Ban,
   Briefcase,
   Building2,
   CheckCircle2,
   Crown,
   Eye,
   Pencil,
+  ShieldAlert,
   ShieldCheck,
   Trash2,
   UserCheck,
 } from "lucide-react";
+import type { UserStatus } from "@/lib/validation";
 import type { ManagedUser, UsersTableProps } from "./types";
 
 export function UsersTable({
@@ -18,6 +22,8 @@ export function UsersTable({
   onViewUser,
   onEditUser,
   onDeleteUser,
+  onChangeStatus,
+  onToggleVerify,
 }: UsersTableProps) {
   const getRoleBadge = (role: string) => {
     switch (role) {
@@ -59,6 +65,32 @@ export function UsersTable({
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "blocked":
+        return {
+          label: "Blocked",
+          icon: Ban,
+          style:
+            "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 dark:border-rose-800/60",
+        };
+      case "inactive":
+        return {
+          label: "Inactive",
+          icon: AlertTriangle,
+          style:
+            "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 dark:border-amber-800/60",
+        };
+      default:
+        return {
+          label: "Active",
+          icon: CheckCircle2,
+          style:
+            "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60",
+        };
+    }
+  };
+
   const getInitials = (name: string, email: string) => {
     if (name?.trim()) {
       const parts = name.trim().split(" ");
@@ -71,21 +103,26 @@ export function UsersTable({
   };
 
   const canEdit = (target: ManagedUser) => {
-    // Super admin can edit anyone
     if (currentUserRole === "super_admin") return true;
-    // Regular admin cannot edit super_admin or other admins
     if (target.role === "super_admin" || target.role === "admin") {
-      return target.id === currentUserId; // Can edit own profile
+      return target.id === currentUserId;
+    }
+    return true;
+  };
+
+  const canChangeStatus = (target: ManagedUser) => {
+    // Super admin can change anyone except self (cannot block self)
+    if (target.id === currentUserId) return false;
+    if (target.role === "super_admin") return false;
+    if (target.role === "admin" && currentUserRole !== "super_admin") {
+      return false;
     }
     return true;
   };
 
   const canDelete = (target: ManagedUser) => {
-    // Cannot delete self
     if (target.id === currentUserId) return false;
-    // Cannot delete super_admin
     if (target.role === "super_admin") return false;
-    // Regular admin cannot delete other admins
     if (target.role === "admin" && currentUserRole !== "super_admin") {
       return false;
     }
@@ -99,9 +136,12 @@ export function UsersTable({
           <thead className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
             <tr>
               <th className="px-5 py-3.5">User</th>
-              <th className="px-4 py-3.5">Assigned Role</th>
-              <th className="px-4 py-3.5 hidden md:table-cell">Status</th>
-              <th className="px-4 py-3.5 hidden lg:table-cell">Joined Date</th>
+              <th className="px-4 py-3.5">Role</th>
+              <th className="px-4 py-3.5">Account Status</th>
+              <th className="px-4 py-3.5 hidden md:table-cell">
+                Email Verified
+              </th>
+              <th className="px-4 py-3.5 hidden lg:table-cell">Joined</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -109,8 +149,11 @@ export function UsersTable({
             {users.map((user) => {
               const roleMeta = getRoleBadge(user.role);
               const RoleIcon = roleMeta.icon;
+              const statusMeta = getStatusBadge(user.status || "active");
+              const StatusIcon = statusMeta.icon;
               const isSelf = user.id === currentUserId;
               const editable = canEdit(user);
+              const statusChangable = canChangeStatus(user);
               const deletable = canDelete(user);
 
               return (
@@ -118,7 +161,7 @@ export function UsersTable({
                   key={user.id}
                   className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
                 >
-                  {/* User Avatar + Name + Email */}
+                  {/* User Avatar + Name + Email + Headline */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-full bg-linear-to-tr from-indigo-600 to-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
@@ -138,6 +181,11 @@ export function UsersTable({
                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                           {user.email}
                         </p>
+                        {user.headline && (
+                          <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium truncate max-w-56">
+                            {user.headline}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -152,9 +200,61 @@ export function UsersTable({
                     </span>
                   </td>
 
-                  {/* Verification Status */}
+                  {/* Account Status with Dropdown Change */}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    {statusChangable && onChangeStatus ? (
+                      <select
+                        value={user.status || "active"}
+                        onChange={(e) =>
+                          onChangeStatus(user, e.target.value as UserStatus)
+                        }
+                        className={`text-xs font-bold px-2 py-1 rounded-lg border cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500 ${statusMeta.style}`}
+                        title="Click to change user account status"
+                      >
+                        <option value="active">🟢 Active</option>
+                        <option value="inactive">🟡 Inactive</option>
+                        <option value="blocked">🔴 Blocked</option>
+                      </select>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${statusMeta.style}`}
+                      >
+                        <StatusIcon className="w-3.5 h-3.5" />
+                        <span>{statusMeta.label}</span>
+                      </span>
+                    )}
+                  </td>
+
+                  {/* Verification Status with Toggle Button */}
                   <td className="px-4 py-4 whitespace-nowrap hidden md:table-cell">
-                    {user.emailVerified ? (
+                    {onToggleVerify ? (
+                      <button
+                        type="button"
+                        onClick={() => onToggleVerify(user)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                          user.emailVerified
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100"
+                            : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-200"
+                        }`}
+                        title={
+                          user.emailVerified
+                            ? "Click to revoke verification"
+                            : "Click to manually verify user"
+                        }
+                      >
+                        {user.emailVerified ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span>Verified</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Unverified</span>
+                          </>
+                        )}
+                      </button>
+                    ) : user.emailVerified ? (
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Verified</span>

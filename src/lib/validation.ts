@@ -136,6 +136,9 @@ export const USER_ROLES = [
 
 export type UserRole = (typeof USER_ROLES)[number];
 
+export const USER_STATUSES = ["active", "inactive", "blocked"] as const;
+export type UserStatus = (typeof USER_STATUSES)[number];
+
 export const updateUserRoleSchema = z.object({
   role: z.enum(USER_ROLES),
 });
@@ -144,4 +147,18 @@ export const updateUserProfileSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   email: z.string().email("Invalid email address").optional(),
   role: z.enum(USER_ROLES).optional(),
+  status: z.enum(USER_STATUSES).optional(),
+  emailVerified: z.boolean().optional(),
+  phone: z.string().optional(),
+  location: z.string().optional(),
+  headline: z.string().optional(), // Target job title e.g. "Senior Full Stack Engineer"
+  bio: z.string().optional(), // Professional summary / pitch
+  skills: z.union([z.array(z.string()), z.string()]).optional(),
+  website: z.string().url().or(z.literal("")).optional(),
+  linkedin: z.string().url().or(z.literal("")).optional(),
+  experience: z.string().optional(), // e.g. "5+ years building distributed React/Node apps"
+  education: z.string().optional(), // e.g. "B.S. in Computer Science"
+  isProfileComplete: z.boolean().optional(),
 });
+
+export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;

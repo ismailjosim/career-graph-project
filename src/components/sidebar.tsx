@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  User,
   Users,
   X,
   Zap,
@@ -58,6 +59,11 @@ const menuItems = [
     icon: Zap,
     label: "Fit Analysis",
     href: "/fit-analysis",
+  },
+  {
+    icon: User,
+    label: "Profile",
+    href: "/profile",
   },
 ];
 

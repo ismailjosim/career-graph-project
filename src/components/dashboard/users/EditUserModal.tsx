@@ -1,6 +1,8 @@
+"use client";
+
 import { Crown, Loader2, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { UserRole } from "@/lib/validation";
+import type { UserRole, UserStatus } from "@/lib/validation";
 import type { EditUserModalProps } from "./types";
 
 export function EditUserModal({
@@ -13,6 +15,12 @@ export function EditUserModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<UserRole>("job_seeker");
+  const [status, setStatus] = useState<UserStatus>("active");
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [headline, setHeadline] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,6 +29,12 @@ export function EditUserModal({
     setName(user.name);
     setEmail(user.email);
     setRole(user.role);
+    setStatus(user.status || "active");
+    setEmailVerified(Boolean(user.emailVerified));
+    setHeadline(user.headline || "");
+    setPhone(user.phone || "");
+    setLocation(user.location || "");
+    setBio(user.bio || "");
     setError(null);
   }, [user, isOpen]);
 
@@ -28,6 +42,8 @@ export function EditUserModal({
 
   const isTransferringSuperAdmin =
     role === "super_admin" && user.role !== "super_admin";
+
+  const isSuperAdminTarget = user.role === "super_admin";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +62,12 @@ export function EditUserModal({
         name: name.trim(),
         email: email.trim(),
         role,
+        status,
+        emailVerified,
+        headline: headline.trim(),
+        phone: phone.trim(),
+        location: location.trim(),
+        bio: bio.trim(),
       });
       onClose();
     } catch (err) {
@@ -59,7 +81,7 @@ export function EditUserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="card w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden flex flex-col">
+      <div className="card w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -68,7 +90,7 @@ export function EditUserModal({
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Edit User & Role
+                Edit User & Permissions
               </h2>
               <p className="text-xs text-slate-500 truncate max-w-64">
                 {user.email}
@@ -87,7 +109,7 @@ export function EditUserModal({
         {/* Form Body */}
         <form
           onSubmit={handleSubmit}
-          className="p-5 space-y-4 text-xs sm:text-sm"
+          className="p-5 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1"
         >
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-700 dark:text-rose-300">
@@ -95,57 +117,160 @@ export function EditUserModal({
             </div>
           )}
 
-          {/* Name Field */}
+          {/* Name & Email Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="input text-xs sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input text-xs sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Role & Status Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Role Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Assigned Role
+              </label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className="input text-xs sm:text-sm cursor-pointer"
+              >
+                {/* Only super_admin can select Super Admin or Admin */}
+                {currentUserRole === "super_admin" && (
+                  <>
+                    <option value="super_admin">
+                      👑 Super Admin (System Admin - Only 1)
+                    </option>
+                    <option value="admin">🛡️ Platform Admin</option>
+                  </>
+                )}
+                <option value="job_seeker">💼 Job Seeker (User)</option>
+                <option value="recruiter">🤝 Recruiter</option>
+                <option value="employer">🏢 Employer</option>
+              </select>
+            </div>
+
+            {/* Account Status Selector */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Account Status
+              </label>
+              <select
+                value={status}
+                disabled={isSuperAdminTarget}
+                onChange={(e) => setStatus(e.target.value as UserStatus)}
+                className="input text-xs sm:text-sm cursor-pointer disabled:opacity-50"
+              >
+                <option value="active">🟢 Active</option>
+                <option value="inactive">🟡 Inactive</option>
+                <option value="blocked">🔴 Blocked</option>
+              </select>
+              {isSuperAdminTarget && (
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Super Admin cannot be deactivated or blocked.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Manual Email Verification Toggle */}
+          <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 flex items-center justify-between">
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                Manual Email Verification
+              </span>
+              <p className="text-[11px] text-slate-500">
+                Grant or revoke verified status without email OTP
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={emailVerified}
+                onChange={(e) => setEmailVerified(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-emerald-600" />
+            </label>
+          </div>
+
+          {/* Profile Headline (Job Title for Cover Letters) */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-              Full Name
+              Target Headline / Job Title
             </label>
             <input
               type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Senior Frontend Developer"
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
               className="input text-xs sm:text-sm"
             />
           </div>
 
-          {/* Email Field */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input text-xs sm:text-sm"
-            />
+          {/* Phone & Location */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Phone Number
+              </label>
+              <input
+                type="text"
+                placeholder="+1 (555) 000-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="input text-xs sm:text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                placeholder="New York, NY or Remote"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="input text-xs sm:text-sm"
+              />
+            </div>
           </div>
 
-          {/* Role Selector */}
+          {/* Bio / Summary for Cover Letter */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-              Assigned Role
+              Professional Bio & Pitch
             </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as UserRole)}
-              className="input text-xs sm:text-sm cursor-pointer"
-            >
-              {/* Only super_admin can select Super Admin or Admin */}
-              {currentUserRole === "super_admin" && (
-                <>
-                  <option value="super_admin">
-                    👑 Super Admin (System Admin - Only 1)
-                  </option>
-                  <option value="admin">🛡️ Platform Admin</option>
-                </>
-              )}
-              <option value="job_seeker">💼 Job Seeker (User)</option>
-              <option value="recruiter">🤝 Recruiter</option>
-              <option value="employer">🏢 Employer</option>
-            </select>
+            <textarea
+              rows={3}
+              placeholder="Brief professional background used to craft personalized cover letters..."
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="input text-xs sm:text-sm resize-none"
+            />
           </div>
 
           {/* Super Admin Transfer Alert */}

@@ -52,6 +52,7 @@ export const config = {
     "/wishlist/:path*",
     "/job-market/:path*",
     "/users/:path*",
+    "/profile/:path*",
     "/login",
     "/register",
   ],

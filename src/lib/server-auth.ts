@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import type { UserRole } from "@/lib/validation";
+import type { UserRole, UserStatus } from "@/lib/validation";
 
 export interface AuthenticatedUser {
   id: string;
@@ -12,6 +12,17 @@ export interface AuthenticatedUser {
   emailVerified: boolean;
   image?: string | null;
   role: UserRole;
+  status: UserStatus;
+  phone?: string;
+  location?: string;
+  headline?: string;
+  bio?: string;
+  skills?: string[] | string;
+  website?: string;
+  linkedin?: string;
+  experience?: string;
+  education?: string;
+  isProfileComplete?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,8 +38,12 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
     let role =
       ((session.user as unknown as Record<string, unknown>).role as UserRole) ||
       "job_seeker";
+    let status: UserStatus =
+      ((session.user as unknown as Record<string, unknown>)
+        .status as UserStatus) || "active";
+    let dbDetails: Record<string, unknown> = {};
 
-    // Query live DB user to avoid stale session cookies after role updates
+    // Query live DB user to avoid stale session cookies after role/status updates
     try {
       const mongoose = await connectDB();
       const db = mongoose.connection.db;
@@ -48,22 +63,43 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
         const dbUser = await userCollection.findOne(
           userQuery as Parameters<typeof userCollection.findOne>[0],
         );
-        if (dbUser?.role) {
-          role = dbUser.role as UserRole;
+        if (dbUser) {
+          if (dbUser.role) role = dbUser.role as UserRole;
+          if (dbUser.status) status = dbUser.status as UserStatus;
+          dbDetails = dbUser;
         }
       }
     } catch {
-      // Fallback to session.role
+      // Fallback to session details
     }
 
     return {
       ...session.user,
+      ...dbDetails,
+      id: session.user.id,
+      name: (dbDetails.name as string) || session.user.name,
+      email: (dbDetails.email as string) || session.user.email,
+      emailVerified:
+        dbDetails.emailVerified !== undefined
+          ? Boolean(dbDetails.emailVerified)
+          : session.user.emailVerified,
       role,
+      status,
     } as AuthenticatedUser;
   } catch (error) {
     console.error("Failed to get session:", error);
     return null;
   }
+}
+
+export function blockedAccountResponse() {
+  return NextResponse.json(
+    {
+      error:
+        "Your account has been suspended or blocked by a platform administrator. Please contact support.",
+    },
+    { status: 403 },
+  );
 }
 
 export function unauthorizedResponse() {
@@ -88,6 +124,10 @@ export async function requireAdminUser(): Promise<
   const user = await getSessionUser();
   if (!user) {
     return { response: unauthorizedResponse() };
+  }
+
+  if (user.status === "blocked") {
+    return { response: blockedAccountResponse() };
   }
 
   if (user.role !== "admin" && user.role !== "super_admin") {
