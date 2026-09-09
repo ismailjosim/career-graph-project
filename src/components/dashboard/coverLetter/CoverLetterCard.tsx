@@ -2,6 +2,8 @@
 
 import { Check, Copy, Edit2, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { confirmAction } from "@/lib/alerts";
 import {
   formatCoverLetterDate,
   getWordAndCharCount,
@@ -23,21 +25,35 @@ export function CoverLetterCard({
     try {
       await navigator.clipboard.writeText(letter.content);
       setCopied(true);
+      toast.success("Cover letter copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy cover letter:", err);
+      toast.error("Failed to copy text to clipboard");
     }
   };
 
   const handleDelete = async () => {
     if (!letter._id) return;
-    if (confirm("Are you sure you want to delete this cover letter?")) {
-      setIsDeleting(true);
-      try {
-        await onDelete(letter._id);
-      } finally {
-        setIsDeleting(false);
-      }
+    const confirmed = await confirmAction({
+      title: "Delete Cover Letter?",
+      text: `Are you sure you want to delete "${letter.title}"? This cannot be undone.`,
+      isDestructive: true,
+      confirmButtonText: "Delete Letter",
+    });
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(letter._id);
+      toast.success("Cover letter deleted successfully!");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete cover letter",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 

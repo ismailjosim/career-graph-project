@@ -2,6 +2,7 @@
 
 import { Coins, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { ManagedUser } from "./types";
 
 interface AdjustTokensModalProps {
@@ -49,9 +50,14 @@ export function AdjustTokensModal({
       }
 
       onSuccess(user.id || user._id, data.newBalance);
+      toast.success(
+        `Tokens adjusted for ${user.name}! New balance: ${data.newBalance} tokens.`,
+      );
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const msg = err instanceof Error ? err.message : "An error occurred";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

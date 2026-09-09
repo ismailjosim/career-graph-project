@@ -2,6 +2,7 @@
 
 import { Crown, Loader2, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { confirmAction } from "@/lib/alerts";
 import type { UserRole, UserStatus } from "@/lib/validation";
 import type { EditUserModalProps } from "./types";
 
@@ -50,9 +51,12 @@ export function EditUserModal({
     setError(null);
 
     if (isTransferringSuperAdmin) {
-      const confirmTransfer = window.confirm(
-        `Are you sure you want to transfer the Super Admin role to ${name || email}?\n\nYou will automatically become an Admin, and this user will become the ONLY Super Admin.`,
-      );
+      const confirmTransfer = await confirmAction({
+        title: "Transfer Super Admin Role?",
+        text: `Are you sure you want to transfer the Super Admin role to ${name || email}? You will automatically become an Admin, and this user will become the ONLY Super Admin.`,
+        isDestructive: true,
+        confirmButtonText: "Transfer Role",
+      });
       if (!confirmTransfer) return;
     }
 

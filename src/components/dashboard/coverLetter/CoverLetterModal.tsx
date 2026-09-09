@@ -3,7 +3,9 @@
 import { Coins, Loader2, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useTokens } from "@/context/tokens-context";
+import { confirmTokenUsage } from "@/lib/alerts";
 import { getWordAndCharCount } from "./coverLetter.utils";
 import type { CoverLetterFormData, CoverLetterModalProps } from "./types";
 
@@ -26,6 +28,8 @@ export function CoverLetterModal({
   const [showAi, setShowAi] = useState(false);
   const [aiJobTitle, setAiJobTitle] = useState("");
   const [aiCompany, setAiCompany] = useState("");
+  const [aiJobDescription, setAiJobDescription] = useState("");
+  const [aiTone, setAiTone] = useState("confident and professional");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
@@ -52,11 +56,17 @@ export function CoverLetterModal({
 
     try {
       await onSave(formData);
+      toast.success(
+        initialData?._id
+          ? "Cover letter updated successfully!"
+          : "Cover letter created successfully!",
+      );
       onClose();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to save cover letter",
-      );
+      const msg =
+        err instanceof Error ? err.message : "Failed to save cover letter";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -64,19 +74,25 @@ export function CoverLetterModal({
 
   const handleGenerateWithAi = async () => {
     if (!aiJobTitle.trim()) {
-      setAiError("Please provide a target job title.");
+      const msg = "Please provide a target job title.";
+      setAiError(msg);
+      toast.error(msg);
       return;
     }
 
-    if (tokens < 20) {
-      setAiError(
-        "Insufficient tokens. You need at least 20 tokens to generate a cover letter.",
-      );
-      return;
-    }
+    const confirmed = await confirmTokenUsage({
+      featureName: "AI Cover Letter Architect",
+      tokenCost: 20,
+      currentTokens: tokens,
+    });
+
+    if (!confirmed) return;
 
     setAiGenerating(true);
     setAiError(null);
+    const toastId = toast.loading(
+      "Crafting tailored cover letter with Gemini...",
+    );
 
     try {
       const res = await fetch("/api/ai/cover-letter", {
@@ -85,6 +101,8 @@ export function CoverLetterModal({
         body: JSON.stringify({
           jobTitle: aiJobTitle.trim(),
           company: aiCompany.trim(),
+          jobDescription: aiJobDescription.trim(),
+          tone: aiTone,
         }),
       });
 
@@ -103,8 +121,15 @@ export function CoverLetterModal({
       }
       refreshTokens();
       setShowAi(false);
+      toast.success(
+        "Cover letter generated successfully! 20 tokens deducted.",
+        { id: toastId },
+      );
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "AI generation failed");
+      const msg =
+        err instanceof Error ? err.message : "AI generation failed";
+      setAiError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setAiGenerating(false);
     }
@@ -137,7 +162,7 @@ export function CoverLetterModal({
         {/* AI Assistant Banner */}
         {!isEditing && (
           <div className="p-6 pb-0">
-            <div className="rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 bg-gradient-to-r from-indigo-50/50 via-purple-50/30 to-indigo-50/50 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-indigo-950/30 p-4 space-y-3">
+            <div className="rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 bg-linear-to-r from-indigo-50/50 via-purple-50/30 to-indigo-50/50 dark:from-indigo-950/30 dark:via-purple-950/20 dark:to-indigo-950/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
@@ -207,6 +232,39 @@ export function CoverLetterModal({
                             className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
                           />
                         </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                          Job Description / Requirements (Recommended)
+                        </label>
+                        <textarea
+                          rows={4}
+                          placeholder="Paste the full job post description, responsibilities, or qualification requirements here..."
+                          value={aiJobDescription}
+                          onChange={(e) => setAiJobDescription(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden resize-y"
+                        />
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                          Gemini will analyze this full post and tailor your background and achievements directly to match.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          Letter Tone & Voice
+                        </label>
+                        <select
+                          value={aiTone}
+                          onChange={(e) => setAiTone(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                        >
+                          <option value="confident and professional">Confident & Professional (Standard)</option>
+                          <option value="enthusiastic, high-energy, and ambitious">Enthusiastic & High-Energy</option>
+                          <option value="executive, strategic, and metric-oriented">Executive & Strategic</option>
+                          <option value="conversational, modern, and personable">Conversational & Modern</option>
+                          <option value="formal and traditional">Formal & Academic</option>
+                        </select>
                       </div>
 
                       {aiError && (

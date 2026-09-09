@@ -4,6 +4,7 @@ import { AlertCircle, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { signIn } from "@/lib/auth-client";
 
@@ -30,17 +31,21 @@ function LoginForm() {
       });
 
       if (res.error) {
-        setError(res.error.message || "Invalid email or password");
+        const msg = res.error.message || "Invalid email or password";
+        setError(msg);
+        toast.error(msg);
       } else {
+        toast.success("Welcome back! Signed in successfully.");
         router.push(callbackUrl);
         router.refresh();
       }
     } catch (err) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during sign in",
-      );
+          : "An unexpected error occurred during sign in";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

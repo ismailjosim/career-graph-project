@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { TokenPackageData } from "./types";
 
 interface PurchaseModalProps {
@@ -46,15 +47,19 @@ export function PurchaseModal({
       }
 
       setSuccess(true);
+      toast.success(
+        `Successfully purchased ${pkg.name}! Added ${data.tokensAdded} tokens.`,
+      );
       setTimeout(() => {
         onSuccess(data.newBalance, data.tokensAdded);
         setSuccess(false);
         onClose();
-      }, 1200);
+      }, 1000);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Payment processing failed",
-      );
+      const msg =
+        err instanceof Error ? err.message : "Payment processing failed";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,10 @@ import {
   unauthorizedResponse,
 } from "@/lib/server-auth";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
+  /^["']|["']$/g,
+  "",
+).trim();
 
 interface FitAnalysisResult {
   fitScore: number;
@@ -261,9 +264,10 @@ Return ONLY valid JSON strictly matching this structure without any markdown wra
 
     const MODELS = [
       "gemini-2.5-flash",
-      "gemini-3.1-flash-lite",
-      "gemini-2.5-flash-lite",
+      "gemini-3.5-flash-lite",
       "gemini-3.5-flash",
+      "gemini-3.6-flash",
+      "gemini-flash-latest",
     ];
 
     let rawOutput = "";

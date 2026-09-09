@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { toast } from "sonner";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { signUp } from "@/lib/auth-client";
 

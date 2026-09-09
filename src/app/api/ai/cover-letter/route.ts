@@ -7,14 +7,17 @@ import {
   unauthorizedResponse,
 } from "@/lib/server-auth";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
+  /^["']|["']$/g,
+  "",
+).trim();
 
 const CANDIDATE_MODELS = [
   "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
   "gemini-3.6-flash",
   "gemini-flash-latest",
-  "gemini-2.5-pro",
 ];
 
 export async function POST(request: NextRequest) {

@@ -4,8 +4,10 @@ import { ArrowLeft, Check, Edit3, ExternalLink, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useJobApplications } from "@/hooks/useApi";
 import { useSession } from "@/lib/auth-client";
+import { confirmAction } from "@/lib/alerts";
 import type { JobApplication } from "@/lib/validation";
 
 export default function ApplicationDetailPage({
@@ -68,19 +70,32 @@ export default function ApplicationDetailPage({
       const updated = await updateApplication(id, formData);
       setApplication(updated);
       setIsEditing(false);
+      toast.success("Application updated successfully!");
     } catch (error) {
-      console.error("Error saving application:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update application",
+      );
     }
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this application?")) {
-      try {
-        await deleteApplication(id);
-        router.push("/applications");
-      } catch (error) {
-        console.error("Error deleting application:", error);
-      }
+    const confirmed = await confirmAction({
+      title: "Delete Application?",
+      text: `Are you sure you want to delete this application for ${application?.jobTitle || "this role"}? This cannot be undone.`,
+      isDestructive: true,
+      confirmButtonText: "Delete Application",
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await deleteApplication(id);
+      toast.success("Application deleted successfully!");
+      router.push("/applications");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete application",
+      );
     }
   };
 

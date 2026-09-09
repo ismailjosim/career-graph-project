@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   AdminPackageModal,
   PackageCard,
@@ -12,6 +13,7 @@ import {
   TokenTransactionsLedger,
 } from "@/components/dashboard/pricing";
 import { useTokens } from "@/context/tokens-context";
+import { confirmAction } from "@/lib/alerts";
 
 export default function PricingPage() {
   const { tokens, refreshTokens, updateTokensLocally } = useTokens();
@@ -70,6 +72,7 @@ export default function PricingPage() {
     updateTokensLocally(newBalance);
     refreshTokens();
     fetchTransactions();
+    toast.success("Tokens credited successfully to your account!");
   };
 
   const handleOpenCreate = () => {
@@ -83,20 +86,30 @@ export default function PricingPage() {
   };
 
   const handleDeletePackage = async (pkg: TokenPackageData) => {
-    if (!confirm(`Are you sure you want to delete "${pkg.name}"?`)) return;
+    const confirmed = await confirmAction({
+      title: "Delete Package?",
+      text: `Are you sure you want to delete "${pkg.name}"? Users will no longer see this package in the marketplace.`,
+      isDestructive: true,
+      confirmButtonText: "Delete Package",
+    });
+
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/packages/${pkg._id}`, {
         method: "DELETE",
       });
       if (res.ok) {
+        toast.success(`Package "${pkg.name}" deleted successfully!`);
         fetchPackages();
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to delete package");
+        toast.error(data.error || "Failed to delete package");
       }
     } catch (err) {
-      console.error("Delete package error:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete package",
+      );
     }
   };
 

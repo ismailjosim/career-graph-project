@@ -17,11 +17,15 @@ import {
   type UploadedResumeFile,
 } from "@/components/dashboard/fit-analysis";
 import { useSession } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useTokens } from "@/context/tokens-context";
+import { confirmTokenUsage } from "@/lib/alerts";
 
 export default function FitAnalysisPage() {
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const userId = session?.user?.id;
+  const { tokens, refreshTokens, updateTokensLocally } = useTokens();
 
   // Stored previous result indicator
   const [previousResult, setPreviousResult] =
@@ -181,27 +185,36 @@ export default function FitAnalysisPage() {
   const handleRunAnalysis = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobInput.description.trim()) {
-      alert("Please provide a job description or link.");
+      toast.warning("Please provide a job description or link.");
       return;
     }
 
     if (resumeMode === "saved" && !selectedResumeId) {
-      alert("Please select a saved resume or upload one.");
+      toast.warning("Please select a saved resume or upload one.");
       return;
     }
 
     if (resumeMode === "upload" && !uploadedFile) {
-      alert("Please select or upload a resume file (PDF/Text).");
+      toast.warning("Please select or upload a resume file (PDF/Text).");
       return;
     }
 
     if (resumeMode === "text" && !resumeText.trim()) {
-      alert("Please paste your resume text.");
+      toast.warning("Please paste your resume text.");
       return;
     }
 
+    const confirmed = await confirmTokenUsage({
+      featureName: "AI Job Fit Analysis",
+      tokenCost: 10,
+      currentTokens: tokens,
+    });
+
+    if (!confirmed) return;
+
     setAnalyzing(true);
     setAnalysisError(null);
+    const toastId = toast.loading("Analyzing job fit alignment with Gemini...");
 
     const interval = setInterval(() => {
       setAnalysisStep((prev) => (prev + 1) % ANALYSIS_STEPS.length);
@@ -260,18 +273,29 @@ export default function FitAnalysisPage() {
         }),
       );
 
+      if (typeof data.remainingTokens === "number") {
+        updateTokensLocally(data.remainingTokens);
+      }
+      refreshTokens();
+
       if (resumeMode === "upload" && saveToAccount) {
         fetchResumes();
       }
 
+      toast.success(
+        `Fit analysis complete! Score: ${data.data?.fitScore ?? 0}%. 10 tokens deducted.`,
+        { id: toastId },
+      );
+
       // Navigate to dedicated result page
       router.push("/fit-analysis/result");
     } catch (err: unknown) {
-      setAnalysisError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during analysis.",
-      );
+          : "An unexpected error occurred during analysis.";
+      setAnalysisError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       clearInterval(interval);
       setAnalyzing(false);

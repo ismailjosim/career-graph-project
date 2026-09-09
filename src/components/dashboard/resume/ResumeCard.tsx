@@ -2,6 +2,8 @@
 
 import { ExternalLink, File, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { confirmAction } from "@/lib/alerts";
 import { formatResumeDate } from "./resume.utils";
 import type { ResumeCardProps } from "./types";
 
@@ -20,6 +22,11 @@ export function ResumeCard({
     setIsSettingDefault(true);
     try {
       await onSetDefault(resume._id);
+      toast.success(`"${resume.name}" set as default resume!`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to set default resume",
+      );
     } finally {
       setIsSettingDefault(false);
     }
@@ -27,13 +34,25 @@ export function ResumeCard({
 
   const handleDelete = async () => {
     if (!resume._id || isDeleting) return;
-    if (confirm("Are you sure you want to delete this resume?")) {
-      setIsDeleting(true);
-      try {
-        await onDelete(resume._id);
-      } finally {
-        setIsDeleting(false);
-      }
+    const confirmed = await confirmAction({
+      title: "Delete Resume?",
+      text: `Are you sure you want to delete "${resume.name}"? This cannot be undone.`,
+      isDestructive: true,
+      confirmButtonText: "Delete Resume",
+    });
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(resume._id);
+      toast.success("Resume deleted successfully!");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete resume",
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 

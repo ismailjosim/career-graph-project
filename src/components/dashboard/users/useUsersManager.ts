@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
+import { confirmAction } from "@/lib/alerts";
 import type { UserRole, UserStatus } from "@/lib/validation";
 import type { ManagedUser, UserRoleFilter } from "./types";
 
@@ -147,10 +149,12 @@ export function useUsersManager() {
         throw new Error(data.error || "Failed to update account status");
       }
 
+      const msg = `Account status for "${user.name}" set to ${newStatus.toUpperCase()}`;
       setFeedback({
         type: "success",
-        message: `Account status for "${user.name}" set to ${newStatus.toUpperCase()}`,
+        message: msg,
       });
+      toast.success(msg);
       setTimeout(() => setFeedback(null), 4000);
 
       if (viewingUser && viewingUser.id === user.id) {
@@ -161,7 +165,9 @@ export function useUsersManager() {
 
       fetchUsers();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to change status");
+      const errText =
+        err instanceof Error ? err.message : "Failed to change status";
+      toast.error(errText);
     }
   };
 
@@ -178,10 +184,12 @@ export function useUsersManager() {
         throw new Error(data.error || "Failed to update verification status");
       }
 
+      const msg = `User "${user.name}" is now marked as ${newStatus ? "VERIFIED" : "UNVERIFIED"}`;
       setFeedback({
         type: "success",
-        message: `User "${user.name}" is now marked as ${newStatus ? "VERIFIED" : "UNVERIFIED"}`,
+        message: msg,
       });
+      toast.success(msg);
       setTimeout(() => setFeedback(null), 4000);
 
       if (viewingUser && viewingUser.id === user.id) {
@@ -192,9 +200,9 @@ export function useUsersManager() {
 
       fetchUsers();
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "Failed to toggle verification",
-      );
+      const errText =
+        err instanceof Error ? err.message : "Failed to toggle verification";
+      toast.error(errText);
     }
   };
 
@@ -212,34 +220,47 @@ export function useUsersManager() {
       bio?: string;
     },
   ) => {
-    const res = await fetch(`/api/users/${userId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || "Failed to update user");
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update user");
+      }
+
+      const msg = `User "${updates.name}" was updated successfully!`;
+      setFeedback({
+        type: "success",
+        message: msg,
+      });
+      toast.success(msg);
+      setTimeout(() => setFeedback(null), 4000);
+
+      if (viewingUser && viewingUser.id === userId) {
+        setViewingUser((prev) => (prev ? { ...prev, ...updates } : null));
+      }
+
+      fetchUsers();
+    } catch (err) {
+      const errText =
+        err instanceof Error ? err.message : "Failed to update user";
+      toast.error(errText);
+      throw err;
     }
-
-    setFeedback({
-      type: "success",
-      message: `User "${updates.name}" was updated successfully!`,
-    });
-    setTimeout(() => setFeedback(null), 4000);
-
-    if (viewingUser && viewingUser.id === userId) {
-      setViewingUser((prev) => (prev ? { ...prev, ...updates } : null));
-    }
-
-    fetchUsers();
   };
 
   const handleDeleteUser = async (user: ManagedUser) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to permanently delete user "${user.name}" (${user.email})?\n\nThis will remove their profile and associated credentials.`,
-    );
+    const confirmDelete = await confirmAction({
+      title: `Delete User "${user.name}"?`,
+      text: `Are you sure you want to permanently delete user "${user.name}" (${user.email})? This will remove their profile and credentials.`,
+      isDestructive: true,
+      confirmButtonText: "Delete User",
+    });
+
     if (!confirmDelete) return;
 
     try {
@@ -249,21 +270,23 @@ export function useUsersManager() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Failed to delete user");
+        toast.error(data.error || "Failed to delete user");
         return;
       }
 
+      const msg = data.message || "User was deleted successfully.";
       setFeedback({
         type: "success",
-        message: data.message || "User was deleted successfully.",
+        message: msg,
       });
+      toast.success(msg);
       setTimeout(() => setFeedback(null), 4000);
 
       fetchUsers();
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "An unexpected error occurred",
-      );
+      const errText =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      toast.error(errText);
     }
   };
 

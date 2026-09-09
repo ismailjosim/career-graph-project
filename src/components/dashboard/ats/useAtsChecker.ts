@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useTokens } from "@/context/tokens-context";
+import { confirmTokenUsage } from "@/lib/alerts";
 import { exportToPdf, exportToWord } from "./atsExport.utils";
 import type {
   AtsAnalysisResult,
@@ -8,6 +11,7 @@ import type {
 } from "./types";
 
 export function useAtsChecker() {
+  const { tokens, refreshTokens, updateTokensLocally } = useTokens();
   const [inputMode, setInputMode] = useState<AtsInputMode>("saved");
 
   // Saved resumes from user's account
@@ -134,6 +138,16 @@ export function useAtsChecker() {
       };
     }
 
+    const confirmed = await confirmTokenUsage({
+      featureName: "AI ATS Resume Audit",
+      tokenCost: 10,
+      currentTokens: tokens,
+    });
+
+    if (!confirmed) return;
+
+    const toastId = toast.loading("Analyzing resume against ATS benchmarks...");
+
     try {
       setAnalyzing(true);
       setAnalysisProgress(15);
@@ -171,12 +185,23 @@ export function useAtsChecker() {
       if (data.resumeTitle) {
         setAuditedDocumentName(data.resumeTitle);
       }
+
+      if (typeof data.remainingTokens === "number") {
+        updateTokensLocally(data.remainingTokens);
+      }
+      refreshTokens();
+
+      toast.success(
+        `ATS Audit Complete! Score: ${data.result?.overallScore ?? 0}/100. 10 tokens deducted.`,
+        { id: toastId },
+      );
     } catch (err) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during ATS audit.",
-      );
+          : "An unexpected error occurred during ATS audit.";
+      setError(msg);
+      toast.error(msg, { id: toastId });
     } finally {
       setAnalyzing(false);
     }
@@ -191,11 +216,13 @@ export function useAtsChecker() {
   const handleDownloadWord = () => {
     if (!result) return;
     exportToWord(result, auditedDocumentName);
+    toast.success("Word report downloaded!");
   };
 
   const handleDownloadPdf = () => {
     if (!result) return;
     exportToPdf(result, auditedDocumentName);
+    toast.success("PDF print dialog opened!");
   };
 
   return {

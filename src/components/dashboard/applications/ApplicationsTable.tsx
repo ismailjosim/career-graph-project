@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
+import { confirmAction } from "@/lib/alerts";
 import {
   formatEmploymentType,
   formatStatusLabel,
@@ -49,17 +51,25 @@ export function ApplicationsTable({
     e.stopPropagation();
     if (!onDelete) return;
 
-    if (
-      window.confirm(
-        "Are you sure you want to delete this job application? This action cannot be undone.",
-      )
-    ) {
-      setDeletingId(id);
-      try {
-        await onDelete(id);
-      } finally {
-        setDeletingId(null);
-      }
+    const confirmed = await confirmAction({
+      title: "Delete Application?",
+      text: "Are you sure you want to delete this job application? This cannot be undone.",
+      isDestructive: true,
+      confirmButtonText: "Delete Application",
+    });
+
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    try {
+      await onDelete(id);
+      toast.success("Application deleted successfully!");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to delete application",
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 

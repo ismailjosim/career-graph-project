@@ -2,6 +2,7 @@
 
 import { Loader2, PackagePlus, Save, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { TokenPackageData } from "./types";
 
 interface AdminPackageModalProps {
@@ -99,9 +100,16 @@ export function AdminPackageModal({
       }
 
       onSuccess();
+      toast.success(
+        isEditing
+          ? `Package "${name}" updated successfully!`
+          : `Package "${name}" created successfully!`,
+      );
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const msg = err instanceof Error ? err.message : "An error occurred";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
