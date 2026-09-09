@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY ||
-  "AQ.Ab8RN6JwkTdFjcrTilW75lqVL_DJlKUjCLcFTF99zytQPmv76Q";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";

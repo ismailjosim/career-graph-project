@@ -3,9 +3,7 @@ import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY ||
-  "AQ.Ab8RN6JwkTdFjcrTilW75lqVL_DJlKUjCLcFTF99zytQPmv76Q";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 interface FitAnalysisResult {
   fitScore: number;

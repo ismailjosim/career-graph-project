@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
 import { DEFAULT_STATUS_OPTIONS } from "./applications.utils";
-import type { ApplicationsFilterBarProps } from "./types";
+import type { LegacyApplicationsFilterBarProps, StatusOption } from "./types";
 
 export function ApplicationsFilterBar({
   searchTerm,
@@ -8,7 +8,7 @@ export function ApplicationsFilterBar({
   filterStatus,
   onFilterStatusChange,
   statusOptions = DEFAULT_STATUS_OPTIONS,
-}: ApplicationsFilterBarProps) {
+}: LegacyApplicationsFilterBarProps) {
   return (
     <div className="card p-6">
       <div className="flex flex-col md:flex-row gap-4">
@@ -36,7 +36,7 @@ export function ApplicationsFilterBar({
 
         {/* Filter Pills */}
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-          {statusOptions.map((status) => {
+          {statusOptions.map((status: StatusOption) => {
             const isActive = filterStatus === status.value;
             return (
               <button

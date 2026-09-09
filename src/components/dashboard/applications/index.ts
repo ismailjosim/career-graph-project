@@ -4,5 +4,8 @@ export * from "./ApplicationsFilterBar";
 export * from "./ApplicationsGrid";
 export * from "./ApplicationsHeader";
 export * from "./ApplicationsLoading";
+export * from "./ApplicationsPagination";
+export * from "./ApplicationsTable";
+export * from "./ApplicationsTableFilters";
 export * from "./applications.utils";
 export * from "./types";
