@@ -1,0 +1,3 @@
+add user role: admin, super_admin(system admin only one), job seeker(user), recruiters, employer 
+- make users page to manage all users by admin and super_admin (view, update, delete)
+- make a user profile where i can see all everything about him. resume, total cover letters and his profile information. after a new user logged in will navigate to update his  profile information that will be necessary to create a cover letter. 
