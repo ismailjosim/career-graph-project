@@ -2,6 +2,7 @@
 
 import { Globe, Plus, SearchX } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   JobMarketCard,
   JobMarketFilters,
@@ -12,6 +13,7 @@ import {
   type MarketSortOption,
 } from "@/components/dashboard/job-market";
 import { useJobMarket } from "@/hooks/useApi";
+import { confirmAction } from "@/lib/alerts";
 import type { JobMarket } from "@/lib/validation";
 
 export default function JobMarketPage() {
@@ -117,16 +119,38 @@ export default function JobMarketPage() {
   const handleModalSubmit = async (
     data: Omit<JobMarket, "_id" | "userId" | "savedAt" | "visitCount">,
   ) => {
-    if (editingMarket?._id) {
-      await updateMarket(editingMarket._id, data);
-    } else {
-      await addMarket(data);
+    try {
+      if (editingMarket?._id) {
+        await updateMarket(editingMarket._id, data);
+        toast.success(`Marketplace "${data.name}" updated successfully!`);
+      } else {
+        await addMarket(data);
+        toast.success(`Marketplace "${data.name}" added successfully!`);
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to save marketplace",
+      );
     }
   };
 
   const handleDeleteMarket = async (id: string) => {
-    if (window.confirm("Are you sure you want to remove this marketplace?")) {
+    const confirmed = await confirmAction({
+      title: "Remove Marketplace?",
+      text: "Are you sure you want to remove this marketplace from your list?",
+      isDestructive: true,
+      confirmButtonText: "Remove",
+    });
+
+    if (!confirmed) return;
+
+    try {
       await deleteMarket(id);
+      toast.success("Marketplace removed successfully!");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to remove marketplace",
+      );
     }
   };
 

@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useJobApplications } from "@/hooks/useApi";
-import { useSession } from "@/lib/auth-client";
 import { confirmAction } from "@/lib/alerts";
+import { useSession } from "@/lib/auth-client";
 import type { JobApplication } from "@/lib/validation";
 
 export default function ApplicationDetailPage({

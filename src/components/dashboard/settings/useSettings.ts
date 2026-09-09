@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { UserRole, UserStatus } from "@/lib/validation";
 import type {
   AccountSecurityInfo,
@@ -132,17 +133,22 @@ export function useSettings() {
         throw new Error(data.error || "Failed to update profile.");
       }
 
+      const successMsg = "Profile information updated successfully!";
       setFeedback({
         type: "success",
-        message: "Profile information updated successfully!",
+        message: successMsg,
       });
+      toast.success(successMsg);
       setTimeout(() => setFeedback(null), 4000);
       fetchProfileAndAccount();
     } catch (err) {
+      const errMsg =
+        err instanceof Error ? err.message : "Failed to save profile.";
       setFeedback({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to save profile.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSavingProfile(false);
     }
@@ -154,18 +160,22 @@ export function useSettings() {
     setFeedback(null);
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      const msg = "New password and confirmation do not match.";
       setFeedback({
         type: "error",
-        message: "New password and confirmation do not match.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
     if (passwordForm.newPassword.length < 6) {
+      const msg = "New password must be at least 6 characters long.";
       setFeedback({
         type: "error",
-        message: "New password must be at least 6 characters long.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -186,10 +196,12 @@ export function useSettings() {
         throw new Error(data.error || "Failed to update password.");
       }
 
+      const successMsg = "Password changed successfully!";
       setFeedback({
         type: "success",
-        message: "Password changed successfully!",
+        message: successMsg,
       });
+      toast.success(successMsg);
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
@@ -197,13 +209,15 @@ export function useSettings() {
       });
       setTimeout(() => setFeedback(null), 4000);
     } catch (err) {
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : "Failed to update password. Please check your current password.";
       setFeedback({
         type: "error",
-        message:
-          err instanceof Error
-            ? err.message
-            : "Failed to update password. Please check your current password.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSavingPassword(false);
     }

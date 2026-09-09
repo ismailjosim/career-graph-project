@@ -1,5 +1,6 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
 import type { UserRole, UserStatus } from "@/lib/validation";
 import type { ProfileData, ProfileFormData } from "./types";
@@ -168,13 +169,17 @@ export function useProfile() {
       const resData = await res.json();
       if (!res.ok) throw new Error(resData.error || "Failed to update status");
 
+      const msg = `Account status updated to ${newStatus.toUpperCase()}`;
       setFeedback({
         type: "success",
-        message: `Account status updated to ${newStatus.toUpperCase()}`,
+        message: msg,
       });
+      toast.success(msg);
       fetchProfile();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update status");
+      const errText =
+        err instanceof Error ? err.message : "Failed to update status";
+      toast.error(errText);
     }
   };
 
@@ -192,15 +197,17 @@ export function useProfile() {
       if (!res.ok)
         throw new Error(resData.error || "Failed to update verification");
 
+      const msg = `User is now marked as ${newStatus ? "VERIFIED" : "UNVERIFIED"}`;
       setFeedback({
         type: "success",
-        message: `User is now marked as ${newStatus ? "VERIFIED" : "UNVERIFIED"}`,
+        message: msg,
       });
+      toast.success(msg);
       fetchProfile();
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : "Failed to toggle verification",
-      );
+      const errText =
+        err instanceof Error ? err.message : "Failed to toggle verification";
+      toast.error(errText);
     }
   };
 

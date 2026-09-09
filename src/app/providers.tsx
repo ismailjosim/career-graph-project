@@ -2,8 +2,8 @@
 
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
-import { TokensProvider } from "@/context/tokens-context";
 import { Toaster } from "@/components/ui/sonner";
+import { TokensProvider } from "@/context/tokens-context";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (

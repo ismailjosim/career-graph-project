@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   ANALYSIS_STEPS,
   AnalysisProgressCard,
@@ -16,10 +17,9 @@ import {
   type StoredResume,
   type UploadedResumeFile,
 } from "@/components/dashboard/fit-analysis";
-import { useSession } from "@/lib/auth-client";
-import { toast } from "sonner";
 import { useTokens } from "@/context/tokens-context";
 import { confirmTokenUsage } from "@/lib/alerts";
+import { useSession } from "@/lib/auth-client";
 
 export default function FitAnalysisPage() {
   const router = useRouter();

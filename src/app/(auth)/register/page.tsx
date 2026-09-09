@@ -64,8 +64,13 @@ function RegisterForm() {
       });
 
       if (res.error) {
-        setError(res.error.message || "Failed to create account");
+        const msg = res.error.message || "Failed to create account";
+        setError(msg);
+        toast.error(msg);
       } else {
+        toast.success(
+          "Account created! 50 Welcome Tokens granted. Please verify your email.",
+        );
         // Automatically dispatch verification code to email
         try {
           await fetch("/api/auth/otp/send", {
@@ -82,11 +87,12 @@ function RegisterForm() {
         );
       }
     } catch (err) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during registration",
-      );
+          : "An unexpected error occurred during registration";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

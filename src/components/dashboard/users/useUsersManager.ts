@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/lib/auth-client";
 import { confirmAction } from "@/lib/alerts";
+import { useSession } from "@/lib/auth-client";
 import type { UserRole, UserStatus } from "@/lib/validation";
 import type { ManagedUser, UserRoleFilter } from "./types";
 

@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { OtpInput } from "@/components/auth/OtpInput";
 
 function VerifyOtpContent() {
@@ -74,6 +75,11 @@ function VerifyOtpContent() {
       }
 
       setSuccess(data.message || "Email verified successfully!");
+      toast.success(
+        data.bonusGiven
+          ? "Email verified successfully! +20 Bonus Tokens awarded."
+          : "Email verified successfully!",
+      );
 
       // Redirect after brief celebration
       setTimeout(() => {
@@ -81,11 +87,12 @@ function VerifyOtpContent() {
         router.refresh();
       }, 1200);
     } catch (err) {
-      setError(
+      const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during verification.",
-      );
+          : "An unexpected error occurred during verification.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -111,12 +118,15 @@ function VerifyOtpContent() {
 
       setCountdown(60);
       setSuccess("A fresh verification code has been sent!");
+      toast.success("A fresh 6-digit code has been sent to your email.");
       if (data.devCode) {
         setDevCode(data.devCode);
       }
       setTimeout(() => setSuccess(null), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resend code.");
+      const msg = err instanceof Error ? err.message : "Failed to resend code.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setResending(false);
     }

@@ -126,8 +126,7 @@ export function CoverLetterModal({
         { id: toastId },
       );
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "AI generation failed";
+      const msg = err instanceof Error ? err.message : "AI generation failed";
       setAiError(msg);
       toast.error(msg, { id: toastId });
     } finally {
@@ -246,7 +245,8 @@ export function CoverLetterModal({
                           className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden resize-y"
                         />
                         <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                          Gemini will analyze this full post and tailor your background and achievements directly to match.
+                          Gemini will analyze this full post and tailor your
+                          background and achievements directly to match.
                         </p>
                       </div>
 
@@ -259,11 +259,21 @@ export function CoverLetterModal({
                           onChange={(e) => setAiTone(e.target.value)}
                           className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
                         >
-                          <option value="confident and professional">Confident & Professional (Standard)</option>
-                          <option value="enthusiastic, high-energy, and ambitious">Enthusiastic & High-Energy</option>
-                          <option value="executive, strategic, and metric-oriented">Executive & Strategic</option>
-                          <option value="conversational, modern, and personable">Conversational & Modern</option>
-                          <option value="formal and traditional">Formal & Academic</option>
+                          <option value="confident and professional">
+                            Confident & Professional (Standard)
+                          </option>
+                          <option value="enthusiastic, high-energy, and ambitious">
+                            Enthusiastic & High-Energy
+                          </option>
+                          <option value="executive, strategic, and metric-oriented">
+                            Executive & Strategic
+                          </option>
+                          <option value="conversational, modern, and personable">
+                            Conversational & Modern
+                          </option>
+                          <option value="formal and traditional">
+                            Formal & Academic
+                          </option>
                         </select>
                       </div>
 

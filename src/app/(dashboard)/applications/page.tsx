@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   type ApplicationsPaginationMeta,
   deleteApplicationAction,
@@ -188,7 +189,7 @@ export default function ApplicationsPage() {
         sortOrder,
       );
     } else {
-      alert(res.error || "Failed to delete application");
+      toast.error(res.error || "Failed to delete application");
     }
   };
 

@@ -15,7 +15,8 @@ const getBaseSwalConfig = (): SweetAlertOptions => {
     confirmButtonColor: "#4f46e5",
     cancelButtonColor: dark ? "#334155" : "#94a3b8",
     customClass: {
-      popup: "rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl font-sans",
+      popup:
+        "rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl font-sans",
       title: "text-lg font-bold text-slate-900 dark:text-white",
       htmlContainer: "text-sm text-slate-600 dark:text-slate-300",
       confirmButton:
