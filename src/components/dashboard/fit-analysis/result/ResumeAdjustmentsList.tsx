@@ -65,8 +65,8 @@ export function ResumeAdjustmentsList({
         </div>
       ) : (
         <div className="space-y-4">
-          {adjustments.map((adj, idx) => {
-            const key = `adj-${idx}`;
+          {adjustments.map((adj) => {
+            const key = `${adj.section}-${adj.impact}-${adj.issue.slice(0, 20)}`;
             const isCopied = copiedKey === key;
 
             return (

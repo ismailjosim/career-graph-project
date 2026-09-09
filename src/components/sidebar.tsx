@@ -15,6 +15,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -107,8 +108,15 @@ export function Sidebar() {
             onClick={() => setMobileOpen(false)}
             className="flex items-center gap-3 overflow-hidden group"
           >
-            <div className="w-10 h-10 shrink-0 rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              CG
+            <div className="w-10 h-10 shrink-0 relative rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md shadow-blue-500/15 border border-slate-200/80 dark:border-slate-700/60 group-hover:scale-105 transition-transform">
+              <Image
+                src="/career-graph.png"
+                alt="Career Graph Logo"
+                width={36}
+                height={36}
+                priority
+                className="w-full h-full object-contain"
+              />
             </div>
             {(!isCollapsed || mobileOpen) && (
               <div className="flex flex-col min-w-0 transition-opacity duration-200">

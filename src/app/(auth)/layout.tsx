@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -9,8 +10,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           href="/dashboard"
           className="inline-flex items-center gap-3 group transition-transform active:scale-95"
         >
-          <div className="w-11 h-11 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/25 group-hover:scale-105 transition-transform">
-            CG
+          <div className="w-12 h-12 rounded-2xl relative bg-white dark:bg-slate-800 p-1.5 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform border border-slate-200/80 dark:border-slate-700/60">
+            <Image
+              src="/career-graph.png"
+              alt="Career Graph Logo"
+              width={44}
+              height={44}
+              priority
+              className="w-full h-full object-contain"
+            />
           </div>
           <div className="text-left">
             <h1 className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
