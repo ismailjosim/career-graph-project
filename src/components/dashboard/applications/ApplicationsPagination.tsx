@@ -79,20 +79,20 @@ export function ApplicationsPagination({
       </div>
 
       {/* Right: Navigation Controls */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap justify-center max-w-full">
         {/* Previous Button */}
         <button
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={!hasPrevPage || loading}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none transition-colors cursor-pointer shrink-0"
         >
           <ChevronLeft className="w-4 h-4" />
           <span className="hidden xs:inline">Prev</span>
         </button>
 
         {/* Numbered Page Buttons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap justify-center">
           {pageItems.map((item) => {
             if (item.type === "ellipsis") {
               return (

@@ -167,9 +167,11 @@ export default function FitAnalysisResultPage() {
                   : "Just now"}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2 mt-0.5">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 flex flex-wrap items-baseline gap-x-2 gap-y-1 mt-0.5">
               <span>{jobTitle}</span>
-              <span className="text-slate-400 font-normal text-lg">at</span>
+              <span className="text-slate-400 font-normal text-base sm:text-lg">
+                at
+              </span>
               <span className="text-blue-600 dark:text-blue-400 font-bold">
                 {company}
               </span>

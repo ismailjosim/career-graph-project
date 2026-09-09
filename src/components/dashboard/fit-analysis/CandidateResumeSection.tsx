@@ -21,14 +21,14 @@ export function CandidateResumeSection({
   onResumeTextChange,
 }: CandidateResumeSectionProps) {
   return (
-    <div className="card p-6 sm:p-7 border border-slate-200 dark:border-slate-800/80 shadow-sm relative overflow-hidden space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="card p-4 sm:p-6 md:p-7 border border-slate-200 dark:border-slate-800/80 shadow-sm relative overflow-hidden space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+          <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shrink-0">
             <FileText className="w-5 h-5" />
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          <div className="min-w-0">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
               2. Candidate Resume
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -38,7 +38,7 @@ export function CandidateResumeSection({
         </div>
 
         {/* Mode Toggle */}
-        <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium">
+        <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium self-start sm:self-auto overflow-x-auto max-w-full shrink-0">
           <button
             type="button"
             onClick={() => onResumeModeChange("saved")}

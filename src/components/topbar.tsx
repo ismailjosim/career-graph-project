@@ -68,15 +68,15 @@ function LiveDateTimeDisplay() {
   });
 
   return (
-    <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs">
-      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
-        <Clock className="w-3.5 h-3.5" />
+    <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs shrink-0">
+      <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
+        <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </div>
       <div className="flex flex-col text-right">
-        <span className="text-xs font-semibold text-slate-800 dark:text-slate-100 font-mono tracking-tight tabular-nums">
+        <span className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 font-mono tracking-tight tabular-nums">
           {formattedTime}
         </span>
-        <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">
+        <span className="text-[9px] sm:text-[10px] font-medium text-slate-500 dark:text-slate-400 hidden sm:inline">
           {formattedDate}
         </span>
       </div>
@@ -101,13 +101,13 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 h-16 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 md:px-8 flex items-center justify-between transition-colors">
+    <header className="sticky top-0 z-30 h-16 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 sm:px-6 md:px-8 flex items-center justify-between transition-colors">
       {/* Left side: Hamburger (mobile), Collapse button (desktop), Page Title */}
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 min-w-0 flex-1 sm:flex-initial">
         {/* Mobile menu trigger */}
         <button
           onClick={toggleMobile}
-          className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0"
           aria-label="Open sidebar menu"
         >
           <Menu className="w-5 h-5" />
@@ -119,7 +119,7 @@ export function TopBar() {
           title={
             isCollapsed ? "Expand sidebar (w-64)" : "Collapse sidebar (w-20)"
           }
-          className="hidden lg:flex items-center justify-center p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          className="hidden lg:flex items-center justify-center p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
         >
           {isCollapsed ? (
             <PanelLeftOpen className="w-5 h-5" />
@@ -129,18 +129,18 @@ export function TopBar() {
         </button>
 
         {/* Title */}
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">
             {currentMeta.title}
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+          <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
             {currentMeta.subtitle}
           </p>
         </div>
       </div>
 
       {/* Right side: Live Date & Time Display */}
-      <div className="flex items-center">
+      <div className="flex items-center shrink-0 ml-2">
         <LiveDateTimeDisplay />
       </div>
     </header>
