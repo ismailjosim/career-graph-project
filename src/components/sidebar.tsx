@@ -19,6 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
 import { useSidebar } from "./sidebar-context";
 
@@ -67,8 +68,24 @@ export function Sidebar() {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
 
-  const userRole = (session?.user as unknown as Record<string, unknown>)?.role;
-  const isAdmin = userRole === "admin" || userRole === "super_admin";
+  const [verifiedRole, setVerifiedRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/users/me")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user?.role) {
+            setVerifiedRole(data.user.role);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [session?.user]);
+
+  const activeRole =
+    verifiedRole || (session?.user as unknown as Record<string, unknown>)?.role;
+  const isAdmin = activeRole === "admin" || activeRole === "super_admin";
 
   const allMenuItems = [
     ...menuItems,

@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertCircle, ArrowLeft, ShieldAlert } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ShieldAlert,
+} from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -11,15 +17,18 @@ import {
   UsersLoading,
   UsersTable,
   UsersTableFilters,
+  ViewUserModal,
 } from "@/components/dashboard/users";
 import { useSession } from "@/lib/auth-client";
 import type { UserRole } from "@/lib/validation";
 
 export default function UsersPage() {
   const { data: session, isPending } = useSession();
-  const currentUserRole =
+  const sessionRole =
     ((session?.user as unknown as Record<string, unknown>)?.role as UserRole) ||
     "job_seeker";
+  const [verifiedRole, setVerifiedRole] = useState<UserRole | null>(null);
+  const currentUserRole = verifiedRole || sessionRole;
   const currentUserId = session?.user?.id || "";
 
   const [users, setUsers] = useState<ManagedUser[]>([]);
@@ -31,16 +40,26 @@ export default function UsersPage() {
     recruiter: 0,
     employer: 0,
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 1,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDenied, setIsDenied] = useState(false);
 
   // Filter and Search States
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRoleFilter>("all");
 
-  // Edit Modal State
+  // Modal States
+  const [viewingUser, setViewingUser] = useState<ManagedUser | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Status feedback toast/banner
   const [feedback, setFeedback] = useState<{
@@ -56,11 +75,14 @@ export default function UsersPage() {
       const params = new URLSearchParams();
       if (selectedRole !== "all") params.set("role", selectedRole);
       if (searchTerm.trim()) params.set("search", searchTerm.trim());
+      params.set("page", currentPage.toString());
+      params.set("limit", "15");
 
       const res = await fetch(`/api/users?${params.toString()}`);
 
       if (res.status === 401 || res.status === 403) {
         const data = await res.json().catch(() => ({}));
+        setIsDenied(true);
         setError(data.error || "Access Denied: Admin privileges required.");
         return;
       }
@@ -69,36 +91,56 @@ export default function UsersPage() {
         throw new Error("Failed to load users list");
       }
 
+      setIsDenied(false);
       const data = await res.json();
       setUsers(data.users || []);
       if (data.roleCounts) {
         setRoleCounts(data.roleCounts);
+      }
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
+      if (data.currentUserRole) {
+        setVerifiedRole(data.currentUserRole);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load users");
     } finally {
       setLoading(false);
     }
-  }, [selectedRole, searchTerm]);
+  }, [selectedRole, searchTerm, currentPage]);
 
   useEffect(() => {
-    if (
-      session?.user &&
-      (currentUserRole === "admin" || currentUserRole === "super_admin")
-    ) {
+    if (session?.user) {
       const timer = setTimeout(() => {
         fetchUsers();
-      }, 200);
+      }, 150);
       return () => clearTimeout(timer);
     }
-    if (!isPending) {
+    if (!isPending && !session?.user) {
       setLoading(false);
+      setIsDenied(true);
     }
-  }, [fetchUsers, session, isPending, currentUserRole]);
+  }, [fetchUsers, session, isPending]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleRoleChange = (role: UserRoleFilter) => {
+    setSelectedRole(role);
+    setCurrentPage(1);
+  };
+
+  const handleViewUser = (user: ManagedUser) => {
+    setViewingUser(user);
+    setIsViewModalOpen(true);
+  };
 
   const handleEditUser = (user: ManagedUser) => {
     setEditingUser(user);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
   const handleSaveUser = async (
@@ -118,11 +160,15 @@ export default function UsersPage() {
 
     setFeedback({
       type: "success",
-      message: `User ${updates.name} updated successfully!`,
+      message: `User "${updates.name}" was updated successfully!`,
     });
     setTimeout(() => setFeedback(null), 4000);
 
-    // Refresh list
+    // Refresh list and if viewing this user, update viewing modal data
+    if (viewingUser && viewingUser.id === userId) {
+      setViewingUser((prev) => (prev ? { ...prev, ...updates } : null));
+    }
+
     fetchUsers();
   };
 
@@ -168,7 +214,10 @@ export default function UsersPage() {
   }
 
   // 2. Unauthorized Access Protection Screen
-  if (currentUserRole !== "admin" && currentUserRole !== "super_admin") {
+  if (
+    isDenied ||
+    (currentUserRole !== "admin" && currentUserRole !== "super_admin")
+  ) {
     return (
       <div className="card p-8 sm:p-12 text-center max-w-lg mx-auto my-12 space-y-5 border-2 border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/20 shadow-lg animate-fade-in">
         <div className="w-16 h-16 rounded-3xl bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto shadow-inner">
@@ -233,9 +282,9 @@ export default function UsersPage() {
       {/* Search and Filters */}
       <UsersTableFilters
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         selectedRole={selectedRole}
-        onRoleChange={setSelectedRole}
+        onRoleChange={handleRoleChange}
         roleCounts={roleCounts}
       />
 
@@ -258,19 +307,86 @@ export default function UsersPage() {
           </p>
         </div>
       ) : (
-        <UsersTable
-          users={users}
-          currentUserId={currentUserId}
-          currentUserRole={currentUserRole}
-          onEditUser={handleEditUser}
-          onDeleteUser={handleDeleteUser}
-        />
+        <div className="space-y-4">
+          <UsersTable
+            users={users}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
+            onViewUser={handleViewUser}
+            onEditUser={handleEditUser}
+            onDeleteUser={handleDeleteUser}
+          />
+
+          {/* Pagination Controls */}
+          {pagination.totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 py-1 text-xs text-slate-500">
+              <div>
+                Showing{" "}
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  {(pagination.page - 1) * pagination.limit + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total,
+                  )}
+                </span>{" "}
+                of{" "}
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  {pagination.total}
+                </span>{" "}
+                users
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <span className="px-2.5 py-1 text-xs font-semibold">
+                  Page {currentPage} of {pagination.totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCurrentPage((p) =>
+                      Math.min(pagination.totalPages, p + 1),
+                    )
+                  }
+                  disabled={currentPage >= pagination.totalPages}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* View User Modal */}
+      <ViewUserModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        user={viewingUser}
+        currentUserRole={currentUserRole}
+        onEditUser={(u) => {
+          setIsViewModalOpen(false);
+          handleEditUser(u);
+        }}
+      />
 
       {/* Edit User Modal */}
       <EditUserModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
         user={editingUser}
         currentUserRole={currentUserRole}
         onSave={handleSaveUser}

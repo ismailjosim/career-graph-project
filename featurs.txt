@@ -1,3 +1,10 @@
-add user role: admin, super_admin(system admin only one), job seeker(user), recruiters, employer 
-- make users page to manage all users by admin and super_admin (view, update, delete)
-- make a user profile where i can see all everything about him. resume, total cover letters and his profile information. after a new user logged in will navigate to update his  profile information that will be necessary to create a cover letter. 
+
+
+Add a page to check resume ATS like a professional ATS app using AI. user can download overall feedback as pdf or word format.
+
+for authentication after register using email and password user need to verify via OTP verification. If he/she logged in using social login (Google, GitHub) then no need to verify via OTP verification. and make a settings page for user to change password, update profile information. 
+
+remove all environment keys from full project. url, api keys only can be accessible from environment variable file .env/.env.local
+
+
+I want to add token or diamond system into the application for using AI features like ATS and Fit analysis.

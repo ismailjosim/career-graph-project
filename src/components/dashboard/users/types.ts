@@ -32,8 +32,17 @@ export interface UsersTableProps {
   users: ManagedUser[];
   currentUserId: string;
   currentUserRole: UserRole;
+  onViewUser: (user: ManagedUser) => void;
   onEditUser: (user: ManagedUser) => void;
   onDeleteUser: (user: ManagedUser) => void;
+}
+
+export interface ViewUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: ManagedUser | null;
+  currentUserRole: UserRole;
+  onEditUser?: (user: ManagedUser) => void;
 }
 
 export interface EditUserModalProps {

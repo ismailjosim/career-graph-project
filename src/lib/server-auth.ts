@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
@@ -23,8 +24,37 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
     });
     if (!session?.user) return null;
 
-    const user = session.user as unknown as Record<string, unknown>;
-    const role = (user.role as UserRole) || "job_seeker";
+    let role =
+      ((session.user as unknown as Record<string, unknown>).role as UserRole) ||
+      "job_seeker";
+
+    // Query live DB user to avoid stale session cookies after role updates
+    try {
+      const mongoose = await connectDB();
+      const db = mongoose.connection.db;
+      if (db) {
+        const userId = session.user.id;
+        const userQuery = {
+          $or: [
+            ...(ObjectId.isValid(userId)
+              ? [{ _id: new ObjectId(userId) }]
+              : []),
+            { _id: userId },
+            { id: userId },
+            { email: session.user.email },
+          ],
+        };
+        const userCollection = db.collection<Record<string, unknown>>("user");
+        const dbUser = await userCollection.findOne(
+          userQuery as Parameters<typeof userCollection.findOne>[0],
+        );
+        if (dbUser?.role) {
+          role = dbUser.role as UserRole;
+        }
+      }
+    } catch {
+      // Fallback to session.role
+    }
 
     return {
       ...session.user,
@@ -52,6 +82,9 @@ export function forbiddenResponse(
 export async function requireAdminUser(): Promise<
   { user: AuthenticatedUser } | { response: NextResponse }
 > {
+  // Ensure the system has at least one super_admin bootstrapped
+  await ensureSuperAdminExists();
+
   const user = await getSessionUser();
   if (!user) {
     return { response: unauthorizedResponse() };
