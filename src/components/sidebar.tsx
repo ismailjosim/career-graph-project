@@ -4,6 +4,7 @@ import {
   BookOpen,
   Briefcase,
   FileText,
+  Globe,
   Heart,
   LayoutDashboard,
   LogIn,
@@ -35,6 +36,11 @@ const menuItems = [
     icon: Heart,
     label: "Wishlist",
     href: "/wishlist",
+  },
+  {
+    icon: Globe,
+    label: "Job Market",
+    href: "/job-market",
   },
   {
     icon: FileText,

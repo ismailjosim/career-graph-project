@@ -26,16 +26,35 @@ export const coverLetterSchema = z.object({
 
 export type CoverLetter = z.infer<typeof coverLetterSchema>;
 
-// Job Market Schema (external job posts)
+// Job Market Schema (marketplace directories & boards)
 export const jobMarketSchema = z.object({
   _id: z.string().optional(),
   userId: z.string(),
-  title: z.string().min(1, "Job title is required"),
-  company: z.string().min(1, "Company name is required"),
-  description: z.string(),
+  name: z.string().min(1, "Marketplace name is required"),
   link: z.string().url("Must be a valid URL"),
-  source: z.enum(["linkedin", "indeed", "glassdoor", "other"]),
+  category: z
+    .enum([
+      "general",
+      "tech",
+      "remote",
+      "startups",
+      "freelance",
+      "design",
+      "local",
+      "other",
+    ])
+    .default("general"),
+  description: z.string().optional().default(""),
+  tags: z.array(z.string()).default([]),
+  notes: z.string().optional().default(""),
+  rating: z.number().min(1).max(5).optional(),
+  isFavorite: z.boolean().default(false),
+  visitCount: z.number().default(0),
   savedAt: z.date().default(() => new Date()),
+  // Backward compatibility fields
+  title: z.string().optional(),
+  company: z.string().optional(),
+  source: z.string().optional(),
 });
 
 export type JobMarket = z.infer<typeof jobMarketSchema>;

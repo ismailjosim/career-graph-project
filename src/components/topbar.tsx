@@ -22,6 +22,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Job Wishlist",
     subtitle: "Save interesting opportunities to apply later",
   },
+  "/job-market": {
+    title: "Job Market Directory",
+    subtitle: "Curate and explore your favorite online job marketplaces",
+  },
   "/cover-letters": {
     title: "Cover Letters",
     subtitle: "Draft and customize your targeted cover letters",

@@ -45,19 +45,42 @@ export const CoverLetter =
 const jobMarketSchema = new mongoose.Schema<IJobMarket>(
   {
     userId: { type: String, required: true, index: true },
-    title: { type: String, required: true },
-    company: { type: String, required: true },
-    description: { type: String, required: true },
-    link: { type: String, required: true },
-    source: {
+    name: { type: String, required: true, trim: true },
+    link: { type: String, required: true, trim: true },
+    category: {
       type: String,
-      enum: ["linkedin", "indeed", "glassdoor", "other"],
-      default: "other",
+      enum: [
+        "general",
+        "tech",
+        "remote",
+        "startups",
+        "freelance",
+        "design",
+        "local",
+        "other",
+      ],
+      default: "general",
+      index: true,
     },
+    description: { type: String, default: "" },
+    tags: { type: [String], default: [] },
+    notes: { type: String, default: "" },
+    rating: { type: Number, min: 1, max: 5 },
+    isFavorite: { type: Boolean, default: false, index: true },
+    visitCount: { type: Number, default: 0 },
     savedAt: { type: Date, default: Date.now },
+    // Backward compatibility
+    title: { type: String },
+    company: { type: String },
+    source: { type: String },
   },
   { timestamps: true },
 );
+
+// In Next.js development, clear cached model so updated schema takes effect immediately
+if (mongoose.models.JobMarket) {
+  delete (mongoose.models as Record<string, unknown>).JobMarket;
+}
 
 export const JobMarket =
   mongoose.models.JobMarket ||
