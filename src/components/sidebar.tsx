@@ -3,8 +3,6 @@
 import {
   BookOpen,
   Briefcase,
-  ChevronLeft,
-  ChevronRight,
   FileText,
   Heart,
   LayoutDashboard,
@@ -58,8 +56,7 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isCollapsed, toggleCollapse, mobileOpen, setMobileOpen } =
-    useSidebar();
+  const { isCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
 
@@ -101,19 +98,6 @@ export function Sidebar() {
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Floating Desktop Collapse/Expand Toggle Button on sidebar edge */}
-        <button
-          onClick={toggleCollapse}
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="hidden lg:flex items-center justify-center absolute -right-3 top-5 w-6 h-6 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 transition-all z-50 cursor-pointer"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-3.5 h-3.5" />
-          ) : (
-            <ChevronLeft className="w-3.5 h-3.5" />
-          )}
-        </button>
-
         {/* Header / Brand Logo */}
         <div
           className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 ${
