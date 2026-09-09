@@ -101,12 +101,33 @@ export function Sidebar() {
             : "-translate-x-full lg:translate-x-0"
         }`}
       >
+        {/* Floating Desktop Collapse/Expand Toggle Button on sidebar edge */}
+        <button
+          onClick={toggleCollapse}
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="hidden lg:flex items-center justify-center absolute -right-3 top-5 w-6 h-6 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-110 transition-all z-50 cursor-pointer"
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronLeft className="w-3.5 h-3.5" />
+          )}
+        </button>
+
         {/* Header / Brand Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
+        <div
+          className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800 ${
+            isCollapsed && !mobileOpen
+              ? "justify-center px-2"
+              : "justify-between px-4"
+          }`}
+        >
           <Link
             href="/dashboard"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 overflow-hidden group"
+            className={`flex items-center gap-3 group ${
+              isCollapsed && !mobileOpen ? "justify-center" : "overflow-hidden"
+            }`}
           >
             <div className="w-10 h-10 shrink-0 relative rounded-xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md shadow-blue-500/15 border border-slate-200/80 dark:border-slate-700/60 group-hover:scale-105 transition-transform">
               <Image
@@ -137,23 +158,16 @@ export function Sidebar() {
           >
             <X className="w-5 h-5" />
           </button>
-
-          {/* Desktop Collapse Toggle Button inside header */}
-          <button
-            onClick={toggleCollapse}
-            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
-          </button>
         </div>
 
         {/* Navigation Menu Items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
+        <nav
+          className={`flex-1 px-3 py-4 space-y-1.5 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isCollapsed && !mobileOpen
+              ? "overflow-visible"
+              : "overflow-y-auto overflow-x-hidden"
+          }`}
+        >
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -198,22 +212,30 @@ export function Sidebar() {
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-950/30">
           {/* User Profile Info */}
           {session?.user ? (
-            <div
-              className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 ${
-                isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
-              }`}
-            >
-              <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
-                {userInitial}
+            <div className="relative group">
+              <div
+                className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 ${
+                  isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                  {userInitial}
+                </div>
+                {(!isCollapsed || mobileOpen) && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                      {session.user.name || "User"}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      {session.user.email}
+                    </p>
+                  </div>
+                )}
               </div>
-              {(!isCollapsed || mobileOpen) && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                    {session.user.name || "User"}
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {session.user.email}
-                  </p>
+              {isCollapsed && !mobileOpen && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
+                  <p className="font-semibold">{session.user.name || "User"}</p>
+                  <p className="text-[10px] opacity-75">{session.user.email}</p>
                 </div>
               )}
             </div>
@@ -229,7 +251,7 @@ export function Sidebar() {
                 {(!isCollapsed || mobileOpen) && <span>Sign In</span>}
               </Link>
               {isCollapsed && !mobileOpen && (
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 z-50 whitespace-nowrap">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
                   Sign In
                 </div>
               )}
