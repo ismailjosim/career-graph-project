@@ -179,7 +179,7 @@ export default function FitAnalysisResultPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={() => window.print()}

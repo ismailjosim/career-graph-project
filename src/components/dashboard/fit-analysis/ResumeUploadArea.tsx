@@ -57,16 +57,16 @@ export function ResumeUploadArea({
         </div>
       ) : (
         <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-indigo-600 text-white">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="p-2.5 rounded-lg bg-indigo-600 text-white shrink-0">
                 <FileCheck className="w-5 h-5" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate max-w-xs">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                   {uploadedFile.name}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 truncate">
                   {(uploadedFile.size / 1024).toFixed(1)} KB &bull;{" "}
                   {uploadedFile.mimeType}
                 </p>
@@ -75,7 +75,7 @@ export function ResumeUploadArea({
             <button
               type="button"
               onClick={onFileRemove}
-              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-rose-500 transition cursor-pointer"
+              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-rose-500 transition cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>

@@ -27,7 +27,7 @@ export function QuickApplyBanner({
         type="button"
         onClick={onApply}
         disabled={applying || appliedSuccess}
-        className={`px-5 py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shrink-0 cursor-pointer ${
+        className={`w-full sm:w-auto px-5 py-2.5 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 shrink-0 cursor-pointer ${
           appliedSuccess
             ? "bg-emerald-600 text-white shadow-xs"
             : "btn-primary shadow-sm"
