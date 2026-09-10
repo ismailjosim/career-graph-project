@@ -112,7 +112,7 @@ export function RecentApplicationsTable({
 
           {/* Desktop & Tablet Table View (>= sm) */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-sm min-w-[580px]">
+            <table className="w-full text-sm min-w-145">
               <thead className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-3.5 text-left font-semibold">

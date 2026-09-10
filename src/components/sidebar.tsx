@@ -13,6 +13,7 @@ import {
   LogOut,
   Moon,
   Settings,
+  Sparkles,
   Sun,
   User,
   Users,
@@ -38,6 +39,11 @@ const menuItems = [
     icon: Briefcase,
     label: "Applications",
     href: "/applications",
+  },
+  {
+    icon: Sparkles,
+    label: "Job Portal",
+    href: "/jobs",
   },
   {
     icon: Heart,

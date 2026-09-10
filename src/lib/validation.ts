@@ -162,3 +162,72 @@ export const updateUserProfileSchema = z.object({
 });
 
 export type UpdateUserProfile = z.infer<typeof updateUserProfileSchema>;
+
+// Job Posting Source Platforms
+export const JOB_SOURCE_PLATFORMS = [
+  "direct",
+  "linkedin",
+  "indeed",
+  "glassdoor",
+  "other",
+] as const;
+export type JobSourcePlatform = (typeof JOB_SOURCE_PLATFORMS)[number];
+
+export const WORKPLACE_TYPES = ["remote", "hybrid", "onsite"] as const;
+export type WorkplaceType = (typeof WORKPLACE_TYPES)[number];
+
+export const EXPERIENCE_LEVELS = [
+  "entry",
+  "mid",
+  "senior",
+  "lead",
+  "executive",
+] as const;
+export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
+
+/**
+ * Calculates dynamic token cost for applying to a job based on requirement density.
+ * Base 5 tokens + 1 token per requirement (minimum 5).
+ */
+export function calculateJobTokenCost(requirements: string[]): number {
+  const count = Array.isArray(requirements)
+    ? requirements.filter((r) => r.trim().length > 0).length
+    : 0;
+  return Math.max(5, 5 + count);
+}
+
+// Job Posting Validation Schema
+export const jobPostingSchema = z.object({
+  _id: z.string().optional(),
+  title: z.string().min(2, "Job title is required"),
+  company: z.string().min(1, "Company name is required"),
+  companyLogo: z.string().optional(),
+  location: z.string().min(1, "Location is required"),
+  workplaceType: z.enum(WORKPLACE_TYPES).default("remote"),
+  employmentType: z
+    .enum(["full-time", "part-time", "contract", "internship"])
+    .default("full-time"),
+  experienceLevel: z.enum(EXPERIENCE_LEVELS).default("mid"),
+  salary: z.string().optional(),
+  salaryMin: z.number().optional(),
+  salaryMax: z.number().optional(),
+  description: z
+    .string()
+    .min(20, "Job description must be at least 20 characters"),
+  requirements: z
+    .array(z.string().min(1))
+    .min(1, "At least one requirement is required"),
+  benefits: z.array(z.string()).default([]),
+  sourcePlatform: z.enum(JOB_SOURCE_PLATFORMS).default("direct"),
+  originalJobUrl: z.string().url().or(z.literal("")).optional(),
+  tokenCost: z.number().min(1).optional(),
+  postedBy: z.string(),
+  posterRole: z.string().default("recruiter"),
+  status: z.enum(["active", "closed"]).default("active"),
+  applicantsCount: z.number().default(0),
+  viewsCount: z.number().default(0),
+  createdAt: z.date().default(() => new Date()),
+  updatedAt: z.date().default(() => new Date()),
+});
+
+export type JobPosting = z.infer<typeof jobPostingSchema>;

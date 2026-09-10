@@ -3,6 +3,7 @@ import type {
   CoverLetter as ICoverLetter,
   JobApplication as IJobApplication,
   JobMarket as IJobMarket,
+  JobPosting as IJobPosting,
   MonthlyStats as IMonthlyStats,
   Resume as IResume,
   Wishlist as IWishlist,
@@ -244,6 +245,74 @@ export const TokenPackage =
   mongoose.models.TokenPackage ||
   mongoose.model<ITokenPackage>("TokenPackage", tokenPackageSchema);
 
+// Job Posting Model (Platform-posted jobs by recruiters/admin)
+const jobPostingSchema = new mongoose.Schema<IJobPosting>(
+  {
+    title: { type: String, required: true, trim: true, index: true },
+    company: { type: String, required: true, trim: true, index: true },
+    companyLogo: { type: String },
+    location: { type: String, required: true, trim: true },
+    workplaceType: {
+      type: String,
+      enum: ["remote", "hybrid", "onsite"],
+      default: "remote",
+      index: true,
+    },
+    employmentType: {
+      type: String,
+      enum: ["full-time", "part-time", "contract", "internship"],
+      default: "full-time",
+      index: true,
+    },
+    experienceLevel: {
+      type: String,
+      enum: ["entry", "mid", "senior", "lead", "executive"],
+      default: "mid",
+    },
+    salary: { type: String },
+    salaryMin: { type: Number },
+    salaryMax: { type: Number },
+    description: { type: String, required: true },
+    requirements: { type: [String], required: true, default: [] },
+    benefits: { type: [String], default: [] },
+    sourcePlatform: {
+      type: String,
+      enum: ["direct", "linkedin", "indeed", "glassdoor", "other"],
+      default: "direct",
+      index: true,
+    },
+    originalJobUrl: { type: String },
+    tokenCost: { type: Number, required: true, default: 5 },
+    postedBy: { type: String, required: true, index: true },
+    posterRole: { type: String, default: "recruiter" },
+    status: {
+      type: String,
+      enum: ["active", "closed"],
+      default: "active",
+      index: true,
+    },
+    applicantsCount: { type: Number, default: 0 },
+    viewsCount: { type: Number, default: 0 },
+  },
+  { timestamps: true },
+);
+
+// Search index for Job Postings
+jobPostingSchema.index({
+  title: "text",
+  company: "text",
+  location: "text",
+  description: "text",
+});
+
+if (mongoose.models.JobPosting) {
+  delete (mongoose.models as Record<string, unknown>).JobPosting;
+}
+
+export const JobPosting =
+  mongoose.models.JobPosting ||
+  mongoose.model<IJobPosting>("JobPosting", jobPostingSchema);
+
 // Token Transaction Model
 export type TokenTransactionType =
   | "signup_bonus"
@@ -252,7 +321,8 @@ export type TokenTransactionType =
   | "admin_grant"
   | "ats_check"
   | "cover_letter"
-  | "fit_analysis";
+  | "fit_analysis"
+  | "job_application";
 
 export interface ITokenTransaction {
   _id?: string;
@@ -282,6 +352,7 @@ const tokenTransactionSchema = new mongoose.Schema<ITokenTransaction>(
         "ats_check",
         "cover_letter",
         "fit_analysis",
+        "job_application",
       ],
       index: true,
     },

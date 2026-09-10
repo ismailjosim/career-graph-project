@@ -24,6 +24,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/resumes": "My Resumes",
   "/applications": "Applications",
   "/applications/new": "New Application",
+  "/jobs": "Job Portal",
+  "/jobs/new": "Post a Job",
   "/fit-analysis": "AI Job Fit Analysis",
   "/fit-analysis/result": "Job Fit Match Report",
   "/pricing": "Pricing",
@@ -73,8 +75,10 @@ export function PageTitleManager() {
         pathname !== "/applications/new"
       ) {
         pageTitle = "Application Details";
-      } else if (pathname.startsWith("/job-market/")) {
+      } else if (pathname.startsWith("/jobs/") && pathname !== "/jobs/new") {
         pageTitle = "Job Details";
+      } else if (pathname.startsWith("/job-market/")) {
+        pageTitle = "Job Market Details";
       } else if (pathname.startsWith("/cover-letters/")) {
         pageTitle = "Cover Letter View";
       } else {

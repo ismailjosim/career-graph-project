@@ -127,6 +127,10 @@ export function forbiddenResponse(
   return NextResponse.json({ error: message }, { status: 403 });
 }
 
+export function canManageSystemUsers(role?: string): boolean {
+  return role === "admin" || role === "super_admin";
+}
+
 export async function requireAdminUser(): Promise<
   { user: AuthenticatedUser } | { response: NextResponse }
 > {

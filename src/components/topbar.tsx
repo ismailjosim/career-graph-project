@@ -26,6 +26,14 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "New Application",
     subtitle: "Record a new job application",
   },
+  "/jobs": {
+    title: "Job Portal",
+    subtitle: "Explore and apply for verified platform positions",
+  },
+  "/jobs/new": {
+    title: "Post a Job",
+    subtitle: "Publish a role from LinkedIn, Indeed, or direct platform",
+  },
   "/wishlist": {
     title: "Job Wishlist",
     subtitle: "Save interesting opportunities to apply later",
@@ -133,6 +141,15 @@ export function TopBar() {
     currentMeta = {
       title: "Application Details",
       subtitle: "View and update application progress",
+    };
+  } else if (
+    !pageTitles[pathname] &&
+    pathname?.startsWith("/jobs/") &&
+    pathname !== "/jobs/new"
+  ) {
+    currentMeta = {
+      title: "Job Details",
+      subtitle: "Role requirements, token cost, and application options",
     };
   }
 
