@@ -57,8 +57,12 @@ export function LandingHero() {
           <span className="font-semibold">
             New: ATS Resume Checker + 50 Free Tokens
           </span>
-          <span className="text-slate-400 dark:text-slate-600 hidden sm:inline">•</span>
-          <span className="hidden sm:inline">4-Pillar Scan, Word/PDF Export & Custom Cover Letters</span>
+          <span className="text-slate-400 dark:text-slate-600 hidden sm:inline">
+            •
+          </span>
+          <span className="hidden sm:inline">
+            4-Pillar Scan, Word/PDF Export & Custom Cover Letters
+          </span>
           <ArrowRight className="w-3.5 h-3.5 ml-0.5 text-blue-500 shrink-0" />
         </Link>
 

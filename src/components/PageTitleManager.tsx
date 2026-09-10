@@ -55,7 +55,10 @@ export function PageTitleManager() {
 
     // 2. Dynamic route matches
     if (!pageTitle) {
-      if (pathname.startsWith("/applications/") && pathname !== "/applications/new") {
+      if (
+        pathname.startsWith("/applications/") &&
+        pathname !== "/applications/new"
+      ) {
         pageTitle = "Application Details";
       } else if (pathname.startsWith("/job-market/")) {
         pageTitle = "Job Details";

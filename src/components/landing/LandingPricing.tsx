@@ -10,12 +10,9 @@ import {
   FileCheck,
   FileEdit,
   FileText,
-  HelpCircle,
   Link2,
   ShieldCheck,
   Sparkles,
-  X,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -287,11 +284,14 @@ export function LandingPricing() {
 
           <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300">
             <span>
-              💡 <strong>1 Complete Application Suite</strong> = 1 ATS Audit (10)
-              + 1 Cover Letter (20) + 1 Fit Check (10) = <strong>40 Tokens (~$0.35–$0.40)</strong>
+              💡 <strong>1 Complete Application Suite</strong> = 1 ATS Audit
+              (10) + 1 Cover Letter (20) + 1 Fit Check (10) ={" "}
+              <strong>40 Tokens (~$0.35–$0.40)</strong>
             </span>
             <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
-              Selected plan covers ~{appTarget === 10 ? "12" : appTarget === 25 ? "28" : "65"} full applications
+              Selected plan covers ~
+              {appTarget === 10 ? "12" : appTarget === 25 ? "28" : "65"} full
+              applications
             </span>
           </div>
         </div>
@@ -399,7 +399,8 @@ export function LandingPricing() {
               Transparent Token Unit Costs
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Exact token consumption per feature. 1 Token = $0.01 (1 cent). No surprises.
+              Exact token consumption per feature. 1 Token = $0.01 (1 cent). No
+              surprises.
             </p>
           </div>
 
@@ -461,7 +462,8 @@ export function LandingPricing() {
               Career Graph vs. Legacy Resume Subscriptions
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Why job seekers are ditching $50/month recurring fees for Pay-As-You-Go.
+              Why job seekers are ditching $50/month recurring fees for
+              Pay-As-You-Go.
             </p>
           </div>
 
@@ -482,7 +484,10 @@ export function LandingPricing() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {comparisons.map((row) => (
-                  <tr key={row.feature} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                  <tr
+                    key={row.feature}
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
+                  >
                     <td className="p-4 sm:p-5 font-medium text-slate-900 dark:text-white">
                       {row.feature}
                     </td>
@@ -508,4 +513,3 @@ export function LandingPricing() {
     </section>
   );
 }
-

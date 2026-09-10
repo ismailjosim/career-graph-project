@@ -110,7 +110,8 @@ export function TokenEconomyCard() {
             Transparent Token Economy
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Know exactly how much each feature and reward costs or grants. 1 Token = $0.01.
+            Know exactly how much each feature and reward costs or grants. 1
+            Token = $0.01.
           </p>
         </div>
         <div className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
