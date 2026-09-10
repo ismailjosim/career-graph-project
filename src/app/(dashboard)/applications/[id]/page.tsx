@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useDocumentTitle } from "@/components/PageTitleManager";
 import { useJobApplications } from "@/hooks/useApi";
 import { confirmAction } from "@/lib/alerts";
 import { useSession } from "@/lib/auth-client";
-import { useDocumentTitle } from "@/components/PageTitleManager";
 import type { JobApplication } from "@/lib/validation";
 
 export default function ApplicationDetailPage({

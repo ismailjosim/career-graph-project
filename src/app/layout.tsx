@@ -27,8 +27,8 @@ export const metadata: Metadata = {
     ? new URL(process.env.NEXT_PUBLIC_APP_URL)
     : undefined,
   title: {
-    default: "Career Graph - Job Application Tracker",
-    template: "%s | Career Graph",
+    default: "Career Graph - Track. Apply. Grow.",
+    template: "%s - Career Graph",
   },
   description:
     "Intelligent job application tracker. Organize your job search, analyze resume-to-job match with AI, craft tailored cover letters, and level up your career.",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "Career Graph",
-    title: "Career Graph - Job Application Tracker",
+    title: "Career Graph - Track. Apply. Grow.",
     description:
       "Track your job search, match resumes against job descriptions with AI, and accelerate your career.",
     images: [
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Career Graph - Job Application Tracker",
+    title: "Career Graph - Track. Apply. Grow.",
     description:
       "Track your job search, match resumes against job descriptions with AI, and accelerate your career.",
     images: ["/career-graph.png"],

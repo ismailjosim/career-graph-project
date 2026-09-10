@@ -14,7 +14,7 @@ import {
 } from "@/components/landing";
 
 export const metadata: Metadata = {
-  title: "Career Graph - AI Job Marketplace & Autonomous Application Tracker",
+  title: "Career Graph - Track. Apply. Grow.",
   description:
     "Discover high-fit roles, run 4-pillar ATS resume checks, generate custom cover letters, and track applications with our fair pay-as-you-go token economy. 50 free tokens on signup.",
 };

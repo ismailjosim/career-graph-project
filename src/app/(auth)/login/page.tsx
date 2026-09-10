@@ -52,7 +52,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="card p-8 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
+    <div className="card p-5 sm:p-8 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
           Welcome back

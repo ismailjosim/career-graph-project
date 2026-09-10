@@ -99,7 +99,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="card p-8 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
+    <div className="card p-5 sm:p-8 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
           Create an account
@@ -225,44 +225,44 @@ function RegisterForm() {
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
             I am registering as a
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => setRole("job_seeker")}
-              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+              className={`p-1.5 sm:p-2.5 rounded-xl border text-[11px] sm:text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer text-center ${
                 role === "job_seeker"
                   ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
                   : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             >
-              <Briefcase className="w-4 h-4" />
-              <span>Job Seeker</span>
+              <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="leading-tight">Job Seeker</span>
             </button>
 
             <button
               type="button"
               onClick={() => setRole("recruiter")}
-              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+              className={`p-1.5 sm:p-2.5 rounded-xl border text-[11px] sm:text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer text-center ${
                 role === "recruiter"
                   ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
                   : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             >
-              <UserCheck className="w-4 h-4" />
-              <span>Recruiter</span>
+              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="leading-tight">Recruiter</span>
             </button>
 
             <button
               type="button"
               onClick={() => setRole("employer")}
-              className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer ${
+              className={`p-1.5 sm:p-2.5 rounded-xl border text-[11px] sm:text-xs font-semibold flex flex-col items-center gap-1 transition cursor-pointer text-center ${
                 role === "employer"
                   ? "border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 ring-2 ring-blue-600/20 shadow-xs"
                   : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             >
-              <Building2 className="w-4 h-4" />
-              <span>Employer</span>
+              <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="leading-tight">Employer</span>
             </button>
           </div>
         </div>

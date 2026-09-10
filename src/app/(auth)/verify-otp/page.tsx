@@ -133,7 +133,7 @@ function VerifyOtpContent() {
   };
 
   return (
-    <div className="card p-8 sm:p-10 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md max-w-md w-full mx-auto space-y-6">
+    <div className="card p-4 sm:p-8 md:p-10 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md max-w-md w-full mx-auto space-y-6">
       <div className="text-center space-y-2">
         <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto shadow-xs">
           <KeyRound className="w-7 h-7" />

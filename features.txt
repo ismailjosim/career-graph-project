@@ -3,5 +3,3 @@ Job Portal: here user will see all the platform posted job created by recruiters
 Job Detail Page: here user will see the full job description, company information, salary range, location, etc. and there will be a button to apply for the job. also there will be a button to save the job. and there will be a button to share the job. also there will be a button to create cover letter for the job. also there will be a button to make resume tailored for the job.
 
 admin can can post job from others platform (linked in, indeed, etc) to this platform. a form to post the job.
-
-show page name to the tab bar when user navigate from one page to another. in react we use this package https://www.npmjs.com/package/react-helmet-async but if that package is not compantable with nextjs

@@ -7,22 +7,30 @@ import { useEffect } from "react";
  * Route-to-Page Title mapping for Career Graph.
  * When navigating, the browser tab bar updates automatically.
  */
+const PROJECT_NAME = "Career Graph";
+const PROJECT_SLOGAN = "Track. Apply. Grow.";
+const HOME_TITLE = `${PROJECT_NAME} - ${PROJECT_SLOGAN}`;
+
+/**
+ * Route-to-Page Title mapping for Career Graph.
+ * When navigating, the browser tab bar updates automatically.
+ */
 const ROUTE_TITLES: Record<string, string> = {
-  "/": "Career Graph - AI Job Application Tracker & Career Suite",
+  "/": HOME_TITLE,
   "/dashboard": "Dashboard",
   "/ats-checker": "ATS Resume Checker",
-  "/job-market": "Job Market & Explore",
+  "/job-market": "Job Market",
   "/cover-letters": "AI Cover Letters",
   "/resumes": "My Resumes",
-  "/applications": "Job Applications Tracker",
+  "/applications": "Applications",
   "/applications/new": "New Application",
   "/fit-analysis": "AI Job Fit Analysis",
   "/fit-analysis/result": "Job Fit Match Report",
-  "/pricing": "Pricing & Diamond Tokens",
+  "/pricing": "Pricing",
   "/profile": "User Profile",
   "/settings": "Account Settings",
   "/users": "User Management",
-  "/wishlist": "Saved Jobs Wishlist",
+  "/wishlist": "Wishlist",
   "/login": "Sign In",
   "/register": "Create Account",
   "/verify-otp": "Verify Email",
@@ -35,7 +43,7 @@ const ROUTE_TITLES: Record<string, string> = {
 export function useDocumentTitle(title?: string | null) {
   useEffect(() => {
     if (!title) return;
-    document.title = `${title} | Career Graph`;
+    document.title = `${title} - ${PROJECT_NAME}`;
   }, [title]);
 }
 
@@ -49,6 +57,11 @@ export function PageTitleManager() {
 
   useEffect(() => {
     if (!pathname) return;
+
+    if (pathname === "/") {
+      document.title = HOME_TITLE;
+      return;
+    }
 
     // 1. Direct exact match
     let pageTitle = ROUTE_TITLES[pathname];
@@ -78,11 +91,7 @@ export function PageTitleManager() {
 
     // 3. Apply to document.title
     if (pageTitle) {
-      if (pathname === "/") {
-        document.title = pageTitle;
-      } else {
-        document.title = `${pageTitle} | Career Graph`;
-      }
+      document.title = `${pageTitle} - ${PROJECT_NAME}`;
     }
   }, [pathname]);
 

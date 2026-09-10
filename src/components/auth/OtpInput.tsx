@@ -80,7 +80,7 @@ export function OtpInput({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 sm:gap-3">
+    <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 md:gap-3">
       {digits.map((digit, idx) => (
         <input
           // biome-ignore lint/suspicious/noArrayIndexKey: Fixed 6-digit OTP array
@@ -97,7 +97,7 @@ export function OtpInput({
           onChange={(e) => handleChange(idx, e.target.value)}
           onKeyDown={(e) => handleKeyDown(idx, e)}
           onPaste={handlePaste}
-          className={`w-11 h-13 sm:w-13 sm:h-15 text-center text-xl sm:text-2xl font-black rounded-xl border-2 transition-all outline-none ${
+          className={`w-9 h-11 sm:w-11 sm:h-13 md:w-13 md:h-15 text-center text-lg sm:text-xl md:text-2xl font-black rounded-lg sm:rounded-xl border-2 transition-all outline-none ${
             isError
               ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400"
               : digit

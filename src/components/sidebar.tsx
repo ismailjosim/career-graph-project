@@ -160,7 +160,7 @@ export function Sidebar() {
         } ${
           // Mobile sizing & positioning
           mobileOpen
-            ? "translate-x-0 w-72 shadow-2xl"
+            ? "translate-x-0 w-[82vw] max-w-72 shadow-2xl"
             : "-translate-x-full lg:translate-x-0"
         }`}
       >

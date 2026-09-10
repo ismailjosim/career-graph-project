@@ -13,6 +13,8 @@ import {
   Link2,
   ShieldCheck,
   Sparkles,
+  X,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -252,7 +254,7 @@ export function LandingPricing() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
               {[
                 { label: "10 Jobs", value: 10, plan: "starter" },
                 { label: "25 Jobs", value: 25, plan: "pro", tag: "Sweet Spot" },
@@ -468,7 +470,7 @@ export function LandingPricing() {
           </div>
 
           <div className="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-            <table className="w-full text-left text-xs sm:text-sm min-w-[560px]">
+            <table className="w-full text-left text-xs sm:text-sm min-w-140">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50">
                   <th className="p-4 sm:p-5 font-bold text-slate-700 dark:text-slate-300">
