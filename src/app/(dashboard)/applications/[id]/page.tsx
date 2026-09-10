@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useJobApplications } from "@/hooks/useApi";
 import { confirmAction } from "@/lib/alerts";
 import { useSession } from "@/lib/auth-client";
+import { useDocumentTitle } from "@/components/PageTitleManager";
 import type { JobApplication } from "@/lib/validation";
 
 export default function ApplicationDetailPage({
@@ -24,6 +25,12 @@ export default function ApplicationDetailPage({
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   const [id, setId] = useState<string>("");
+
+  useDocumentTitle(
+    application
+      ? `${application.jobTitle} at ${application.company}`
+      : "Application Details",
+  );
 
   useEffect(() => {
     const resolveParams = async () => {

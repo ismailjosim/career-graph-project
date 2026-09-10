@@ -41,8 +41,8 @@ export function LandingHero() {
   return (
     <section className="relative pt-12 pb-20 sm:pt-16 sm:pb-24 lg:pt-20 lg:pb-32 overflow-hidden">
       {/* Background Decorative Gradients & Glows */}
-      <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-112.5 bg-linear-to-b from-blue-500/15 via-indigo-500/10 to-transparent blur-3xl dark:from-blue-600/20 dark:via-indigo-600/15" />
+      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-112.5 bg-linear-to-b from-blue-500/15 via-indigo-500/10 to-transparent blur-3xl dark:from-blue-600/20 dark:via-indigo-600/15" />
         <div className="absolute top-40 -left-48 w-96 h-96 bg-cyan-500/10 dark:bg-cyan-500/15 rounded-full blur-3xl" />
         <div className="absolute top-20 -right-48 w-96 h-96 bg-purple-500/10 dark:bg-purple-500/15 rounded-full blur-3xl" />
       </div>
@@ -51,19 +51,19 @@ export function LandingHero() {
         {/* Top Announcement Pill */}
         <Link
           href="#pricing"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium shadow-xs mb-8 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
+          className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium shadow-xs mb-8 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
         >
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
           <span className="font-semibold">
             New: ATS Resume Checker + 50 Free Tokens
           </span>
-          <span className="text-slate-400 dark:text-slate-600">•</span>
-          <span>4-Pillar Scan, Word/PDF Export & Custom Cover Letters</span>
-          <ArrowRight className="w-3.5 h-3.5 ml-0.5 text-blue-500" />
+          <span className="text-slate-400 dark:text-slate-600 hidden sm:inline">•</span>
+          <span className="hidden sm:inline">4-Pillar Scan, Word/PDF Export & Custom Cover Letters</span>
+          <ArrowRight className="w-3.5 h-3.5 ml-0.5 text-blue-500 shrink-0" />
         </Link>
 
         {/* Primary Marketplace Headline */}
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-[1.12]">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white max-w-4xl mx-auto leading-[1.14]">
           Discover High-Fit Jobs.{" "}
           <span className="bg-linear-to-r from-blue-600 via-indigo-600 to-cyan-500 bg-clip-text text-transparent">
             Dominate Applications with AI.
@@ -188,9 +188,9 @@ export function LandingHero() {
         </div>
 
         {/* Live Metrics Proof Bar */}
-        <div className="mt-16 pt-10 border-t border-slate-200/80 dark:border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 max-w-4xl mx-auto">
+        <div className="mt-16 pt-10 border-t border-slate-200/80 dark:border-slate-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 max-w-4xl mx-auto">
           <div className="text-center">
-            <p className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-slate-900 dark:text-white">
+            <p className="text-2xl sm:text-4xl font-extrabold font-space-grotesk text-slate-900 dark:text-white">
               98.4%
             </p>
             <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -198,7 +198,7 @@ export function LandingHero() {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-blue-600 dark:text-blue-400">
+            <p className="text-2xl sm:text-4xl font-extrabold font-space-grotesk text-blue-600 dark:text-blue-400">
               &lt; 3 Sec
             </p>
             <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -206,7 +206,7 @@ export function LandingHero() {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-indigo-600 dark:text-indigo-400">
+            <p className="text-2xl sm:text-4xl font-extrabold font-space-grotesk text-indigo-600 dark:text-indigo-400">
               10+ Boards
             </p>
             <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -214,7 +214,7 @@ export function LandingHero() {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-3xl sm:text-4xl font-extrabold font-space-grotesk text-cyan-600 dark:text-cyan-400">
+            <p className="text-2xl sm:text-4xl font-extrabold font-space-grotesk text-cyan-600 dark:text-cyan-400">
               5 Roles
             </p>
             <p className="mt-1 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">

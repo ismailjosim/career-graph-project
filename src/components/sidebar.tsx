@@ -265,7 +265,7 @@ export function Sidebar() {
             <Link
               href="/pricing"
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2.5 p-2 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-yellow-500/10 border border-amber-500/25 dark:border-amber-400/25 hover:border-amber-500/40 text-amber-700 dark:text-amber-300 transition-all ${
+              className={`flex items-center gap-2.5 p-2 rounded-xl bg-linear-to-r from-amber-500/10 via-amber-500/5 to-yellow-500/10 border border-amber-500/25 dark:border-amber-400/25 hover:border-amber-500/40 text-amber-700 dark:text-amber-300 transition-all ${
                 isCollapsed && !mobileOpen ? "justify-center p-2" : ""
               }`}
             >

@@ -1,8 +1,11 @@
 import {
+  Briefcase,
   CheckCircle2,
   FileCheck,
+  FileEdit,
   FileText,
   Gift,
+  Link2,
   MailCheck,
   Zap,
 } from "lucide-react";
@@ -33,7 +36,7 @@ export function TokenEconomyCard() {
     },
     {
       title: "ATS Resume Checker",
-      tokens: "10 Tokens",
+      tokens: "10 Tokens ($0.10)",
       badge: "Per Full Audit",
       badgeColor:
         "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
@@ -44,7 +47,7 @@ export function TokenEconomyCard() {
     },
     {
       title: "Job Fit Alignment",
-      tokens: "10 Tokens",
+      tokens: "10 Tokens ($0.10)",
       badge: "Per Analysis",
       badgeColor:
         "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
@@ -55,7 +58,7 @@ export function TokenEconomyCard() {
     },
     {
       title: "AI Cover Letter Architect",
-      tokens: "20 Tokens",
+      tokens: "20 Tokens ($0.20)",
       badge: "Per Generation",
       badgeColor:
         "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
@@ -63,6 +66,39 @@ export function TokenEconomyCard() {
         "Custom-tailored, persuasive cover letters based on your profile & role.",
       icon: FileText,
       iconColor: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/50",
+    },
+    {
+      title: "Tailored Resume Rewrite",
+      tokens: "25 Tokens ($0.25)",
+      badge: "Per Generation",
+      badgeColor:
+        "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+      description:
+        "Keyword-tailored resume bullets and impact metrics aligned to a JD.",
+      icon: FileEdit,
+      iconColor: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/50",
+    },
+    {
+      title: "Job Portal 1-Click Apply",
+      tokens: "10 Tokens ($0.10)",
+      badge: "Per Application",
+      badgeColor:
+        "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+      description:
+        "Direct verified platform submission with recruiter-matched criteria.",
+      icon: Briefcase,
+      iconColor: "text-cyan-500 bg-cyan-50 dark:bg-cyan-950/50",
+    },
+    {
+      title: "Job Link Extraction",
+      tokens: "5 Tokens ($0.05)",
+      badge: "Per URL Scrape",
+      badgeColor:
+        "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+      description:
+        "Auto-extracts role details, salary & requirements from any job link.",
+      icon: Link2,
+      iconColor: "text-slate-500 bg-slate-50 dark:bg-slate-950/50",
     },
   ];
 
@@ -74,7 +110,7 @@ export function TokenEconomyCard() {
             Transparent Token Economy
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Know exactly how much each feature and reward costs or grants
+            Know exactly how much each feature and reward costs or grants. 1 Token = $0.01.
           </p>
         </div>
         <div className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -83,7 +119,7 @@ export function TokenEconomyCard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map((item) => {
           const Icon = item.icon;
           return (

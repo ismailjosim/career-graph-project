@@ -84,7 +84,7 @@ function LiveDateTimeDisplay() {
 
   if (!time) {
     return (
-      <div className="h-9 w-32 md:w-44 rounded-xl bg-slate-100 dark:bg-slate-800/80 animate-pulse border border-slate-200/60 dark:border-slate-700/50" />
+      <div className="hidden sm:block h-9 w-32 md:w-44 rounded-xl bg-slate-100 dark:bg-slate-800/80 animate-pulse border border-slate-200/60 dark:border-slate-700/50" />
     );
   }
 
@@ -103,7 +103,7 @@ function LiveDateTimeDisplay() {
   });
 
   return (
-    <div className="flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs shrink-0">
+    <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-xs shrink-0">
       <div className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
         <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </div>
@@ -137,13 +137,13 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 h-16 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3 sm:px-6 md:px-8 flex items-center justify-between transition-colors">
+    <header className="sticky top-0 z-30 h-16 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-2.5 sm:px-6 md:px-8 flex items-center justify-between transition-colors">
       {/* Left side: Hamburger (mobile), Collapse button (desktop), Page Title */}
-      <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 min-w-0 flex-1 sm:flex-initial">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1 mr-2">
         {/* Mobile menu trigger */}
         <button
           onClick={toggleMobile}
-          className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0"
+          className="lg:hidden p-1.5 sm:p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0"
           aria-label="Open sidebar menu"
         >
           <Menu className="w-5 h-5" />
@@ -165,8 +165,8 @@ export function TopBar() {
         </button>
 
         {/* Title */}
-        <div className="min-w-0">
-          <h1 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-sm sm:text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight truncate">
             {currentMeta.title}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
@@ -176,14 +176,14 @@ export function TopBar() {
       </div>
 
       {/* Right side: Token Balance Pill & Live Date & Time Display */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <Link
           href="/pricing"
           title="View Token Balance & Packages"
-          className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 hover:from-amber-500/20 hover:via-yellow-500/20 hover:to-amber-500/20 border border-amber-500/30 dark:border-amber-400/30 text-amber-700 dark:text-amber-300 shadow-xs hover:shadow-sm transition-all group cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-linear-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 hover:from-amber-500/20 hover:via-yellow-500/20 hover:to-amber-500/20 border border-amber-500/30 dark:border-amber-400/30 text-amber-700 dark:text-amber-300 shadow-xs hover:shadow-sm transition-all group cursor-pointer"
         >
-          <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-            <Coins className="w-3.5 h-3.5" />
+          <div className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform shrink-0">
+            <Coins className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </div>
           <div className="flex flex-col text-left leading-none">
             <div className="flex items-center gap-1">

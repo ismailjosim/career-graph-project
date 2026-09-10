@@ -76,7 +76,7 @@ export function ApplicationsTable({
   return (
     <div className="card overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse min-w-[540px]">
           <thead>
             <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-900/60 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <th scope="col" className="py-3.5 px-4 sm:px-6">

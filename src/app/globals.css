@@ -9,8 +9,20 @@
   --font-space-grotesk: "Space Grotesk", sans-serif;
 }
 
-* {
+a,
+button,
+input,
+select,
+textarea,
+.card,
+.card-hover,
+.btn {
   @apply transition-colors duration-200;
+}
+
+html,
+body {
+  overflow-x: clip;
 }
 
 html {

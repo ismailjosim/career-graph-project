@@ -89,7 +89,7 @@ export function TokenTransactionsLedger({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[500px]">
             <thead>
               <tr className="border-b border-slate-200/60 dark:border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
                 <th className="pb-3 pl-2">Event</th>

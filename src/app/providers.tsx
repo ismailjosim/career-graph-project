@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { PageTitleManager } from "@/components/PageTitleManager";
 import { Toaster } from "@/components/ui/sonner";
 import { TokensProvider } from "@/context/tokens-context";
 
@@ -14,9 +15,11 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       <TokensProvider>
+        <PageTitleManager />
         {children}
         <Toaster />
       </TokensProvider>
     </ThemeProvider>
   );
 }
+

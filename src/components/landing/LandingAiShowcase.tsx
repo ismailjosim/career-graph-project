@@ -56,11 +56,11 @@ export function LandingAiShowcase() {
         </div>
 
         {/* Interactive Feature Tabs */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto p-1.5 bg-slate-200/60 dark:bg-slate-800/80 rounded-2xl backdrop-blur-md">
+        <div className="mt-10 sm:mt-12 flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 max-w-4xl mx-auto p-1.5 bg-slate-200/60 dark:bg-slate-800/80 rounded-2xl backdrop-blur-md overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("ats")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === "ats"
                 ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-md shadow-black/5"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -72,19 +72,19 @@ export function LandingAiShowcase() {
           <button
             type="button"
             onClick={() => setActiveTab("cover")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === "cover"
                 ? "bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-md shadow-black/5"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>AI Cover Letter Architect</span>
+            <span>AI Cover Letter</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("fit")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === "fit"
                 ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-md shadow-black/5"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -96,19 +96,19 @@ export function LandingAiShowcase() {
           <button
             type="button"
             onClick={() => setActiveTab("extract")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === "extract"
                 ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-md shadow-black/5"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
             <Zap className="w-4 h-4" />
-            <span>Smart Job Extractor</span>
+            <span>Smart Extractor</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("resume")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === "resume"
                 ? "bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-md shadow-black/5"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -173,21 +173,21 @@ export function LandingAiShowcase() {
 
             {/* ATS Checker Visual Preview */}
             <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700/80 space-y-4">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
                     <FileCheck className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base truncate">
                       Senior_FullStack_Engineer.pdf
                     </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                       Scanned against Senior Full-Stack role requirements
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   <span className="text-lg font-extrabold font-space-grotesk">
                     91/100
@@ -239,7 +239,7 @@ export function LandingAiShowcase() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between pt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                   <div className="flex flex-wrap gap-1.5 items-center">
                     <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">
                       Matched:
@@ -260,7 +260,7 @@ export function LandingAiShowcase() {
                     ))}
                   </div>
 
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-medium border border-slate-200 dark:border-slate-700">
                       <Download className="w-3 h-3 text-blue-500" />
                       DOCX
@@ -323,7 +323,7 @@ export function LandingAiShowcase() {
 
             {/* Interactive Preview Card */}
             <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700/80">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-700">
                 <div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-base">
                     Staff Full-Stack Engineer
@@ -332,7 +332,7 @@ export function LandingAiShowcase() {
                     Target Role: Vercel • Remote
                   </p>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
                   <span className="text-xl font-extrabold font-space-grotesk">
                     92%
                   </span>
