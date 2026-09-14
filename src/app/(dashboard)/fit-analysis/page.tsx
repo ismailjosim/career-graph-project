@@ -80,6 +80,29 @@ export default function FitAnalysisPage() {
     } catch {
       // Ignore parse error
     }
+
+    // Check if user clicked "Tailor Resume" from the Job Portal
+    try {
+      const targetJobRaw = sessionStorage.getItem("career_graph_target_job");
+      if (targetJobRaw) {
+        const target = JSON.parse(targetJobRaw);
+        if (target?.title || target?.description) {
+          setJobInput({
+            title: target.title || "",
+            company: target.company || "",
+            description: target.description || "",
+          });
+          setJobMode("paste");
+          toast.success(
+            `Loaded "${target.title || "Job"}" from Job Portal! Select or upload your resume below to analyze and tailor it.`,
+            { duration: 5000 },
+          );
+          sessionStorage.removeItem("career_graph_target_job");
+        }
+      }
+    } catch {
+      // Ignore parse error
+    }
   }, []);
 
   // Fetch stored resumes

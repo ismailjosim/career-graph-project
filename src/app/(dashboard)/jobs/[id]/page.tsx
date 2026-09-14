@@ -150,9 +150,10 @@ export default function JobDetailPage() {
   const handleCreateCoverLetter = () => {
     if (!job) return;
     const searchParams = new URLSearchParams({
-      title: `${job.title} at ${job.company}`,
+      title: job.title,
       company: job.company,
       requirements: job.requirements?.join(", ") || "",
+      description: job.description || "",
     });
     router.push(`/cover-letters?${searchParams.toString()}`);
   };
@@ -469,6 +470,77 @@ export default function JobDetailPage() {
 
         {/* Right Column (1 col): Job Snapshot & Company Overview */}
         <div className="space-y-6">
+          {/* Company Information Card */}
+          <div className="card p-6 space-y-4">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-blue-500" />
+              <span>Company Information</span>
+            </h3>
+
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="w-12 h-12 rounded-xl bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shrink-0 overflow-hidden shadow-xs">
+                {job.companyLogo ? (
+                  <Image
+                    src={job.companyLogo}
+                    alt={job.company}
+                    width={48}
+                    height={48}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  job.company.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-bold text-base text-slate-900 dark:text-white truncate">
+                  {job.company}
+                </h4>
+                <div className="flex items-center gap-1 text-xs text-slate-500">
+                  <MapPin className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">{job.location}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Workplace Model</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                  {job.workplaceType}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Listed Via</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
+                  {job.sourcePlatform === "direct"
+                    ? "Career Graph Portal"
+                    : job.sourcePlatform}
+                </span>
+              </div>
+              {job.salary && (
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Salary Range</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {job.salary}
+                  </span>
+                </div>
+              )}
+              {job.originalJobUrl && (
+                <div className="pt-2">
+                  <a
+                    href={job.originalJobUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-outline w-full text-xs py-2 flex items-center justify-center gap-1.5"
+                  >
+                    <span>View on {job.sourcePlatform}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Job Overview Summary */}
           <div className="card p-6 space-y-4">
             <h3 className="font-bold text-sm text-slate-900 dark:text-white uppercase tracking-wider">

@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   CoverLetterFilterBar,
   CoverLetterHeader,
@@ -12,7 +14,13 @@ import {
 import { useCoverLetters } from "@/hooks/useApi";
 import type { CoverLetter } from "@/lib/validation";
 
-export default function CoverLettersPage() {
+function CoverLettersContent() {
+  const searchParams = useSearchParams();
+  const urlTitle = searchParams.get("title");
+  const urlCompany = searchParams.get("company");
+  const urlRequirements = searchParams.get("requirements");
+  const urlDesc = searchParams.get("description");
+
   const {
     coverLetters,
     loading,
@@ -24,6 +32,36 @@ export default function CoverLettersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingLetter, setEditingLetter] = useState<CoverLetter | null>(null);
+  const [initialAiData, setInitialAiData] = useState<{
+    jobTitle?: string;
+    company?: string;
+    jobDescription?: string;
+    autoOpenAi?: boolean;
+  } | null>(null);
+
+  // Auto-launch modal if redirected from a job posting
+  useEffect(() => {
+    if (urlTitle || urlCompany || urlRequirements || urlDesc) {
+      const compiledDesc = [
+        urlRequirements ? `Key Requirements:\n${urlRequirements}` : "",
+        urlDesc ? `Job Details:\n${urlDesc}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+
+      setInitialAiData({
+        jobTitle: urlTitle || "",
+        company: urlCompany || "",
+        jobDescription: compiledDesc,
+        autoOpenAi: true,
+      });
+      setEditingLetter(null);
+      setShowModal(true);
+      toast.info(
+        `Loaded details for ${urlTitle || "target role"}. Ready to craft cover letter!`,
+      );
+    }
+  }, [urlTitle, urlCompany, urlRequirements, urlDesc]);
 
   const filteredLetters = useMemo(
     () => filterCoverLetters(coverLetters, searchTerm),
@@ -32,11 +70,13 @@ export default function CoverLettersPage() {
 
   const handleOpenCreate = () => {
     setEditingLetter(null);
+    setInitialAiData(null);
     setShowModal(true);
   };
 
   const handleOpenEdit = (letter: CoverLetter) => {
     setEditingLetter(letter);
+    setInitialAiData(null);
     setShowModal(true);
   };
 
@@ -77,10 +117,20 @@ export default function CoverLettersPage() {
         onClose={() => {
           setShowModal(false);
           setEditingLetter(null);
+          setInitialAiData(null);
         }}
         initialData={editingLetter}
+        initialAiData={initialAiData || undefined}
         onSave={handleSave}
       />
     </div>
+  );
+}
+
+export default function CoverLettersPage() {
+  return (
+    <Suspense fallback={<CoverLetterLoading />}>
+      <CoverLettersContent />
+    </Suspense>
   );
 }

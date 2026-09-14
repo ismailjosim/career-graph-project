@@ -34,6 +34,12 @@ export interface CoverLetterModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: CoverLetter | null;
+  initialAiData?: {
+    jobTitle?: string;
+    company?: string;
+    jobDescription?: string;
+    autoOpenAi?: boolean;
+  };
   onSave: (data: CoverLetterFormData) => Promise<CoverLetter>;
 }
 

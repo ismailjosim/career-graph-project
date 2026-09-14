@@ -13,6 +13,7 @@ export function CoverLetterModal({
   isOpen,
   onClose,
   initialData,
+  initialAiData,
   onSave,
 }: CoverLetterModalProps) {
   const { tokens, refreshTokens, updateTokensLocally } = useTokens();
@@ -39,11 +40,24 @@ export function CoverLetterModal({
         title: initialData.title || "",
         content: initialData.content || "",
       });
+      setShowAi(false);
     } else {
-      setFormData({ title: "", content: "" });
+      const defaultTitle = initialAiData?.jobTitle
+        ? `${initialAiData.jobTitle} - ${initialAiData.company || "Cover Letter"}`
+        : "";
+      setFormData({ title: defaultTitle, content: "" });
+
+      if (initialAiData) {
+        setAiJobTitle(initialAiData.jobTitle || "");
+        setAiCompany(initialAiData.company || "");
+        setAiJobDescription(initialAiData.jobDescription || "");
+        if (initialAiData.autoOpenAi) {
+          setShowAi(true);
+        }
+      }
     }
     setError(null);
-  }, [initialData]);
+  }, [initialData, initialAiData]);
 
   if (!isOpen) return null;
 
