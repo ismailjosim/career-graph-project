@@ -1,5 +1,0 @@
-Job Portal: here user will see all the platform posted job created by recruiters. and user can apply for the job through this platform. and each application will cost some tokens. based on how many requirements the job has. also there will be a job search bar where user can search for jobs.
-
-Job Detail Page: here user will see the full job description, company information, salary range, location, etc. and there will be a button to apply for the job. also there will be a button to save the job. and there will be a button to share the job. also there will be a button to create cover letter for the job. also there will be a button to make resume tailored for the job.
-
-admin can can post job from others platform (linked in, indeed, etc) to this platform. a form to post the job.
