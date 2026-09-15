@@ -50,6 +50,16 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Resumes",
     subtitle: "Manage versions of your tailored resumes",
   },
+  "/resumes/builder": {
+    title: "AI Resume Architect & Builder",
+    subtitle:
+      "Live split-screen ATS resume editor with real-time keyword scoring",
+  },
+  "/mock-interview": {
+    title: "AI Mock Interview Simulator",
+    subtitle:
+      "Voice & audio interview coaching powered by STAR framework diagnostics",
+  },
   "/fit-analysis": {
     title: "Job Fit Analysis",
     subtitle: "Analyze alignment between your resume and job requirements",

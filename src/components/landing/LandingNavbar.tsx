@@ -88,18 +88,6 @@ export function LandingNavbar() {
             Tracker
           </Link>
           <Link
-            href="#roles"
-            className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-          >
-            For Recruiters & Seekers
-          </Link>
-          <Link
-            href="#comparison"
-            className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
-          >
-            Why AI?
-          </Link>
-          <Link
             href="#pricing"
             className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-amber-600 dark:text-slate-300 dark:hover:text-amber-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
           >
@@ -196,13 +184,7 @@ export function LandingNavbar() {
             <FileCheck2 className="w-4 h-4 text-cyan-500" />
             Application Pipeline Tracker
           </Link>
-          <Link
-            href="#roles"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            Role-Based Solutions (Seeker / Recruiter / Employer)
-          </Link>
+
           <Link
             href="#pricing"
             onClick={() => setMobileMenuOpen(false)}
