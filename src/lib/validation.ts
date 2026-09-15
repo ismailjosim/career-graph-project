@@ -231,3 +231,54 @@ export const jobPostingSchema = z.object({
 });
 
 export type JobPosting = z.infer<typeof jobPostingSchema>;
+
+// Review Validation Schemas
+export const REVIEW_ROLES = ["job_seeker", "recruiter", "employer"] as const;
+export type ReviewRole = (typeof REVIEW_ROLES)[number];
+
+export const REVIEW_STATUSES = [
+  "pending",
+  "approved",
+  "rejected",
+  "featured",
+  "hidden",
+] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+
+export const submitReviewSchema = z.object({
+  role: z.enum(REVIEW_ROLES, {
+    message: "Role must be job_seeker, recruiter, or employer",
+  }),
+  rating: z.number().int().min(1, "Rating must be at least 1 star").max(5, "Rating cannot exceed 5 stars"),
+  content: z
+    .string()
+    .trim()
+    .min(10, "Review must be at least 10 characters long")
+    .max(600, "Review cannot exceed 600 characters"),
+  headline: z.string().trim().max(100).optional().default(""),
+  companyOrTarget: z.string().trim().max(100).optional().default(""),
+  verifiedOutcome: z.string().trim().max(120).optional().default(""),
+  tags: z.array(z.string().trim()).max(5).default([]),
+});
+
+export type SubmitReviewInput = z.infer<typeof submitReviewSchema>;
+
+export const reviewSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  authorName: z.string(),
+  authorImage: z.string().optional(),
+  role: z.enum(REVIEW_ROLES),
+  rating: z.number().int().min(1).max(5),
+  content: z.string(),
+  headline: z.string().default(""),
+  companyOrTarget: z.string().default(""),
+  verifiedOutcome: z.string().default(""),
+  tags: z.array(z.string()).default([]),
+  status: z.enum(REVIEW_STATUSES).default("approved"),
+  helpfulVotes: z.number().default(0),
+  createdAt: z.date().default(() => new Date()),
+  updatedAt: z.date().default(() => new Date()),
+});
+
+export type Review = z.infer<typeof reviewSchema>;

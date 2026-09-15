@@ -6,6 +6,7 @@ import type {
   JobPosting as IJobPosting,
   MonthlyStats as IMonthlyStats,
   Resume as IResume,
+  Review as IReview,
   Wishlist as IWishlist,
 } from "@/lib/validation";
 
@@ -369,3 +370,37 @@ tokenTransactionSchema.index({ userId: 1, createdAt: -1 });
 export const TokenTransaction =
   mongoose.models.TokenTransaction ||
   mongoose.model<ITokenTransaction>("TokenTransaction", tokenTransactionSchema);
+
+// Review Model (1 review per user, verified role-based feedback)
+const reviewSchema = new mongoose.Schema<IReview>(
+  {
+    userId: { type: String, required: true, unique: true, index: true },
+    authorName: { type: String, required: true, trim: true },
+    authorImage: { type: String },
+    role: {
+      type: String,
+      required: true,
+      enum: ["job_seeker", "recruiter", "employer"],
+      index: true,
+    },
+    rating: { type: Number, required: true, min: 1, max: 5, index: true },
+    content: { type: String, required: true, trim: true },
+    headline: { type: String, default: "", trim: true },
+    companyOrTarget: { type: String, default: "", trim: true },
+    verifiedOutcome: { type: String, default: "", trim: true },
+    tags: { type: [String], default: [] },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "featured", "hidden"],
+      default: "approved",
+      index: true,
+    },
+    helpfulVotes: { type: Number, default: 0 },
+  },
+  { timestamps: true },
+);
+
+reviewSchema.index({ status: 1, role: 1, createdAt: -1 });
+
+export const Review =
+  mongoose.models.Review || mongoose.model<IReview>("Review", reviewSchema);
