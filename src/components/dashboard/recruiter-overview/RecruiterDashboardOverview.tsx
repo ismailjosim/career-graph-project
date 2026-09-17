@@ -4,17 +4,13 @@ import {
   ArrowRight,
   Briefcase,
   Coins,
-  ExternalLink,
   Eye,
   MousePointerClick,
   Plus,
-  RefreshCw,
-  Sparkles,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 interface RecruiterOverviewData {
   recruiter: {
@@ -76,8 +72,16 @@ export function RecruiterDashboardOverview() {
       <div className="w-full space-y-6 animate-pulse">
         <div className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+          {[
+            "recruiter-kpi-1",
+            "recruiter-kpi-2",
+            "recruiter-kpi-3",
+            "recruiter-kpi-4",
+          ].map((slotId) => (
+            <div
+              key={slotId}
+              className="h-32 rounded-2xl bg-slate-200 dark:bg-slate-800"
+            />
           ))}
         </div>
         <div className="h-64 rounded-2xl bg-slate-200 dark:bg-slate-800" />
@@ -91,7 +95,11 @@ export function RecruiterDashboardOverview() {
         <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
           {error || "Could not load hiring pipeline data"}
         </p>
-        <button type="button" onClick={fetchOverview} className="btn-primary py-2 px-4 text-xs font-semibold">
+        <button
+          type="button"
+          onClick={fetchOverview}
+          className="btn-primary py-2 px-4 text-xs font-semibold"
+        >
           Retry
         </button>
       </div>
@@ -114,7 +122,8 @@ export function RecruiterDashboardOverview() {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Welcome back, {recruiter.name}! Track your candidate applications, job listing views, and clicks.
+            Welcome back, {recruiter.name}! Track your candidate applications,
+            job listing views, and clicks.
           </p>
         </div>
 
@@ -280,8 +289,12 @@ export function RecruiterDashboardOverview() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-400 italic">
-                    You haven&apos;t posted any job openings yet. Click &quot;Post a Job&quot; to start receiving candidates!
+                  <td
+                    colSpan={7}
+                    className="py-10 text-center text-slate-400 italic"
+                  >
+                    You haven&apos;t posted any job openings yet. Click
+                    &quot;Post a Job&quot; to start receiving candidates!
                   </td>
                 </tr>
               )}

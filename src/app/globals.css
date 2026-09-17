@@ -182,6 +182,27 @@ html {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Infinite Marquee Animation for Testimonials Carousel */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 45s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Custom utility for gradient backgrounds */
 .bg-linear-premium {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);

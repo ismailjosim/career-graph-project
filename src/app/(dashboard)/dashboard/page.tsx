@@ -24,7 +24,9 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
-  const [adminViewMode, setAdminViewMode] = useState<"admin" | "candidate">("admin");
+  const [adminViewMode, setAdminViewMode] = useState<"admin" | "candidate">(
+    "admin",
+  );
 
   // Fetch verified role
   useEffect(() => {
@@ -44,12 +46,8 @@ export default function DashboardPage() {
   }, [session]);
 
   // Candidate Data Hooks
-  const {
-    applications,
-    loading: appLoading,
-    createApplication,
-    fetchApplications,
-  } = useJobApplications();
+  const { applications, createApplication, fetchApplications } =
+    useJobApplications();
   const { refreshStats } = useMonthlyStats();
 
   const [showModal, setShowModal] = useState(false);

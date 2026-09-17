@@ -180,7 +180,7 @@ export function Sidebar() {
               {
                 icon: MessageSquareQuote,
                 label: "Feedback & Reviews",
-                href: "/reviews",
+                href: "/admin/reviews",
               },
             ],
           },

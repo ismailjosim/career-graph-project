@@ -2,7 +2,6 @@
 
 import {
   Activity,
-  Briefcase,
   Eye,
   MessageSquare,
   Plus,
@@ -76,12 +75,16 @@ export function AdminOverviewHeader({
             title="Preview candidate dashboard view"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>{viewMode === "candidate" ? "Viewing Candidate" : "Preview Candidate"}</span>
+            <span>
+              {viewMode === "candidate"
+                ? "Viewing Candidate"
+                : "Preview Candidate"}
+            </span>
           </button>
 
           {/* Quick Jump to Reviews Moderation */}
           <Link
-            href="/reviews"
+            href="/admin/reviews"
             className="btn-outline text-xs py-2 px-3 flex items-center gap-1.5 font-medium relative"
           >
             <MessageSquare className="w-3.5 h-3.5 text-indigo-500" />
@@ -144,7 +147,11 @@ export function AdminOverviewHeader({
                   : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
-              {p === "7d" ? "Last 7 Days" : p === "30d" ? "Last 30 Days" : "All Time"}
+              {p === "7d"
+                ? "Last 7 Days"
+                : p === "30d"
+                  ? "Last 30 Days"
+                  : "All Time"}
             </button>
           ))}
         </div>

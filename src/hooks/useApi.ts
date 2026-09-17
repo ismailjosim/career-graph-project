@@ -473,6 +473,8 @@ export function useResumes() {
     name: string;
     fileName: string;
     fileUrl: string;
+    cloudinaryPublicId?: string;
+    fileSize?: number;
   }) => {
     if (!userId) throw new Error("Authentication required");
 

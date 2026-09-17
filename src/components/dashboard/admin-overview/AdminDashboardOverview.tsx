@@ -32,7 +32,9 @@ export function AdminDashboardOverview({
       const res = await fetch("/api/admin/overview");
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.error || "Failed to load admin overview metrics");
+        throw new Error(
+          errJson.error || "Failed to load admin overview metrics",
+        );
       }
 
       const json = await res.json();
@@ -59,9 +61,18 @@ export function AdminDashboardOverview({
       <div className="w-full space-y-6 animate-pulse">
         <div className="h-28 rounded-2xl bg-slate-200 dark:bg-slate-800" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {[
+            "kpi-1",
+            "kpi-2",
+            "kpi-3",
+            "kpi-4",
+            "kpi-5",
+            "kpi-6",
+            "kpi-7",
+            "kpi-8",
+          ].map((id) => (
             <div
-              key={i}
+              key={id}
               className="h-36 rounded-2xl bg-slate-200 dark:bg-slate-800"
             />
           ))}

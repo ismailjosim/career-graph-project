@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import {
@@ -180,13 +181,34 @@ export async function POST(request: NextRequest) {
       // If user chose to save this resume to their account
       if (resume.saveToAccount) {
         try {
+          const buffer = Buffer.from(cleanBase64, "base64");
+          let fileUrl = resume.fileBase64.startsWith("data:")
+            ? resume.fileBase64
+            : `data:${mimeType};base64,${cleanBase64}`;
+          let cloudinaryPublicId: string | undefined;
+
+          try {
+            const uploadRes = await uploadToCloudinary(buffer, {
+              folder: "career-graph/resumes",
+              resourceType: "auto",
+              publicId: `resume_${userId}_${Date.now()}`,
+            });
+            fileUrl = uploadRes.secureUrl;
+            cloudinaryPublicId = uploadRes.publicId;
+          } catch (cldErr) {
+            console.warn(
+              "Could not upload to Cloudinary, falling back to base64:",
+              cldErr,
+            );
+          }
+
           const newDoc = new Resume({
             userId,
             name: resume.resumeName || resume.fileName || "Uploaded Resume",
             fileName: resume.fileName || "resume.pdf",
-            fileUrl: resume.fileBase64.startsWith("data:")
-              ? resume.fileBase64
-              : `data:${mimeType};base64,${cleanBase64}`,
+            fileUrl,
+            cloudinaryPublicId,
+            fileSize: buffer.byteLength,
             uploadedAt: new Date(),
             isDefault: false,
           });

@@ -101,4 +101,5 @@ export const fileUploader = {
 npm packages needed for this:   cloudinary,multer-storage-cloudinary,multer
 
 although i have provided all the code and references data you need but do your research and give me a total over plan for implementation.
-
+user profile image update is connect to better-auth keep that in mind.
+after adding image uploading features replace all the place where user need to upload and files with actual data. 

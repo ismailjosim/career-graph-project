@@ -10,6 +10,7 @@ import {
   ProfileOnboardingBanner,
   ProfileOverviewCard,
   ProfileResumesCard,
+  ProfileReviewCard,
   ProfileStatsGrid,
   useProfile,
 } from "@/components/dashboard/profile";
@@ -34,6 +35,7 @@ function ProfileContent() {
     isViewingOtherUser,
     isPromptingSetup,
     currentOperatorRole,
+    refreshProfile,
   } = useProfile();
 
   if (loading) {
@@ -57,6 +59,7 @@ function ProfileContent() {
         currentOperatorRole={currentOperatorRole}
         onAdminStatusChange={handleAdminStatusChange}
         onAdminVerifyToggle={handleAdminVerifyToggle}
+        onAvatarUpdated={refreshProfile}
       />
 
       {/* Onboarding Callout Banner for Incomplete Profiles */}
@@ -89,6 +92,7 @@ function ProfileContent() {
         {/* Left Column: Profile Pitch, Skills & Background */}
         <div className="space-y-6">
           <ProfileOverviewCard user={user} />
+          {!isViewingOtherUser && <ProfileReviewCard />}
         </div>
 
         {/* Right Column: Uploaded Resumes & Cover Letters */}
@@ -96,6 +100,7 @@ function ProfileContent() {
           <ProfileResumesCard
             resumes={resumes}
             isViewingOtherUser={isViewingOtherUser}
+            onResumesUpdated={refreshProfile}
           />
           <ProfileCoverLettersCard
             coverLetters={coverLetters}

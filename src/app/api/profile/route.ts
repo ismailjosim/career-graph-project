@@ -148,6 +148,8 @@ export async function PUT(request: NextRequest) {
     };
 
     if (validatedData.name) updatePayload.name = validatedData.name;
+    if (validatedData.image !== undefined)
+      updatePayload.image = validatedData.image;
     if (validatedData.phone !== undefined)
       updatePayload.phone = validatedData.phone;
     if (validatedData.location !== undefined)

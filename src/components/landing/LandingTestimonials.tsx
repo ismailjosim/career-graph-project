@@ -1,17 +1,16 @@
 "use client";
 
 import {
+  ArrowRight,
   Briefcase,
   Building2,
   Loader2,
-  PlusCircle,
   ShieldCheck,
-  Sparkles,
   Star,
   UserCheck,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { ReviewModal } from "@/components/reviews/ReviewModal";
 import type { ReviewRole } from "@/lib/validation";
 
 interface ReviewItem {
@@ -74,22 +73,19 @@ const AVATAR_GRADIENTS = [
 ];
 
 export function LandingTestimonials() {
-  const [activeTab, setActiveTab] = useState<"all" | ReviewRole>("all");
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [stats, setStats] = useState<ReviewStats>({
-    totalReviews: 6,
-    averageRating: 5.0,
-    roleCounts: { all: 6, job_seeker: 3, recruiter: 2, employer: 1 },
+    totalReviews: 12,
+    averageRating: 4.9,
+    roleCounts: { all: 12, job_seeker: 6, recruiter: 3, employer: 3 },
   });
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const url =
-        activeTab === "all" ? "/api/reviews" : `/api/reviews?role=${activeTab}`;
-      const res = await fetch(url);
+      // Fetch up to 12 reviews for the infinite carousel
+      const res = await fetch("/api/reviews?limit=12");
       const data = await res.json();
       if (data.success) {
         setReviews(data.reviews || []);
@@ -98,139 +94,58 @@ export function LandingTestimonials() {
         }
       }
     } catch (err) {
-      console.error("Failed to load dynamic reviews:", err);
+      console.error("Failed to load carousel reviews:", err);
     } finally {
       setLoading(false);
     }
-  }, [activeTab]);
+  }, []);
 
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
 
+  // Duplicate items for a seamless continuous CSS marquee loop
+  const marqueeItems = [...reviews, ...reviews];
+
   return (
-    <section className="py-20 sm:py-28 relative">
+    <section className="py-20 sm:py-28 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header with Live Average Rating Pill */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wider mb-4">
             <div className="flex items-center gap-1 text-amber-400">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             </div>
             <span>
-              {stats.averageRating.toFixed(1)} / 5.0 Rating • Verified Community
-              Feedback
+              {stats.averageRating.toFixed(1)} / 5.0 Rating • 100% Verified
+              Community Feedback
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-space-grotesk">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white font-space-grotesk">
             Loved by Job Seekers, Recruiters & Employers
           </h2>
-          <p className="mt-3 text-base text-slate-600 dark:text-slate-300">
+          <p className="mt-3 text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Real outcomes from ambitious professionals, talent scouts, and
             hiring teams transforming their career workflows.
           </p>
         </div>
+      </div>
 
-        {/* Filter Tabs & "Share Your Experience" Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
-          {/* Persona Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-800 w-full sm:w-auto">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === "all"
-                  ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <span>All Stories</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-[10px] text-slate-700 dark:text-slate-300">
-                {stats.roleCounts.all}
-              </span>
-            </button>
+      {/* Infinite Horizontal Reviews Carousel */}
+      <div className="relative w-full overflow-hidden">
+        {/* Left and Right Fade Masks */}
+        <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-linear-to-r from-white dark:from-slate-950 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-linear-to-l from-white dark:from-slate-950 to-transparent z-10 pointer-events-none" />
 
-            <button
-              onClick={() => setActiveTab("job_seeker")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === "job_seeker"
-                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Job Seekers</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/60 text-[10px] text-blue-700 dark:text-blue-300">
-                {stats.roleCounts.job_seeker}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("recruiter")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === "recruiter"
-                  ? "bg-white dark:bg-slate-900 text-teal-600 dark:text-teal-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Recruiters</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-teal-100 dark:bg-teal-950/60 text-[10px] text-teal-700 dark:text-teal-300">
-                {stats.roleCounts.recruiter}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab("employer")}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === "employer"
-                  ? "bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Employers</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/60 text-[10px] text-purple-700 dark:text-purple-300">
-                {stats.roleCounts.employer}
-              </span>
-            </button>
-          </div>
-
-          {/* Leave a review button */}
-          <button
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs font-semibold shadow-sm transition-all hover:scale-[1.02] shrink-0"
-          >
-            <PlusCircle className="w-4 h-4 text-blue-500" />
-            <span>Leave a Review</span>
-          </button>
-        </div>
-
-        {/* Dynamic Reviews Grid */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-500">
+          <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             <p className="text-xs">Loading verified reviews...</p>
           </div>
-        ) : reviews.length === 0 ? (
-          <div className="text-center py-16 p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-lg mx-auto">
-            <Sparkles className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              No reviews in this category yet
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4">
-              Be the first to share your experience with Career Graph!
-            </p>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
-            >
-              Write First Review
-            </button>
-          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviews.map((rev, index) => {
+          <div className="flex gap-6 py-4 animate-marquee hover:[animation-play-state:paused] cursor-grab active:cursor-grabbing">
+            {marqueeItems.map((rev, index) => {
               const roleConfig =
                 ROLE_BADGES[rev.role] || ROLE_BADGES.job_seeker;
               const RoleIcon = roleConfig.icon;
@@ -245,16 +160,16 @@ export function LandingTestimonials() {
 
               return (
                 <div
-                  key={rev._id}
-                  className="p-6 sm:p-7 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-md shadow-blue-500/5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:shadow-lg"
+                  key={`${rev._id}-${index}`}
+                  className="w-85 sm:w-95 shrink-0 p-6 sm:p-7 bg-white dark:bg-slate-900/90 backdrop-blur-sm rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-blue-500/5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:scale-[1.01]"
                 >
                   <div>
-                    {/* Top Row: Stars + Role Badge */}
+                    {/* Top Row: Rating Stars + Role Badge */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-1 text-amber-400">
                         {[...Array(5)].map((_, i) => (
                           <Star
-                            key={`star-${rev._id}-${i}`}
+                            key={`star-${rev._id}-${index}-${i}`}
                             className={`w-3.5 h-3.5 ${
                               i < rev.rating
                                 ? "fill-amber-400 text-amber-400"
@@ -276,12 +191,12 @@ export function LandingTestimonials() {
                     {rev.verifiedOutcome && (
                       <div className="mb-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 text-[11px] font-medium">
                         <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
-                        <span>{rev.verifiedOutcome}</span>
+                        <span className="truncate">{rev.verifiedOutcome}</span>
                       </div>
                     )}
 
                     {/* Review Quote */}
-                    <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-4">
+                    <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-4 line-clamp-4">
                       &ldquo;{rev.content}&rdquo;
                     </p>
 
@@ -303,7 +218,7 @@ export function LandingTestimonials() {
                   {/* Author Card Footer */}
                   <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                     {rev.authorImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
+                      // biome-ignore lint/performance/noImgElement: Testimonial author avatars from OAuth
                       <img
                         src={rev.authorImage}
                         alt={rev.authorName}
@@ -311,7 +226,7 @@ export function LandingTestimonials() {
                       />
                     ) : (
                       <div
-                        className={`w-10 h-10 rounded-full bg-linear-to-tr ${gradient} text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-sm`}
+                        className={`w-10 h-10 rounded-full bg-linear-to-tr ${gradient} text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs`}
                       >
                         {initials}
                       </div>
@@ -334,12 +249,22 @@ export function LandingTestimonials() {
         )}
       </div>
 
-      {/* Review Submission & Edit Modal */}
-      <ReviewModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSuccess={fetchReviews}
-      />
+      {/* "See All Reviews" CTA Section Below Carousel */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 text-center">
+        <div className="inline-flex flex-col sm:flex-row items-center gap-4">
+          <Link
+            href="/reviews"
+            className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-sm font-bold shadow-lg shadow-slate-900/10 dark:shadow-white/10 transition-all hover:scale-[1.02] active:scale-[0.98] group"
+          >
+            <span>See All Reviews</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            Filtered by star ratings, candidate roles & recruitment teams
+          </span>
+        </div>
+      </div>
     </section>
   );
 }

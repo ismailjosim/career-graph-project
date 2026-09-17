@@ -5,7 +5,7 @@ import { AnalyticsEvent, JobPosting } from "@/lib/models";
 import { getSessionUser } from "@/lib/server-auth";
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -46,7 +46,9 @@ export async function POST(
         sourcePlatform: updatedJob.sourcePlatform,
         targetUrl: updatedJob.originalJobUrl,
       },
-    }).catch((err) => console.warn("Failed to log click analytics event:", err));
+    }).catch((err) =>
+      console.warn("Failed to log click analytics event:", err),
+    );
 
     return NextResponse.json({
       success: true,

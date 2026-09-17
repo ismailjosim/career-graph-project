@@ -12,25 +12,31 @@ export async function GET() {
 
     await connectDB();
 
-    const [myJobs, activeCount, closedCount, aggregatesRaw] = await Promise.all([
-      JobPosting.find({ postedBy: user.id })
-        .sort({ createdAt: -1 })
-        .limit(6)
-        .lean(),
-      JobPosting.countDocuments({ postedBy: user.id, status: "active" }),
-      JobPosting.countDocuments({ postedBy: user.id, status: "closed" }),
-      JobPosting.aggregate<{ totalViews: number; totalApplicants: number; totalClicks: number }>([
-        { $match: { postedBy: user.id } },
-        {
-          $group: {
-            _id: null,
-            totalViews: { $sum: { $ifNull: ["$viewsCount", 0] } },
-            totalApplicants: { $sum: { $ifNull: ["$applicantsCount", 0] } },
-            totalClicks: { $sum: { $ifNull: ["$externalClicksCount", 0] } },
+    const [myJobs, activeCount, closedCount, aggregatesRaw] = await Promise.all(
+      [
+        JobPosting.find({ postedBy: user.id })
+          .sort({ createdAt: -1 })
+          .limit(6)
+          .lean(),
+        JobPosting.countDocuments({ postedBy: user.id, status: "active" }),
+        JobPosting.countDocuments({ postedBy: user.id, status: "closed" }),
+        JobPosting.aggregate<{
+          totalViews: number;
+          totalApplicants: number;
+          totalClicks: number;
+        }>([
+          { $match: { postedBy: user.id } },
+          {
+            $group: {
+              _id: null,
+              totalViews: { $sum: { $ifNull: ["$viewsCount", 0] } },
+              totalApplicants: { $sum: { $ifNull: ["$applicantsCount", 0] } },
+              totalClicks: { $sum: { $ifNull: ["$externalClicksCount", 0] } },
+            },
           },
-        },
-      ]),
-    ]);
+        ]),
+      ],
+    );
 
     const totalViews = aggregatesRaw[0]?.totalViews || 0;
     const totalApplicants = aggregatesRaw[0]?.totalApplicants || 0;

@@ -7,6 +7,8 @@ export const resumeSchema = z.object({
   name: z.string().min(1, "Resume name is required"),
   fileName: z.string(),
   fileUrl: z.string().url(),
+  cloudinaryPublicId: z.string().optional(),
+  fileSize: z.number().optional(),
   uploadedAt: z.date().default(() => new Date()),
   isDefault: z.boolean().default(false),
   rawText: z.string().optional(),
@@ -186,6 +188,7 @@ export const updateUserProfileSchema = z.object({
   role: z.enum(USER_ROLES).optional(),
   status: z.enum(USER_STATUSES).optional(),
   emailVerified: z.boolean().optional(),
+  image: z.string().url().or(z.literal("")).optional(),
   phone: z.string().optional(),
   location: z.string().optional(),
   headline: z.string().optional(), // Target job title e.g. "Senior Full Stack Engineer"

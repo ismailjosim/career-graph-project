@@ -181,7 +181,7 @@ export function JobCard({
             {job.requirements.slice(0, 4).map((req) => (
               <span
                 key={req}
-                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 truncate max-w-[140px]"
+                className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 truncate max-w-35"
               >
                 {req}
               </span>

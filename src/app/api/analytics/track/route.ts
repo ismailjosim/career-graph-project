@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
 
     if (!validated.success) {
       return NextResponse.json(
-        { error: "Invalid analytics payload", details: validated.error.format() },
+        {
+          error: "Invalid analytics payload",
+          details: validated.error.format(),
+        },
         { status: 400 },
       );
     }

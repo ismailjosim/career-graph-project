@@ -130,7 +130,7 @@ export function EditProfileForm({
 
       {/* Overall Years of Experience Range */}
       <div>
-        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 items-center gap-1.5">
           <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
           <span>Total Years of Experience (Industry Range)</span>
         </label>

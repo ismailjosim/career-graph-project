@@ -58,18 +58,33 @@ export async function GET() {
       userCollection.countDocuments(),
       userCollection
         .aggregate<{ _id: string; count: number }>([
-          { $group: { _id: { $ifNull: ["$role", "job_seeker"] }, count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: { $ifNull: ["$role", "job_seeker"] },
+              count: { $sum: 1 },
+            },
+          },
         ])
         .toArray(),
       userCollection
         .aggregate<{ _id: string; count: number }>([
-          { $group: { _id: { $ifNull: ["$status", "active"] }, count: { $sum: 1 } } },
+          {
+            $group: {
+              _id: { $ifNull: ["$status", "active"] },
+              count: { $sum: 1 },
+            },
+          },
         ])
         .toArray(),
       userCollection.countDocuments({ emailVerified: true }),
       userCollection
         .aggregate<{ totalTokens: number }>([
-          { $group: { _id: null, totalTokens: { $sum: { $ifNull: ["$tokens", 50] } } } },
+          {
+            $group: {
+              _id: null,
+              totalTokens: { $sum: { $ifNull: ["$tokens", 50] } },
+            },
+          },
         ])
         .toArray(),
 
@@ -99,7 +114,9 @@ export async function GET() {
       JobPosting.find()
         .sort({ externalClicksCount: -1, viewsCount: -1 })
         .limit(6)
-        .select("title company sourcePlatform location workplaceType externalClicksCount viewsCount applicantsCount originalJobUrl")
+        .select(
+          "title company sourcePlatform location workplaceType externalClicksCount viewsCount applicantsCount originalJobUrl",
+        )
         .lean(),
 
       // 4. AI Tool & Feature Generation Counts
@@ -230,7 +247,10 @@ export async function GET() {
     const timelineData = Array.from({ length: 14 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (13 - i));
-      const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const dateStr = d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
       return {
         date: dateStr,
         users: Math.max(1, Math.round(totalUsers / 14 + (i % 3))),

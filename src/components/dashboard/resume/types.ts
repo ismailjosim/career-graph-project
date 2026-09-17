@@ -4,6 +4,8 @@ export interface ResumeFormData {
   name: string;
   fileName: string;
   fileUrl: string;
+  cloudinaryPublicId?: string;
+  fileSize?: number;
 }
 
 export interface ResumeHeaderProps {

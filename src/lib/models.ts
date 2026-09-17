@@ -18,6 +18,8 @@ const resumeSchema = new mongoose.Schema<IResume>(
     name: { type: String, required: true },
     fileName: { type: String, required: true },
     fileUrl: { type: String, required: true },
+    cloudinaryPublicId: { type: String },
+    fileSize: { type: Number },
     uploadedAt: { type: Date, default: Date.now },
     isDefault: { type: Boolean, default: false },
     rawText: { type: String },
@@ -434,4 +436,3 @@ const analyticsEventSchema = new mongoose.Schema<IAnalyticsEvent>(
 export const AnalyticsEvent =
   mongoose.models.AnalyticsEvent ||
   mongoose.model<IAnalyticsEvent>("AnalyticsEvent", analyticsEventSchema);
-

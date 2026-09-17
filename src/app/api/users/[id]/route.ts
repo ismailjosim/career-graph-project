@@ -275,6 +275,9 @@ export async function PUT(
     if (validatedData.emailVerified !== undefined) {
       updatePayload.emailVerified = validatedData.emailVerified;
     }
+    if (validatedData.image !== undefined) {
+      updatePayload.image = validatedData.image;
+    }
     if (validatedData.phone !== undefined)
       updatePayload.phone = validatedData.phone;
     if (validatedData.location !== undefined)

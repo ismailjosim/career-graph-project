@@ -8,6 +8,7 @@ export * from "./ProfileLoading";
 export * from "./ProfileOnboardingBanner";
 export * from "./ProfileOverviewCard";
 export * from "./ProfileResumesCard";
+export * from "./ProfileReviewCard";
 export * from "./ProfileStatsGrid";
 export * from "./TechnicalSkillsSection";
 export * from "./types";

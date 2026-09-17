@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Briefcase, ExternalLink, Eye, MousePointerClick } from "lucide-react";
+import { ArrowUpRight, ExternalLink, MousePointerClick } from "lucide-react";
 import Link from "next/link";
 import type { AdminTopJob } from "./types";
 
@@ -31,7 +31,8 @@ export function AdminTopJobsTable({ jobs = [] }: AdminTopJobsTableProps) {
             <span>Top Performing Jobs by External Clicks</span>
           </h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Post-level engagement metrics tracking outbound candidate traffic to hiring boards
+            Post-level engagement metrics tracking outbound candidate traffic to
+            hiring boards
           </p>
         </div>
         <Link
@@ -128,7 +129,10 @@ export function AdminTopJobsTable({ jobs = [] }: AdminTopJobsTableProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-400 italic">
+                <td
+                  colSpan={7}
+                  className="py-8 text-center text-slate-400 italic"
+                >
                   No job postings with tracked clicks yet.
                 </td>
               </tr>

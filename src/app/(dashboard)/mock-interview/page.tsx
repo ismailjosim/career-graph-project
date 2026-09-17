@@ -7,12 +7,9 @@ import {
   Bot,
   Briefcase,
   CheckCircle2,
-  Clock,
   FileCheck,
-  Headphones,
   Mic,
   Play,
-  RotateCcw,
   Sparkles,
   TrendingUp,
   Volume2,
@@ -233,11 +230,11 @@ export default function MockInterviewPage() {
 
         {activeTab === "preview" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {featureHighlights.map((feature, idx) => {
+            {featureHighlights.map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
-                  key={idx}
+                  key={feature.title}
                   className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all space-y-3 group"
                 >
                   <div
@@ -380,7 +377,7 @@ export default function MockInterviewPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {roadmapSteps.map((step, idx) => (
             <div
-              key={idx}
+              key={step.title}
               className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2 relative"
             >
               <div className="flex items-center justify-between">

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { deleteFromCloudinary, extractPublicIdFromUrl } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
@@ -97,14 +98,22 @@ export async function DELETE(
     await connectDB();
 
     const { id } = await params;
-    const result = await Resume.deleteOne({
-      _id: id,
-      userId,
-    });
+    const resume = await Resume.findOne({ _id: id, userId });
 
-    if (result.deletedCount === 0) {
+    if (!resume) {
       return NextResponse.json({ error: "Resume not found" }, { status: 404 });
     }
+
+    const publicId =
+      resume.cloudinaryPublicId || extractPublicIdFromUrl(resume.fileUrl);
+    if (publicId) {
+      deleteFromCloudinary(publicId, "raw").catch(() => {
+        // Retry as image resource type just in case
+        deleteFromCloudinary(publicId, "image").catch(() => {});
+      });
+    }
+
+    await Resume.deleteOne({ _id: id, userId });
 
     return NextResponse.json({ message: "Resume deleted successfully" });
   } catch (error) {

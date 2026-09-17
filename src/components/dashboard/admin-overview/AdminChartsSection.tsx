@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, BarChart3, PieChart, Sparkles } from "lucide-react";
+import { Activity, Sparkles } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   Area,
@@ -9,13 +9,16 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-import type { AdminAiMetrics, AdminJobMetrics, AdminTimelinePoint } from "./types";
+import type {
+  AdminAiMetrics,
+  AdminJobMetrics,
+  AdminTimelinePoint,
+} from "./types";
 
 interface AdminChartsSectionProps {
   timeline: AdminTimelinePoint[];
@@ -34,7 +37,11 @@ export function AdminChartsSection({
   // Data for AI Tools Distribution Bar Chart
   const aiDistributionData = [
     { name: "Fit Analysis", count: aiTools.fitAnalysisRuns, color: "#6366f1" },
-    { name: "Cover Letters", count: aiTools.coverLettersGenerated, color: "#3b82f6" },
+    {
+      name: "Cover Letters",
+      count: aiTools.coverLettersGenerated,
+      color: "#3b82f6",
+    },
     { name: "ATS Scans", count: aiTools.atsChecksRuns, color: "#10b981" },
   ];
 
@@ -43,7 +50,11 @@ export function AdminChartsSection({
     { name: "Direct", count: jobs.bySource.direct || 0, color: "#6366f1" },
     { name: "LinkedIn", count: jobs.bySource.linkedin || 0, color: "#0077b5" },
     { name: "Indeed", count: jobs.bySource.indeed || 0, color: "#2164f3" },
-    { name: "Glassdoor/Other", count: (jobs.bySource.glassdoor || 0) + (jobs.bySource.other || 0), color: "#0caa41" },
+    {
+      name: "Glassdoor/Other",
+      count: (jobs.bySource.glassdoor || 0) + (jobs.bySource.other || 0),
+      color: "#0caa41",
+    },
   ];
 
   return (
@@ -63,18 +74,25 @@ export function AdminChartsSection({
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-indigo-500 inline-block" />
-              <span className="text-slate-600 dark:text-slate-400 font-medium">Applications</span>
+              <span className="text-slate-600 dark:text-slate-400 font-medium">
+                Applications
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-purple-500 inline-block" />
-              <span className="text-slate-600 dark:text-slate-400 font-medium">Clicks</span>
+              <span className="text-slate-600 dark:text-slate-400 font-medium">
+                Clicks
+              </span>
             </div>
           </div>
         </div>
 
         <div className="w-full h-64 sm:h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart
+              data={timeline}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="appGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -150,8 +168,16 @@ export function AdminChartsSection({
 
         <div className="w-full h-48 sm:h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={aiDistributionData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDark ? "#334155" : "#f1f5f9"} />
+            <BarChart
+              data={aiDistributionData}
+              layout="vertical"
+              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke={isDark ? "#334155" : "#f1f5f9"}
+              />
               <XAxis type="number" hide />
               <YAxis
                 type="category"

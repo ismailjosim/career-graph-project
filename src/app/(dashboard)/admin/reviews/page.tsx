@@ -477,7 +477,7 @@ export default function AdminReviewsPage() {
                   <th className="px-5 py-3.5">Reviewer</th>
                   <th className="px-4 py-3.5">Role</th>
                   <th className="px-4 py-3.5">Rating & Outcome</th>
-                  <th className="px-5 py-3.5 min-w-[280px]">Review Quote</th>
+                  <th className="px-5 py-3.5 min-w-70">Review Quote</th>
                   <th className="px-4 py-3.5">Status</th>
                   <th className="px-5 py-3.5 text-right">Moderation Actions</th>
                 </tr>
@@ -504,10 +504,10 @@ export default function AdminReviewsPage() {
                       {/* Column 1: Reviewer Info */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                          <div className="w-9 h-9 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
                             {initials}
                           </div>
-                          <div className="min-w-0 max-w-[170px]">
+                          <div className="min-w-0 max-w-42.5">
                             <div className="font-semibold text-slate-900 dark:text-white truncate">
                               {rev.authorName}
                             </div>
@@ -562,7 +562,7 @@ export default function AdminReviewsPage() {
                             </span>
                           </div>
                           {rev.verifiedOutcome && (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium truncate max-w-[190px]">
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium truncate max-w-47.5">
                               <ShieldCheck className="w-3 h-3 shrink-0 text-emerald-500" />
                               <span className="truncate">
                                 {rev.verifiedOutcome}
@@ -767,9 +767,14 @@ export default function AdminReviewsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Rating:</span>
                 <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(detailModalReview.rating)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                  ))}
+                  {[1, 2, 3, 4, 5]
+                    .slice(0, detailModalReview.rating)
+                    .map((starNum) => (
+                      <Star
+                        key={`detail-star-${starNum}`}
+                        className="w-3.5 h-3.5 fill-amber-400"
+                      />
+                    ))}
                   <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">
                     {detailModalReview.rating}.0
                   </span>
