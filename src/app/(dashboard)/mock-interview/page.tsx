@@ -63,28 +63,32 @@ const featureHighlights = [
     title: "Voice-Powered Simulation",
     description:
       "Practice vocal responses naturally with low-latency audio processing and realistic conversational pauses.",
-    accent: "from-blue-500/20 to-indigo-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50",
+    accent:
+      "from-blue-500/20 to-indigo-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50",
   },
   {
     icon: Award,
     title: "STAR Method Diagnostics",
     description:
       "Real-time heuristic evaluation measuring your Situation clarity, Task definition, Action specifics, and Result metrics.",
-    accent: "from-amber-500/20 to-orange-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50",
+    accent:
+      "from-amber-500/20 to-orange-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50",
   },
   {
     icon: TrendingUp,
     title: "Speech & Pacing Analytics",
     description:
       "Pinpoint filler words (um, like, actually), monitor words-per-minute pace, and gauge tone confidence.",
-    accent: "from-emerald-500/20 to-teal-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50",
+    accent:
+      "from-emerald-500/20 to-teal-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50",
   },
   {
     icon: Briefcase,
     title: "Targeted Job Persona",
     description:
       "Calibrate the interviewer persona to FAANG, high-growth startups, or enterprise leadership standards.",
-    accent: "from-purple-500/20 to-pink-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50",
+    accent:
+      "from-purple-500/20 to-pink-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/50",
   },
 ];
 
@@ -104,7 +108,9 @@ export default function MockInterviewPage() {
     }
 
     setSubscribed(true);
-    toast.success("You're on the VIP waitlist! We'll notify you when early access opens.");
+    toast.success(
+      "You're on the VIP waitlist! We'll notify you when early access opens.",
+    );
   };
 
   const toggleAudioDemo = () => {
@@ -132,11 +138,17 @@ export default function MockInterviewPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            AI Mock Interview <span className="bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Simulator</span>
+            AI Mock Interview{" "}
+            <span className="bg-linear-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Simulator
+            </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-            Practice realistic, voice-powered mock interviews tailored to your target role. Receive instant STAR-method scorecards, pacing diagnostics, and actionable feedback before the actual high-stakes call.
+            Practice realistic, voice-powered mock interviews tailored to your
+            target role. Receive instant STAR-method scorecards, pacing
+            diagnostics, and actionable feedback before the actual high-stakes
+            call.
           </p>
 
           {/* Waitlist Form */}
@@ -144,16 +156,25 @@ export default function MockInterviewPage() {
             {subscribed ? (
               <div className="inline-flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-medium text-sm">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                <span>You're registered for VIP early access! We will email you priority credentials.</span>
+                <span>
+                  You're registered for VIP early access! We will email you
+                  priority credentials.
+                </span>
               </div>
             ) : (
-              <form onSubmit={handleNotifySubmit} className="flex flex-col sm:flex-row gap-2.5 max-w-md">
+              <form
+                onSubmit={handleNotifySubmit}
+                className="flex flex-col sm:flex-row gap-2.5 max-w-md"
+              >
                 <div className="relative flex-1">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={session?.user?.email || "Enter your email for early access"}
+                    placeholder={
+                      session?.user?.email ||
+                      "Enter your email for early access"
+                    }
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm"
                   />
                 </div>
@@ -167,7 +188,8 @@ export default function MockInterviewPage() {
               </form>
             )}
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Early testers receive 50 complimentary interview coaching tokens upon launch.
+              Early testers receive 50 complimentary interview coaching tokens
+              upon launch.
             </p>
           </div>
         </div>
@@ -218,7 +240,9 @@ export default function MockInterviewPage() {
                   key={idx}
                   className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all space-y-3 group"
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border bg-linear-to-br ${feature.accent}`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center border bg-linear-to-br ${feature.accent}`}
+                  >
                     <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
                   </div>
                   <h3 className="text-base font-semibold text-slate-900 dark:text-white">
@@ -260,7 +284,8 @@ export default function MockInterviewPage() {
                 >
                   {isPlayingDemo ? (
                     <>
-                      <Volume2 className="w-4 h-4 animate-pulse" /> Playing Question Audio...
+                      <Volume2 className="w-4 h-4 animate-pulse" /> Playing
+                      Question Audio...
                     </>
                   ) : (
                     <>
@@ -278,7 +303,9 @@ export default function MockInterviewPage() {
                   Question 3 of 5 • Behavioral & Problem Solving
                 </span>
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
-                  "Tell me about a time when a critical production pipeline failed. How did you diagnose the root cause, communicate with stakeholders, and prevent recurrence?"
+                  "Tell me about a time when a critical production pipeline
+                  failed. How did you diagnose the root cause, communicate with
+                  stakeholders, and prevent recurrence?"
                 </p>
               </div>
 
@@ -289,24 +316,48 @@ export default function MockInterviewPage() {
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40">
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Situation</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">92 / 100</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Clear blast-radius context</p>
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      Situation
+                    </span>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                      92 / 100
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Clear blast-radius context
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40">
-                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">Task</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">88 / 100</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Explicit ownership defined</p>
+                    <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                      Task
+                    </span>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                      88 / 100
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Explicit ownership defined
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/40">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">Action</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">95 / 100</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Strong technical isolation</p>
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                      Action
+                    </span>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                      95 / 100
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Strong technical isolation
+                    </p>
                   </div>
                   <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40">
-                    <span className="text-xs font-bold text-purple-600 dark:text-purple-400">Result</span>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">85 / 100</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Add MTTR percentage metrics</p>
+                    <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                      Result
+                    </span>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
+                      85 / 100
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Add MTTR percentage metrics
+                    </p>
                   </div>
                 </div>
               </div>
@@ -338,13 +389,15 @@ export default function MockInterviewPage() {
                     step.status === "completed"
                       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                       : step.status === "in_progress"
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
-                      : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                        : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
                   }`}
                 >
                   {step.tag}
                 </span>
-                <span className="text-xs font-semibold text-slate-400">0{idx + 1}</span>
+                <span className="text-xs font-semibold text-slate-400">
+                  0{idx + 1}
+                </span>
               </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 {step.title}
@@ -364,7 +417,8 @@ export default function MockInterviewPage() {
             Prepare Your Resume in the Meantime
           </h3>
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Use our AI ATS Checker or Job Fit Analyzer to ensure your application materials are fully optimized for recruiter screening.
+            Use our AI ATS Checker or Job Fit Analyzer to ensure your
+            application materials are fully optimized for recruiter screening.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 shrink-0">

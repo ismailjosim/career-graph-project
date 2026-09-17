@@ -52,6 +52,7 @@ export const auth = betterAuth({
       headline: { type: "string", required: false },
       bio: { type: "string", required: false },
       skills: { type: "string", required: false },
+      technicalSkills: { type: "string", required: false },
       website: { type: "string", required: false },
       linkedin: { type: "string", required: false },
       experience: { type: "string", required: false },

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Review } from "@/lib/models";
 import { getSessionUser } from "@/lib/server-auth";
@@ -13,7 +13,10 @@ export async function GET(req: NextRequest) {
     const user = await getSessionUser();
     if (!user || (user.role !== "admin" && user.role !== "super_admin")) {
       return NextResponse.json(
-        { success: false, error: "Access denied. Admin authorization required." },
+        {
+          success: false,
+          error: "Access denied. Admin authorization required.",
+        },
         { status: 403 },
       );
     }
@@ -33,13 +36,20 @@ export async function GET(req: NextRequest) {
 
     const filter: Record<string, unknown> = {};
 
-    if (roleParam !== "all" && REVIEW_ROLES.includes(roleParam as unknown as typeof REVIEW_ROLES[number])) {
+    if (
+      roleParam !== "all" &&
+      REVIEW_ROLES.includes(
+        roleParam as unknown as (typeof REVIEW_ROLES)[number],
+      )
+    ) {
       filter.role = roleParam;
     }
 
     if (
       statusParam !== "all" &&
-      REVIEW_STATUSES.includes(statusParam as unknown as typeof REVIEW_STATUSES[number])
+      REVIEW_STATUSES.includes(
+        statusParam as unknown as (typeof REVIEW_STATUSES)[number],
+      )
     ) {
       filter.status = statusParam;
     }

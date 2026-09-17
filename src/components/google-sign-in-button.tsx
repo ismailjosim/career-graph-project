@@ -46,7 +46,7 @@ export function GoogleSignInButton({
       type="button"
       onClick={handleGoogleSignIn}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-750 transition-all active:scale-98 shadow-sm hover:shadow cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+      className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-100 font-medium hover:text-slate-900 dark:hover:text-white transition-all duration-200 active:scale-[0.98] shadow-xs hover:shadow-md cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed select-none"
     >
       {loading ? (
         <div className="w-5 h-5 border-2 border-slate-400 border-t-blue-600 rounded-full animate-spin" />

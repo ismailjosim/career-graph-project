@@ -143,6 +143,43 @@ export const updateUserRoleSchema = z.object({
   role: z.enum(USER_ROLES),
 });
 
+// Experience Ranges (Industry Standard)
+export const EXPERIENCE_RANGES = [
+  "0 - 1 year",
+  "1 - 3 years",
+  "3 - 5 years",
+  "5 - 7 years",
+  "7 - 10 years",
+  "10+ years",
+] as const;
+export type ExperienceRange = (typeof EXPERIENCE_RANGES)[number];
+
+// Structured Education Entry Schema
+export const educationEntrySchema = z.object({
+  id: z.string().optional(),
+  institution: z.string().min(1, "Institution name is required"),
+  degree: z.string().min(1, "Degree / Qualification is required"),
+  fieldOfStudy: z.string().optional().default(""),
+  startYear: z.string().optional().default(""),
+  endYear: z.string().optional().default(""),
+  credits: z.string().optional().default(""),
+  grade: z.string().optional().default(""),
+  activities: z.string().optional().default(""),
+});
+export type EducationEntry = z.infer<typeof educationEntrySchema>;
+
+// Structured Technical Skill with Years of Experience Schema
+export const technicalSkillSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Skill name is required"),
+  yearsOfExperience: z.union([z.string(), z.number()]),
+  proficiency: z
+    .enum(["beginner", "intermediate", "advanced", "expert"])
+    .optional()
+    .default("intermediate"),
+});
+export type TechnicalSkill = z.infer<typeof technicalSkillSchema>;
+
 export const updateUserProfileSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
   email: z.string().email("Invalid email address").optional(),
@@ -154,10 +191,13 @@ export const updateUserProfileSchema = z.object({
   headline: z.string().optional(), // Target job title e.g. "Senior Full Stack Engineer"
   bio: z.string().optional(), // Professional summary / pitch
   skills: z.union([z.array(z.string()), z.string()]).optional(),
+  technicalSkills: z
+    .union([z.array(technicalSkillSchema), z.string()])
+    .optional(),
   website: z.string().url().or(z.literal("")).optional(),
   linkedin: z.string().url().or(z.literal("")).optional(),
-  experience: z.string().optional(), // e.g. "5+ years building distributed React/Node apps"
-  education: z.string().optional(), // e.g. "B.S. in Computer Science"
+  experience: z.string().optional(), // e.g. "3 - 5 years"
+  education: z.union([z.array(educationEntrySchema), z.string()]).optional(),
   isProfileComplete: z.boolean().optional(),
 });
 
@@ -226,11 +266,33 @@ export const jobPostingSchema = z.object({
   status: z.enum(["active", "closed"]).default("active"),
   applicantsCount: z.number().default(0),
   viewsCount: z.number().default(0),
+  externalClicksCount: z.number().default(0),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
 });
 
 export type JobPosting = z.infer<typeof jobPostingSchema>;
+
+// Analytics Telemetry Schema
+export const ANALYTICS_EVENT_TYPES = [
+  "resume_download",
+  "resume_print",
+  "external_job_click",
+  "cover_letter_generated",
+  "fit_analysis_run",
+  "ats_check_run",
+] as const;
+export type AnalyticsEventType = (typeof ANALYTICS_EVENT_TYPES)[number];
+
+export const analyticsEventSchema = z.object({
+  _id: z.string().optional(),
+  eventType: z.enum(ANALYTICS_EVENT_TYPES),
+  userId: z.string().optional(),
+  resourceId: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  createdAt: z.date().default(() => new Date()),
+});
+export type AnalyticsEvent = z.infer<typeof analyticsEventSchema>;
 
 // Review Validation Schemas
 export const REVIEW_ROLES = ["job_seeker", "recruiter", "employer"] as const;
@@ -249,7 +311,11 @@ export const submitReviewSchema = z.object({
   role: z.enum(REVIEW_ROLES, {
     message: "Role must be job_seeker, recruiter, or employer",
   }),
-  rating: z.number().int().min(1, "Rating must be at least 1 star").max(5, "Rating cannot exceed 5 stars"),
+  rating: z
+    .number()
+    .int()
+    .min(1, "Rating must be at least 1 star")
+    .max(5, "Rating cannot exceed 5 stars"),
   content: z
     .string()
     .trim()

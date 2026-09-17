@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type {
+  AnalyticsEvent as IAnalyticsEvent,
   CoverLetter as ICoverLetter,
   JobApplication as IJobApplication,
   JobMarket as IJobMarket,
@@ -294,6 +295,7 @@ const jobPostingSchema = new mongoose.Schema<IJobPosting>(
     },
     applicantsCount: { type: Number, default: 0 },
     viewsCount: { type: Number, default: 0 },
+    externalClicksCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );
@@ -404,3 +406,32 @@ reviewSchema.index({ status: 1, role: 1, createdAt: -1 });
 
 export const Review =
   mongoose.models.Review || mongoose.model<IReview>("Review", reviewSchema);
+
+// Analytics Event Model (telemetry tracking for prints, downloads, and outbound clicks)
+const analyticsEventSchema = new mongoose.Schema<IAnalyticsEvent>(
+  {
+    eventType: {
+      type: String,
+      required: true,
+      enum: [
+        "resume_download",
+        "resume_print",
+        "external_job_click",
+        "cover_letter_generated",
+        "fit_analysis_run",
+        "ats_check_run",
+      ],
+      index: true,
+    },
+    userId: { type: String, index: true },
+    resourceId: { type: String, index: true },
+    metadata: { type: mongoose.Schema.Types.Mixed },
+    createdAt: { type: Date, default: Date.now, index: true },
+  },
+  { timestamps: true },
+);
+
+export const AnalyticsEvent =
+  mongoose.models.AnalyticsEvent ||
+  mongoose.model<IAnalyticsEvent>("AnalyticsEvent", analyticsEventSchema);
+

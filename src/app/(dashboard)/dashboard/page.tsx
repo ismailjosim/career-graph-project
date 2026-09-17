@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Eye, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AdminDashboardOverview } from "@/components/dashboard/admin-overview";
 import {
   AddApplicationModal,
   buildMetricsChartData,
@@ -13,9 +15,35 @@ import {
   QuickInsightsCard,
   RecentApplicationsTable,
 } from "@/components/dashboard/overview";
+import { RecruiterDashboardOverview } from "@/components/dashboard/recruiter-overview";
 import { useJobApplications, useMonthlyStats } from "@/hooks/useApi";
+import { useSession } from "@/lib/auth-client";
+import type { UserRole } from "@/lib/validation";
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+  const [adminViewMode, setAdminViewMode] = useState<"admin" | "candidate">("admin");
+
+  // Fetch verified role
+  useEffect(() => {
+    if (session?.user) {
+      fetch("/api/users/me")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user?.role) {
+            setUserRole(data.user.role as UserRole);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setRoleLoading(false));
+    } else {
+      setRoleLoading(false);
+    }
+  }, [session]);
+
+  // Candidate Data Hooks
   const {
     applications,
     loading: appLoading,
@@ -33,13 +61,11 @@ export default function DashboardPage() {
     [applications],
   );
 
-  // Chart data 1: Current Metric Breakdown
   const metricsChartData = useMemo(
     () => buildMetricsChartData(metrics),
     [metrics],
   );
 
-  // Chart data 2: 6-Month Timeline Performance
   const timelineChartData = useMemo(
     () => buildTimelineChartData(applications),
     [applications],
@@ -50,12 +76,51 @@ export default function DashboardPage() {
     await refreshStats();
   };
 
-  if (appLoading) {
+  if (roleLoading) {
     return <DashboardLoading />;
   }
 
+  // 1. Admin & Super Admin Perspective
+  const isAdminUser = userRole === "admin" || userRole === "super_admin";
+
+  if (isAdminUser && adminViewMode === "admin") {
+    return (
+      <AdminDashboardOverview
+        viewMode="admin"
+        onToggleViewMode={() => setAdminViewMode("candidate")}
+      />
+    );
+  }
+
+  // 2. Recruiter & Employer Perspective
+  const isRecruiterUser = userRole === "recruiter" || userRole === "employer";
+  if (isRecruiterUser) {
+    return <RecruiterDashboardOverview />;
+  }
+
+  // 3. Job Seeker (Candidate) Perspective (or Admin previewing candidate)
   return (
-    <div className="w-full space-y-8 animate-fade-in">
+    <div className="w-full space-y-8 animate-fade-in pb-16">
+      {/* Admin Preview Notice Bar */}
+      {isAdminUser && (
+        <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-200 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Eye className="w-4 h-4 text-amber-600" />
+            <span className="font-semibold">
+              Admin Mode: Currently Previewing Candidate Overview Experience
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAdminViewMode("admin")}
+            className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Return to Admin Command Center</span>
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <DashboardOverviewHeader
         totalApplications={metrics.total}

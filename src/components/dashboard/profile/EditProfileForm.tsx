@@ -1,9 +1,16 @@
-import { Loader2, Pencil, Save, X } from "lucide-react";
+import { Briefcase, Loader2, Pencil, Save, X } from "lucide-react";
+import { EXPERIENCE_RANGES } from "@/lib/validation";
+import { CoreSkillsSelect } from "./CoreSkillsSelect";
+import { EducationFormSection } from "./EducationFormSection";
+import { TechnicalSkillsSection } from "./TechnicalSkillsSection";
 import type { ProfileFormData } from "./types";
 
 interface EditProfileFormProps {
   formData: ProfileFormData;
-  onChange: (field: keyof ProfileFormData, value: string) => void;
+  onChange: <K extends keyof ProfileFormData>(
+    field: K,
+    value: ProfileFormData[K],
+  ) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
   saving: boolean;
@@ -16,10 +23,17 @@ export function EditProfileForm({
   onCancel,
   saving,
 }: EditProfileFormProps) {
+  // Check if current experience matches one of the preset ranges
+  const isCustomExperience =
+    formData.experience &&
+    !EXPERIENCE_RANGES.includes(
+      formData.experience as (typeof EXPERIENCE_RANGES)[number],
+    );
+
   return (
     <form
       onSubmit={onSubmit}
-      className="card p-6 sm:p-8 bg-white dark:bg-slate-900 border-2 border-indigo-500/50 shadow-lg rounded-2xl space-y-5 animate-in fade-in"
+      className="card p-6 sm:p-8 bg-white dark:bg-slate-900 border-2 border-indigo-500/50 shadow-lg rounded-2xl space-y-6 animate-in fade-in"
     >
       <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
@@ -37,10 +51,11 @@ export function EditProfileForm({
         </button>
       </div>
 
+      {/* Identity & Target Headline */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            Full Name
+            Full Name *
           </label>
           <input
             type="text"
@@ -69,6 +84,7 @@ export function EditProfileForm({
         </div>
       </div>
 
+      {/* Contact & Location */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
@@ -97,6 +113,7 @@ export function EditProfileForm({
         </div>
       </div>
 
+      {/* Professional Pitch / Summary */}
       <div>
         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
           Professional Summary & Cover Letter Pitch *
@@ -111,76 +128,106 @@ export function EditProfileForm({
         />
       </div>
 
+      {/* Overall Years of Experience Range */}
       <div>
-        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-          Core Skills (Comma separated)
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
+          <span>Total Years of Experience (Industry Range)</span>
         </label>
-        <input
-          type="text"
-          placeholder="React, TypeScript, Next.js, Node.js, MongoDB, Tailwind CSS"
-          value={formData.skills}
-          onChange={(e) => onChange("skills", e.target.value)}
-          className="input text-xs sm:text-sm"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+          <select
+            value={
+              isCustomExperience
+                ? "custom"
+                : formData.experience || "0 - 1 year"
+            }
+            onChange={(e) => {
+              if (e.target.value !== "custom") {
+                onChange("experience", e.target.value);
+              }
+            }}
+            className="input text-xs sm:text-sm cursor-pointer"
+          >
+            {EXPERIENCE_RANGES.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+            <option value="custom">Custom / Other format...</option>
+          </select>
+
+          {isCustomExperience && (
+            <input
+              type="text"
+              placeholder="e.g. 12+ years in distributed systems"
+              value={formData.experience}
+              onChange={(e) => onChange("experience", e.target.value)}
+              className="input text-xs sm:text-sm"
+            />
+          )}
+        </div>
+        <p className="text-[10px] text-slate-400 mt-1">
+          Standardized experience brackets match recruiter filtering criteria on
+          top job boards.
+        </p>
+      </div>
+
+      {/* Core Skills (Powered by react-select with maximum limit) */}
+      <CoreSkillsSelect
+        skills={formData.skills}
+        onChange={(skills) => onChange("skills", skills)}
+        maxSkills={15}
+      />
+
+      {/* Technical Skills with Years of Experience */}
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <TechnicalSkillsSection
+          skills={formData.technicalSkills}
+          onChange={(skills) => onChange("technicalSkills", skills)}
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            LinkedIn Profile URL
-          </label>
-          <input
-            type="url"
-            placeholder="https://linkedin.com/in/username"
-            value={formData.linkedin}
-            onChange={(e) => onChange("linkedin", e.target.value)}
-            className="input text-xs sm:text-sm"
-          />
-        </div>
+      {/* Expanded Education Section */}
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <EducationFormSection
+          education={formData.education}
+          onChange={(education) => onChange("education", education)}
+        />
+      </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            Personal Portfolio / Website
-          </label>
-          <input
-            type="url"
-            placeholder="https://myportfolio.com"
-            value={formData.website}
-            onChange={(e) => onChange("website", e.target.value)}
-            className="input text-xs sm:text-sm"
-          />
+      {/* Online Profiles & Links */}
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+              LinkedIn Profile URL
+            </label>
+            <input
+              type="url"
+              placeholder="https://linkedin.com/in/username"
+              value={formData.linkedin}
+              onChange={(e) => onChange("linkedin", e.target.value)}
+              className="input text-xs sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+              Personal Portfolio / Website
+            </label>
+            <input
+              type="url"
+              placeholder="https://myportfolio.com"
+              value={formData.website}
+              onChange={(e) => onChange("website", e.target.value)}
+              className="input text-xs sm:text-sm"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            Years of Experience / Background
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. 5+ years in product development"
-            value={formData.experience}
-            onChange={(e) => onChange("experience", e.target.value)}
-            className="input text-xs sm:text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            Education / Degree
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. B.S. in Computer Science"
-            value={formData.education}
-            onChange={(e) => onChange("education", e.target.value)}
-            className="input text-xs sm:text-sm"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-200 dark:border-slate-800">
+      {/* Form Action Controls */}
+      <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-200 dark:border-slate-800">
         <button
           type="button"
           onClick={onCancel}

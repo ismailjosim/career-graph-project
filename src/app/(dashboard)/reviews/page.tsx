@@ -1,25 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import {
-  Star,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Trash2,
-  Eye,
-  Search,
-  UserCheck,
+  ArrowLeft,
   Briefcase,
   Building2,
-  ShieldCheck,
-  ShieldAlert,
+  CheckCircle2,
+  Clock,
+  Eye,
   Loader2,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
   Sparkles,
-  ArrowLeft,
+  Star,
+  Trash2,
+  UserCheck,
   X,
+  XCircle,
 } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import type { ReviewRole, ReviewStatus } from "@/lib/validation";
 
@@ -83,7 +83,8 @@ export default function AdminReviewsPage() {
 
   // Actions state
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [detailModalReview, setDetailModalReview] = useState<AdminReview | null>(null);
+  const [detailModalReview, setDetailModalReview] =
+    useState<AdminReview | null>(null);
   const [bannerMessage, setBannerMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -131,11 +132,17 @@ export default function AdminReviewsPage() {
         if (data.metrics) setMetrics(data.metrics);
         if (data.pagination) setTotalPages(data.pagination.totalPages || 1);
       } else {
-        setBannerMessage({ type: "error", text: data.error || "Failed to load reviews" });
+        setBannerMessage({
+          type: "error",
+          text: data.error || "Failed to load reviews",
+        });
       }
     } catch (err) {
       console.error("Failed to load admin reviews:", err);
-      setBannerMessage({ type: "error", text: "Network error loading reviews" });
+      setBannerMessage({
+        type: "error",
+        text: "Network error loading reviews",
+      });
     } finally {
       setLoading(false);
     }
@@ -148,7 +155,10 @@ export default function AdminReviewsPage() {
   }, [isAdmin, loadReviews]);
 
   // Handle status change (Approve, Reject, Feature, etc.)
-  const handleUpdateStatus = async (reviewId: string, newStatus: ReviewStatus) => {
+  const handleUpdateStatus = async (
+    reviewId: string,
+    newStatus: ReviewStatus,
+  ) => {
     setActionLoadingId(reviewId);
     try {
       const res = await fetch(`/api/admin/reviews/${reviewId}`, {
@@ -169,11 +179,13 @@ export default function AdminReviewsPage() {
 
       // Update in local state immediately
       setReviews((prev) =>
-        prev.map((r) => (r._id === reviewId ? { ...r, status: newStatus } : r))
+        prev.map((r) => (r._id === reviewId ? { ...r, status: newStatus } : r)),
       );
 
       if (detailModalReview?._id === reviewId) {
-        setDetailModalReview((prev) => (prev ? { ...prev, status: newStatus } : null));
+        setDetailModalReview((prev) =>
+          prev ? { ...prev, status: newStatus } : null,
+        );
       }
 
       // Re-fetch metrics in background
@@ -190,7 +202,8 @@ export default function AdminReviewsPage() {
 
   // Handle permanent delete
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to permanently delete this review?")) return;
+    if (!confirm("Are you sure you want to permanently delete this review?"))
+      return;
 
     setActionLoadingId(reviewId);
     try {
@@ -203,7 +216,10 @@ export default function AdminReviewsPage() {
         throw new Error(data.error || "Failed to delete review");
       }
 
-      setBannerMessage({ type: "success", text: "Review permanently deleted." });
+      setBannerMessage({
+        type: "success",
+        text: "Review permanently deleted.",
+      });
       setReviews((prev) => prev.filter((r) => r._id !== reviewId));
       if (detailModalReview?._id === reviewId) {
         setDetailModalReview(null);
@@ -224,7 +240,9 @@ export default function AdminReviewsPage() {
     return (
       <div className="py-24 text-center space-y-3">
         <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-        <p className="text-xs text-slate-500">Verifying administrative access...</p>
+        <p className="text-xs text-slate-500">
+          Verifying administrative access...
+        </p>
       </div>
     );
   }
@@ -268,7 +286,9 @@ export default function AdminReviewsPage() {
               Administration
             </span>
             <span>/</span>
-            <span className="text-blue-600 font-semibold">Feedback & Reviews</span>
+            <span className="text-blue-600 font-semibold">
+              Feedback & Reviews
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight font-space-grotesk">
             Feedback & Reviews Moderation
@@ -309,7 +329,9 @@ export default function AdminReviewsPage() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-space-grotesk">
             {metrics.total}
           </div>
-          <span className="text-[11px] text-slate-400">All-time submissions</span>
+          <span className="text-[11px] text-slate-400">
+            All-time submissions
+          </span>
         </div>
 
         {/* Pending Moderation */}
@@ -337,7 +359,9 @@ export default function AdminReviewsPage() {
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-space-grotesk">
             {metrics.approved}
           </div>
-          <span className="text-[11px] text-slate-400">Visible on landing page</span>
+          <span className="text-[11px] text-slate-400">
+            Visible on landing page
+          </span>
         </div>
 
         {/* Rejected Reviews */}
@@ -351,7 +375,9 @@ export default function AdminReviewsPage() {
           <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1 font-space-grotesk">
             {metrics.rejected}
           </div>
-          <span className="text-[11px] text-slate-400">Filtered from public</span>
+          <span className="text-[11px] text-slate-400">
+            Filtered from public
+          </span>
         </div>
 
         {/* Average Rating */}
@@ -538,7 +564,9 @@ export default function AdminReviewsPage() {
                           {rev.verifiedOutcome && (
                             <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium truncate max-w-[190px]">
                               <ShieldCheck className="w-3 h-3 shrink-0 text-emerald-500" />
-                              <span className="truncate">{rev.verifiedOutcome}</span>
+                              <span className="truncate">
+                                {rev.verifiedOutcome}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -597,7 +625,9 @@ export default function AdminReviewsPage() {
                           {/* Quick Approve Button */}
                           {!isApprovedReview && (
                             <button
-                              onClick={() => handleUpdateStatus(rev._id, "approved")}
+                              onClick={() =>
+                                handleUpdateStatus(rev._id, "approved")
+                              }
                               disabled={actionLoadingId === rev._id}
                               title="Approve Review"
                               className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 transition-colors"
@@ -609,7 +639,9 @@ export default function AdminReviewsPage() {
                           {/* Quick Reject Button */}
                           {!isRejectedReview && (
                             <button
-                              onClick={() => handleUpdateStatus(rev._id, "rejected")}
+                              onClick={() =>
+                                handleUpdateStatus(rev._id, "rejected")
+                              }
                               disabled={actionLoadingId === rev._id}
                               title="Reject Review"
                               className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 transition-colors"
@@ -623,11 +655,15 @@ export default function AdminReviewsPage() {
                             onClick={() =>
                               handleUpdateStatus(
                                 rev._id,
-                                isFeaturedReview ? "approved" : "featured"
+                                isFeaturedReview ? "approved" : "featured",
                               )
                             }
                             disabled={actionLoadingId === rev._id}
-                            title={isFeaturedReview ? "Unfeature" : "Mark as Featured"}
+                            title={
+                              isFeaturedReview
+                                ? "Unfeature"
+                                : "Mark as Featured"
+                            }
                             className={`p-1.5 rounded-lg border transition-colors ${
                               isFeaturedReview
                                 ? "bg-purple-600 text-white border-purple-600"
@@ -706,7 +742,8 @@ export default function AdminReviewsPage() {
                     {detailModalReview.authorName}
                   </h3>
                   <p className="text-[11px] text-slate-400">
-                    {detailModalReview.headline || "Member"} • ID: {detailModalReview.userId.slice(-6)}
+                    {detailModalReview.headline || "Member"} • ID:{" "}
+                    {detailModalReview.userId.slice(-6)}
                   </p>
                 </div>
               </div>
@@ -749,7 +786,9 @@ export default function AdminReviewsPage() {
               )}
 
               <div>
-                <span className="text-slate-500 block mb-1">Full Feedback:</span>
+                <span className="text-slate-500 block mb-1">
+                  Full Feedback:
+                </span>
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 leading-relaxed italic">
                   &ldquo;{detailModalReview.content}&rdquo;
                 </div>
@@ -757,7 +796,9 @@ export default function AdminReviewsPage() {
 
               {detailModalReview.tags && detailModalReview.tags.length > 0 && (
                 <div>
-                  <span className="text-slate-500 block mb-1">Tags Highlighted:</span>
+                  <span className="text-slate-500 block mb-1">
+                    Tags Highlighted:
+                  </span>
                   <div className="flex flex-wrap gap-1">
                     {detailModalReview.tags.map((t) => (
                       <span
@@ -772,21 +813,30 @@ export default function AdminReviewsPage() {
               )}
 
               <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <span>Submitted: {new Date(detailModalReview.createdAt).toLocaleString()}</span>
-                <span className="font-semibold capitalize">Status: {detailModalReview.status}</span>
+                <span>
+                  Submitted:{" "}
+                  {new Date(detailModalReview.createdAt).toLocaleString()}
+                </span>
+                <span className="font-semibold capitalize">
+                  Status: {detailModalReview.status}
+                </span>
               </div>
             </div>
 
             {/* Quick Action Footer */}
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
-                onClick={() => handleUpdateStatus(detailModalReview._id, "rejected")}
+                onClick={() =>
+                  handleUpdateStatus(detailModalReview._id, "rejected")
+                }
                 className="px-3 py-1.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold"
               >
                 Reject
               </button>
               <button
-                onClick={() => handleUpdateStatus(detailModalReview._id, "approved")}
+                onClick={() =>
+                  handleUpdateStatus(detailModalReview._id, "approved")
+                }
                 className="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold shadow-xs"
               >
                 Approve

@@ -5,6 +5,43 @@ import { CoverLetter, JobApplication, Resume } from "@/lib/models";
 import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 import { updateUserProfileSchema } from "@/lib/validation";
 
+function parseEducation(raw: unknown) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string" && raw.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    return [
+      {
+        id: "legacy-edu-1",
+        institution: "",
+        degree: raw.trim(),
+        fieldOfStudy: "",
+        startYear: "",
+        endYear: "",
+        credits: "",
+        grade: "",
+        activities: "",
+      },
+    ];
+  }
+  return [];
+}
+
+function parseTechnicalSkills(raw: unknown) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string" && raw.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  return [];
+}
+
 export async function GET() {
   try {
     const user = await getSessionUser();
@@ -21,6 +58,15 @@ export async function GET() {
       JobApplication.countDocuments({ userId: user.id }),
     ]);
 
+    const parsedSkills = Array.isArray(user.skills)
+      ? user.skills
+      : typeof user.skills === "string"
+        ? user.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
     return NextResponse.json({
       user: {
         id: user.id,
@@ -34,11 +80,12 @@ export async function GET() {
         location: user.location || "",
         headline: user.headline || "",
         bio: user.bio || "",
-        skills: user.skills || [],
+        skills: parsedSkills,
+        technicalSkills: parseTechnicalSkills(user.technicalSkills),
         website: user.website || "",
         linkedin: user.linkedin || "",
         experience: user.experience || "",
-        education: user.education || "",
+        education: parseEducation(user.education),
         isProfileComplete: Boolean(user.isProfileComplete),
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -122,8 +169,18 @@ export async function PUT(request: NextRequest) {
       updatePayload.linkedin = validatedData.linkedin;
     if (validatedData.experience !== undefined)
       updatePayload.experience = validatedData.experience;
-    if (validatedData.education !== undefined)
-      updatePayload.education = validatedData.education;
+    if (validatedData.education !== undefined) {
+      updatePayload.education = Array.isArray(validatedData.education)
+        ? JSON.stringify(validatedData.education)
+        : validatedData.education;
+    }
+    if (validatedData.technicalSkills !== undefined) {
+      updatePayload.technicalSkills = Array.isArray(
+        validatedData.technicalSkills,
+      )
+        ? JSON.stringify(validatedData.technicalSkills)
+        : validatedData.technicalSkills;
+    }
 
     // Check if essential fields for cover letter generation are filled
     const headline = validatedData.headline ?? user.headline;
@@ -151,6 +208,15 @@ export async function PUT(request: NextRequest) {
       userQuery as Parameters<typeof userCollection.findOne>[0],
     );
 
+    const parsedUpdatedSkills = Array.isArray(updatedUser?.skills)
+      ? updatedUser.skills
+      : typeof updatedUser?.skills === "string"
+        ? updatedUser.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
     return NextResponse.json({
       message: "Profile updated successfully",
       user: {
@@ -164,11 +230,12 @@ export async function PUT(request: NextRequest) {
         location: updatedUser?.location || "",
         headline: updatedUser?.headline || "",
         bio: updatedUser?.bio || "",
-        skills: updatedUser?.skills || [],
+        skills: parsedUpdatedSkills,
+        technicalSkills: parseTechnicalSkills(updatedUser?.technicalSkills),
         website: updatedUser?.website || "",
         linkedin: updatedUser?.linkedin || "",
         experience: updatedUser?.experience || "",
-        education: updatedUser?.education || "",
+        education: parseEducation(updatedUser?.education),
         isProfileComplete: Boolean(updatedUser?.isProfileComplete),
         updatedAt: updatedUser?.updatedAt,
       },

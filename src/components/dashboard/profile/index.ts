@@ -1,4 +1,6 @@
+export * from "./CoreSkillsSelect";
 export * from "./EditProfileForm";
+export * from "./EducationFormSection";
 export * from "./ProfileCoverLettersCard";
 export * from "./ProfileError";
 export * from "./ProfileHeader";
@@ -7,5 +9,6 @@ export * from "./ProfileOnboardingBanner";
 export * from "./ProfileOverviewCard";
 export * from "./ProfileResumesCard";
 export * from "./ProfileStatsGrid";
+export * from "./TechnicalSkillsSection";
 export * from "./types";
 export * from "./useProfile";

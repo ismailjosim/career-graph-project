@@ -5,6 +5,43 @@ import { CoverLetter, JobApplication, Resume } from "@/lib/models";
 import { forbiddenResponse, requireAdminUser } from "@/lib/server-auth";
 import { updateUserProfileSchema } from "@/lib/validation";
 
+function parseEducation(raw: unknown) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string" && raw.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    return [
+      {
+        id: "legacy-edu-1",
+        institution: "",
+        degree: raw.trim(),
+        fieldOfStudy: "",
+        startYear: "",
+        endYear: "",
+        credits: "",
+        grade: "",
+        activities: "",
+      },
+    ];
+  }
+  return [];
+}
+
+function parseTechnicalSkills(raw: unknown) {
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string" && raw.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+  }
+  return [];
+}
+
 function getUserQuery(id: string): Record<string, unknown> {
   try {
     return {
@@ -66,11 +103,19 @@ export async function GET(
         location: user.location || "",
         headline: user.headline || "",
         bio: user.bio || "",
-        skills: user.skills || [],
+        skills: Array.isArray(user.skills)
+          ? user.skills
+          : typeof user.skills === "string"
+            ? user.skills
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+            : [],
+        technicalSkills: parseTechnicalSkills(user.technicalSkills),
         website: user.website || "",
         linkedin: user.linkedin || "",
         experience: user.experience || "",
-        education: user.education || "",
+        education: parseEducation(user.education),
         tokens: typeof user.tokens === "number" ? user.tokens : 50,
         isProfileComplete: Boolean(user.isProfileComplete),
         createdAt: user.createdAt || new Date(),
@@ -251,8 +296,18 @@ export async function PUT(
       updatePayload.linkedin = validatedData.linkedin;
     if (validatedData.experience !== undefined)
       updatePayload.experience = validatedData.experience;
-    if (validatedData.education !== undefined)
-      updatePayload.education = validatedData.education;
+    if (validatedData.education !== undefined) {
+      updatePayload.education = Array.isArray(validatedData.education)
+        ? JSON.stringify(validatedData.education)
+        : validatedData.education;
+    }
+    if (validatedData.technicalSkills !== undefined) {
+      updatePayload.technicalSkills = Array.isArray(
+        validatedData.technicalSkills,
+      )
+        ? JSON.stringify(validatedData.technicalSkills)
+        : validatedData.technicalSkills;
+    }
     if (validatedData.isProfileComplete !== undefined) {
       updatePayload.isProfileComplete = validatedData.isProfileComplete;
     }

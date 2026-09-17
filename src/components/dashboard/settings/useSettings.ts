@@ -65,7 +65,15 @@ export function useSettings() {
           website: u.website || "",
           linkedin: u.linkedin || "",
           experience: u.experience || "",
-          education: u.education || "",
+          education: Array.isArray(u.education)
+            ? u.education
+                .map((e: { degree?: string; institution?: string }) =>
+                  [e.degree, e.institution].filter(Boolean).join(" - "),
+                )
+                .join("; ")
+            : typeof u.education === "string"
+              ? u.education
+              : "",
         });
 
         setSecurityInfo({

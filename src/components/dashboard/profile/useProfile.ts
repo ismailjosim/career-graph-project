@@ -37,11 +37,12 @@ export function useProfile() {
     phone: "",
     location: "",
     bio: "",
-    skills: "",
+    skills: [],
+    technicalSkills: [],
     website: "",
     linkedin: "",
     experience: "",
-    education: "",
+    education: [],
   });
 
   const isViewingOtherUser = Boolean(
@@ -76,14 +77,20 @@ export function useProfile() {
         location: u.location || "",
         bio: u.bio || "",
         skills: Array.isArray(u.skills)
-          ? u.skills.join(", ")
+          ? u.skills
           : typeof u.skills === "string"
             ? u.skills
-            : "",
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+            : [],
+        technicalSkills: Array.isArray(u.technicalSkills)
+          ? u.technicalSkills
+          : [],
         website: u.website || "",
         linkedin: u.linkedin || "",
         experience: u.experience || "",
-        education: u.education || "",
+        education: Array.isArray(u.education) ? u.education : [],
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -96,9 +103,9 @@ export function useProfile() {
     fetchProfile();
   }, [fetchProfile]);
 
-  const handleFormFieldChange = (
-    field: keyof ProfileFormData,
-    value: string,
+  const handleFormFieldChange = <K extends keyof ProfileFormData>(
+    field: K,
+    value: ProfileFormData[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -119,14 +126,12 @@ export function useProfile() {
         phone: formData.phone.trim(),
         location: formData.location.trim(),
         bio: formData.bio.trim(),
-        skills: formData.skills
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        skills: formData.skills,
+        technicalSkills: formData.technicalSkills,
         website: formData.website.trim(),
         linkedin: formData.linkedin.trim(),
         experience: formData.experience.trim(),
-        education: formData.education.trim(),
+        education: formData.education,
       };
 
       const res = await fetch(endpoint, {

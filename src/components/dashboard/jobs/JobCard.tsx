@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import type { JobCardProps } from "./types";
 
 export function JobCard({
@@ -20,6 +21,17 @@ export function JobCard({
   isSaved = false,
   hasApplied = false,
 }: JobCardProps) {
+  const [clicksCount, setClicksCount] = useState(job.externalClicksCount || 0);
+
+  const handleExternalClick = () => {
+    setClicksCount((prev) => prev + 1);
+    if (job._id) {
+      fetch(`/api/jobs/${job._id}/click`, {
+        method: "POST",
+        keepalive: true,
+      }).catch(() => {});
+    }
+  };
   const getSourceBadge = (source: string) => {
     switch (source) {
       case "linkedin":
@@ -150,10 +162,14 @@ export function JobCard({
               href={job.originalJobUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 ml-auto text-[11px]"
-              title={`View on ${job.sourcePlatform}`}
+              onClick={handleExternalClick}
+              className="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5 ml-auto text-[11px] font-medium px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+              title={`View on ${job.sourcePlatform} (${clicksCount} clicks)`}
             >
-              <span>Source</span>
+              <span>{job.sourcePlatform}</span>
+              <span className="px-1.5 py-0.2 rounded bg-blue-100/70 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+                {clicksCount} clicks
+              </span>
               <ExternalLink className="w-3 h-3" />
             </a>
           )}

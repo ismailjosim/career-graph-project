@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Review } from "@/lib/models";
 import { getSessionUser } from "@/lib/server-auth";
 import {
   REVIEW_ROLES,
-  ReviewRole,
+  type ReviewRole,
   submitReviewSchema,
 } from "@/lib/validation";
 
@@ -170,20 +170,28 @@ export async function GET(req: NextRequest) {
 
     if (dbReviews.length === 0) {
       // Filter fallbacks by role if selected
-      combinedReviews = roleParam && roleParam !== "all"
-        ? (FALLBACK_REVIEWS.filter((r) => r.role === roleParam) as unknown as typeof dbReviews)
-        : (FALLBACK_REVIEWS as unknown as typeof dbReviews);
+      combinedReviews =
+        roleParam && roleParam !== "all"
+          ? (FALLBACK_REVIEWS.filter(
+              (r) => r.role === roleParam,
+            ) as unknown as typeof dbReviews)
+          : (FALLBACK_REVIEWS as unknown as typeof dbReviews);
 
       counts = {
         all: FALLBACK_REVIEWS.length,
-        job_seeker: FALLBACK_REVIEWS.filter((r) => r.role === "job_seeker").length,
-        recruiter: FALLBACK_REVIEWS.filter((r) => r.role === "recruiter").length,
+        job_seeker: FALLBACK_REVIEWS.filter((r) => r.role === "job_seeker")
+          .length,
+        recruiter: FALLBACK_REVIEWS.filter((r) => r.role === "recruiter")
+          .length,
         employer: FALLBACK_REVIEWS.filter((r) => r.role === "employer").length,
       };
     }
 
     // Compute average rating
-    const ratingSum = combinedReviews.reduce((acc, r) => acc + (r.rating || 5), 0);
+    const ratingSum = combinedReviews.reduce(
+      (acc, r) => acc + (r.rating || 5),
+      0,
+    );
     const avgRating =
       combinedReviews.length > 0
         ? Number((ratingSum / combinedReviews.length).toFixed(1))

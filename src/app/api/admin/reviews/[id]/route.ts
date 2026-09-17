@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Review } from "@/lib/models";
 import { getSessionUser } from "@/lib/server-auth";
@@ -17,7 +17,10 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     const user = await getSessionUser();
     if (!user || (user.role !== "admin" && user.role !== "super_admin")) {
       return NextResponse.json(
-        { success: false, error: "Access denied. Admin authorization required." },
+        {
+          success: false,
+          error: "Access denied. Admin authorization required.",
+        },
         { status: 403 },
       );
     }
@@ -71,12 +74,15 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
  * DELETE /api/admin/reviews/[id]
  * Permanently deletes a review.
  */
-export async function DELETE(req: NextRequest, { params }: RouteParams) {
+export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
     const user = await getSessionUser();
     if (!user || (user.role !== "admin" && user.role !== "super_admin")) {
       return NextResponse.json(
-        { success: false, error: "Access denied. Admin authorization required." },
+        {
+          success: false,
+          error: "Access denied. Admin authorization required.",
+        },
         { status: 403 },
       );
     }

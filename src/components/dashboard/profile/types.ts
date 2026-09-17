@@ -1,4 +1,11 @@
-import type { UserRole, UserStatus } from "@/lib/validation";
+import type {
+  EducationEntry,
+  TechnicalSkill,
+  UserRole,
+  UserStatus,
+} from "@/lib/validation";
+
+export type { EducationEntry, TechnicalSkill };
 
 export interface ProfileUser {
   id: string;
@@ -13,10 +20,11 @@ export interface ProfileUser {
   headline?: string;
   bio?: string;
   skills?: string[] | string;
+  technicalSkills?: TechnicalSkill[] | string;
   website?: string;
   linkedin?: string;
   experience?: string;
-  education?: string;
+  education?: EducationEntry[] | string;
   isProfileComplete?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -58,9 +66,10 @@ export interface ProfileFormData {
   phone: string;
   location: string;
   bio: string;
-  skills: string;
+  skills: string[];
+  technicalSkills: TechnicalSkill[];
   website: string;
   linkedin: string;
   experience: string;
-  education: string;
+  education: EducationEntry[];
 }

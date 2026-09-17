@@ -21,6 +21,7 @@ export interface AuthenticatedUser {
   headline?: string;
   bio?: string;
   skills?: string[] | string;
+  technicalSkills?: string | unknown[];
   website?: string;
   linkedin?: string;
   experience?: string;

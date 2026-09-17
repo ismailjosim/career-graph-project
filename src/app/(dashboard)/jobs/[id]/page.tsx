@@ -41,6 +41,19 @@ export default function JobDetailPage() {
   >(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
+  const handleTrackClick = () => {
+    if (!id) return;
+    setJob((prev) =>
+      prev
+        ? { ...prev, externalClicksCount: (prev.externalClicksCount || 0) + 1 }
+        : null,
+    );
+    fetch(`/api/jobs/${id}/click`, {
+      method: "POST",
+      keepalive: true,
+    }).catch(() => {});
+  };
+
   useEffect(() => {
     if (!id) return;
 
@@ -232,9 +245,13 @@ export default function JobDetailPage() {
             href={job.originalJobUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+            onClick={handleTrackClick}
+            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1.5"
           >
             <span>Original {job.sourcePlatform} Post</span>
+            <span className="px-1.5 py-0.2 rounded bg-blue-100/70 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+              {job.externalClicksCount || 0} clicks
+            </span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         )}
@@ -531,9 +548,13 @@ export default function JobDetailPage() {
                     href={job.originalJobUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={handleTrackClick}
                     className="btn-outline w-full text-xs py-2 flex items-center justify-center gap-1.5"
                   >
                     <span>View on {job.sourcePlatform}</span>
+                    <span className="px-1.5 py-0.2 rounded bg-blue-100/70 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+                      {job.externalClicksCount || 0} clicks
+                    </span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
