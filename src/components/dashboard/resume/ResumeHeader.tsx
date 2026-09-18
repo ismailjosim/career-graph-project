@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText, Plus } from "lucide-react";
+import { ArrowLeft, FileText, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { ResumeHeaderProps } from "./types";
 
@@ -30,14 +30,24 @@ export function ResumeHeader({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onAddResume}
-        className="btn-primary flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap"
-      >
-        <Plus className="w-4 h-4" />
-        <span>Add Resume</span>
-      </button>
+      <div className="flex items-center gap-2.5">
+        <Link
+          href="/resumes/templates"
+          className="btn-primary flex items-center justify-center gap-2 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:to-pink-700 text-white font-bold"
+        >
+          <Sparkles className="w-4 h-4 text-amber-300" />
+          <span>Build Resume</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={onAddResume}
+          className="btn-secondary flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap text-sm font-semibold"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Upload PDF</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,15 @@
 "use client";
 
-import { Download, Eye, File, Star, Trash2 } from "lucide-react";
+import {
+  Download,
+  Eye,
+  File,
+  FileEdit,
+  Sparkles,
+  Star,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DocumentPreviewModal } from "@/components/ui/DocumentPreviewModal";
@@ -77,6 +86,11 @@ export function ResumeCard({
                     Default
                   </span>
                 )}
+                {resume.isBuiltInApp && (
+                  <span className="text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" /> Built in Studio
+                  </span>
+                )}
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-1.5 truncate">
                 <File className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -86,7 +100,11 @@ export function ResumeCard({
           </div>
 
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-2 mb-4">
-            <span>Uploaded {formattedDate}</span>
+            <span>
+              {resume.isBuiltInApp
+                ? "Created in Builder"
+                : `Uploaded ${formattedDate}`}
+            </span>
             {fileSizeLabel && (
               <>
                 <span>•</span>
@@ -101,25 +119,45 @@ export function ResumeCard({
         {/* Action Footer */}
         <div className="pt-4 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setShowPreview(true)}
-              className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>Preview</span>
-            </button>
+            {resume.isBuiltInApp ? (
+              <Link
+                href={`/resumes/builder?id=${resume._id}`}
+                className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer text-indigo-600 dark:text-indigo-400 font-semibold"
+              >
+                <FileEdit className="w-3.5 h-3.5" />
+                <span>Edit</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                className="btn-secondary text-xs py-1.5 px-3 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Preview</span>
+              </button>
+            )}
 
-            <a
-              href={resume.fileUrl}
-              download={resume.fileName || "resume.pdf"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
-              title="Download Resume"
-            >
-              <Download className="w-4 h-4" />
-            </a>
+            {resume.isBuiltInApp ? (
+              <Link
+                href={`/resumes/builder?id=${resume._id}`}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+                title="Open in Builder to Download PDF or Print"
+              >
+                <Download className="w-4 h-4" />
+              </Link>
+            ) : (
+              <a
+                href={resume.fileUrl}
+                download={resume.fileName || "resume.pdf"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+                title="Download Resume"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5">

@@ -50,6 +50,11 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Resumes",
     subtitle: "Manage versions of your tailored resumes",
   },
+  "/resumes/templates": {
+    title: "Choose Resume Template",
+    subtitle:
+      "Select an ATS-optimized design template before editing your resume",
+  },
   "/resumes/builder": {
     title: "AI Resume Architect & Builder",
     subtitle:

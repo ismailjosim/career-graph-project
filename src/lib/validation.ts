@@ -1,20 +1,112 @@
 import { z } from "zod";
 
+// Resume Builder Schemas
+export const resumePersonalInfoSchema = z.object({
+  fullName: z.string().default(""),
+  headline: z.string().default(""),
+  email: z.string().default(""),
+  phone: z.string().default(""),
+  location: z.string().default(""),
+  website: z.string().default(""),
+  linkedin: z.string().default(""),
+  github: z.string().default(""),
+});
+
+export const resumeExperienceItemSchema = z.object({
+  id: z.string(),
+  company: z.string(),
+  role: z.string(),
+  location: z.string().optional(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+  isCurrent: z.boolean().default(false),
+  description: z.string().default(""),
+  highlights: z.array(z.string()).default([]),
+});
+
+export const resumeEducationItemSchema = z.object({
+  id: z.string(),
+  institution: z.string(),
+  degree: z.string(),
+  fieldOfStudy: z.string().optional(),
+  location: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  gpa: z.string().optional(),
+  honors: z.string().optional(),
+});
+
+export const resumeSkillGroupSchema = z.object({
+  category: z.string(),
+  skills: z.array(z.string()),
+});
+
+export const resumeProjectItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  role: z.string().optional(),
+  link: z.string().optional(),
+  github: z.string().optional(),
+  techStack: z.array(z.string()).default([]),
+  description: z.string().default(""),
+  highlights: z.array(z.string()).default([]),
+});
+
+export const resumeCertificationItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  issuer: z.string(),
+  date: z.string().optional(),
+  url: z.string().optional(),
+});
+
+export const resumeThemeConfigSchema = z.object({
+  accentColor: z.string().default("#4f46e5"),
+  fontFamily: z.enum(["sans", "serif", "mono"]).default("sans"),
+  layoutDensity: z.enum(["compact", "normal", "spacious"]).default("normal"),
+});
+
+export const resumeBuilderDataSchema = z.object({
+  personalInfo: resumePersonalInfoSchema,
+  summary: z.string().default(""),
+  experiences: z.array(resumeExperienceItemSchema).default([]),
+  educations: z.array(resumeEducationItemSchema).default([]),
+  skillGroups: z.array(resumeSkillGroupSchema).default([]),
+  projects: z.array(resumeProjectItemSchema).default([]),
+  certifications: z.array(resumeCertificationItemSchema).default([]),
+});
+
 // Resume Schema
 export const resumeSchema = z.object({
   _id: z.string().optional(),
   userId: z.string(),
   name: z.string().min(1, "Resume name is required"),
   fileName: z.string(),
-  fileUrl: z.string().url(),
+  fileUrl: z.string(),
   cloudinaryPublicId: z.string().optional(),
   fileSize: z.number().optional(),
   uploadedAt: z.date().default(() => new Date()),
   isDefault: z.boolean().default(false),
   rawText: z.string().optional(),
+  isBuiltInApp: z.boolean().default(false),
+  templateId: z
+    .enum(["modern", "executive", "tech", "creative"])
+    .default("modern"),
+  themeConfig: resumeThemeConfigSchema.optional(),
+  builderData: resumeBuilderDataSchema.optional(),
 });
 
 export type Resume = z.infer<typeof resumeSchema>;
+export type ResumeBuilderData = z.infer<typeof resumeBuilderDataSchema>;
+export type ResumePersonalInfo = z.infer<typeof resumePersonalInfoSchema>;
+export type ResumeExperienceItem = z.infer<typeof resumeExperienceItemSchema>;
+export type ResumeEducationItem = z.infer<typeof resumeEducationItemSchema>;
+export type ResumeSkillGroup = z.infer<typeof resumeSkillGroupSchema>;
+export type ResumeProjectItem = z.infer<typeof resumeProjectItemSchema>;
+export type ResumeCertificationItem = z.infer<
+  typeof resumeCertificationItemSchema
+>;
+export type ResumeThemeConfig = z.infer<typeof resumeThemeConfigSchema>;
 
 // Cover Letter Schema
 export const coverLetterSchema = z.object({

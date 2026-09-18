@@ -22,6 +22,8 @@ const ROUTE_TITLES: Record<string, string> = {
   "/job-market": "Job Market",
   "/cover-letters": "AI Cover Letters",
   "/resumes": "My Resumes",
+  "/resumes/templates": "Select Resume Template",
+  "/resumes/builder": "Resume Builder Studio",
   "/applications": "Applications",
   "/applications/new": "New Application",
   "/jobs": "Job Portal",

@@ -23,6 +23,14 @@ const resumeSchema = new mongoose.Schema<IResume>(
     uploadedAt: { type: Date, default: Date.now },
     isDefault: { type: Boolean, default: false },
     rawText: { type: String },
+    isBuiltInApp: { type: Boolean, default: false },
+    templateId: { type: String, default: "modern" },
+    themeConfig: {
+      accentColor: { type: String, default: "#4f46e5" },
+      fontFamily: { type: String, default: "sans" },
+      layoutDensity: { type: String, default: "normal" },
+    },
+    builderData: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true },
 );
@@ -327,7 +335,8 @@ export type TokenTransactionType =
   | "ats_check"
   | "cover_letter"
   | "fit_analysis"
-  | "job_application";
+  | "job_application"
+  | "resume_builder";
 
 export interface ITokenTransaction {
   _id?: string;
