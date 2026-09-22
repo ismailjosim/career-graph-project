@@ -47,10 +47,11 @@ export function LandingComparison() {
         "Fair Pay-as-you-go tokens from $5 (~$0.10/scan). 70 Free welcome tokens. Never expire.",
     },
     {
-      feature: "Role-Based Governance",
-      traditional: "Single shared logins with zero permission controls",
+      feature: "AI Interview Preparation",
+      traditional:
+        "Expensive $100+/hr mock interview coaches or reciting answers alone in the mirror",
       careerGraph:
-        "Enterprise RBAC (Super Admin singleton, Admin, Recruiter, Seeker)",
+        "Interactive AI Mock Interviewer simulating realistic role-specific questions with instant feedback",
     },
   ];
 

@@ -9,12 +9,14 @@ interface ResumeDocumentPreviewProps {
   data: ResumeBuilderData;
   templateId: TemplateId;
   themeConfig: ResumeThemeConfig;
+  layoutArchetype?: string;
 }
 
 export function ResumeDocumentPreview({
   data,
   templateId,
   themeConfig,
+  layoutArchetype,
 }: ResumeDocumentPreviewProps) {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
 
@@ -76,6 +78,7 @@ export function ResumeDocumentPreview({
           >
             <ResumeTemplateRenderer
               templateId={templateId}
+              layoutArchetype={layoutArchetype}
               data={data}
               themeConfig={themeConfig}
             />

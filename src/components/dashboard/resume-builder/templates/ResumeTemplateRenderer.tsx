@@ -10,12 +10,14 @@ import { TechMinimalistTemplate } from "./TechMinimalistTemplate";
 
 interface ResumeTemplateRendererProps {
   templateId: TemplateId;
+  layoutArchetype?: string;
   data: ResumeBuilderData;
   themeConfig: ResumeThemeConfig;
 }
 
 export function ResumeTemplateRenderer({
   templateId,
+  layoutArchetype,
   data,
   themeConfig,
 }: ResumeTemplateRendererProps) {
@@ -27,18 +29,33 @@ export function ResumeTemplateRenderer({
         ? "font-mono"
         : "font-sans";
 
+  // Determine which layout component to render
+  const isExecutive =
+    templateId === "executive" ||
+    layoutArchetype === "executive_classic" ||
+    templateId.includes("executive");
+
+  const isTech =
+    templateId === "tech" ||
+    layoutArchetype === "minimal_tech" ||
+    templateId.includes("tech") ||
+    templateId.includes("minimal");
+
+  const isCreative =
+    templateId === "creative" ||
+    layoutArchetype === "sidebar_left" ||
+    templateId.includes("creative") ||
+    templateId.includes("sidebar");
+
   return (
     <div className={`w-full bg-white text-slate-900 ${fontClass}`}>
-      {templateId === "executive" && (
+      {isExecutive ? (
         <ExecutiveClassicTemplate data={data} themeConfig={themeConfig} />
-      )}
-      {templateId === "tech" && (
+      ) : isTech ? (
         <TechMinimalistTemplate data={data} themeConfig={themeConfig} />
-      )}
-      {templateId === "creative" && (
+      ) : isCreative ? (
         <CreativeSidebarTemplate data={data} themeConfig={themeConfig} />
-      )}
-      {templateId === "modern" && (
+      ) : (
         <ModernCleanTemplate data={data} themeConfig={themeConfig} />
       )}
     </div>

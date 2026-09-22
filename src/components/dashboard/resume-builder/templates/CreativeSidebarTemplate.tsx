@@ -1,12 +1,9 @@
-import {
-  Briefcase,
-  GraduationCap,
-  Mail,
-  MapPin,
-  Phone,
-  Sparkles,
-} from "lucide-react";
+import { Briefcase, Sparkles } from "lucide-react";
 import type { ResumeBuilderData, ResumeThemeConfig } from "../types";
+import {
+  TemplateContactList,
+  TemplateEducationItemView,
+} from "./templateComponents";
 
 interface TemplateProps {
   data: ResumeBuilderData;
@@ -53,59 +50,10 @@ export function CreativeSidebarTemplate({ data, themeConfig }: TemplateProps) {
             >
               Contact Information
             </h3>
-
-            {personalInfo.email && (
-              <div className="flex items-start gap-1.5 break-all">
-                <Mail className="w-3 h-3 text-slate-400 shrink-0 mt-0.5" />
-                <span>{personalInfo.email}</span>
-              </div>
-            )}
-            {personalInfo.phone && (
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                <span>{personalInfo.phone}</span>
-              </div>
-            )}
-            {personalInfo.location && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                <span>{personalInfo.location}</span>
-              </div>
-            )}
-            {personalInfo.website && (
-              <div className="flex items-start gap-1.5 break-all text-slate-500">
-                <span className="font-bold text-[10px] text-slate-400">
-                  web:
-                </span>
-                <span>{personalInfo.website.replace(/^https?:\/\//, "")}</span>
-              </div>
-            )}
-            {personalInfo.linkedin && (
-              <div className="flex items-start gap-1.5 break-all text-slate-500">
-                <span className="font-bold text-[10px] text-slate-400">
-                  in/
-                </span>
-                <span>
-                  {personalInfo.linkedin.replace(
-                    /^https?:\/\/(www\.)?linkedin\.com\/in\//,
-                    "",
-                  )}
-                </span>
-              </div>
-            )}
-            {personalInfo.github && (
-              <div className="flex items-start gap-1.5 break-all text-slate-500">
-                <span className="font-bold text-[10px] text-slate-400">
-                  gh/
-                </span>
-                <span>
-                  {personalInfo.github.replace(
-                    /^https?:\/\/(www\.)?github\.com\//,
-                    "",
-                  )}
-                </span>
-              </div>
-            )}
+            <TemplateContactList
+              personalInfo={personalInfo}
+              accentColor={accent}
+            />
           </div>
 
           {/* Skills in Sidebar */}
@@ -128,7 +76,7 @@ export function CreativeSidebarTemplate({ data, themeConfig }: TemplateProps) {
                       {group.skills.map((skill) => (
                         <span
                           key={`${group.category}-${skill}`}
-                          className="px-1.5 py-0.5 rounded bg-white text-slate-800 text-[10px] border border-slate-200 shadow-xs"
+                          className="px-1.5 py-0.5 rounded bg-white text-slate-800 text-[10px] border border-slate-200 shadow-2xs"
                         >
                           {skill}
                         </span>
@@ -150,126 +98,102 @@ export function CreativeSidebarTemplate({ data, themeConfig }: TemplateProps) {
                 Education
               </h3>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {educations.map((edu) => (
-                  <div key={edu.id} className="text-xs">
-                    <div className="font-bold text-slate-900">{edu.degree}</div>
-                    {edu.fieldOfStudy && (
-                      <div className="text-slate-600 text-[10.5px]">
-                        {edu.fieldOfStudy}
-                      </div>
-                    )}
-                    <div className="text-slate-500 text-[10.5px]">
-                      {edu.institution} ({edu.startDate || ""} -{" "}
-                      {edu.endDate || ""})
-                    </div>
-                    {edu.honors && (
-                      <div className="text-slate-500 text-[10px] italic mt-0.5">
-                        {edu.honors}
-                      </div>
-                    )}
+                  <TemplateEducationItemView
+                    key={edu.id}
+                    edu={edu}
+                    accentColor={accent}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Certifications in Sidebar */}
+          {certifications && certifications.length > 0 && (
+            <div className="mb-4">
+              <h3
+                className="text-[10px] font-bold uppercase tracking-wider pb-1 border-b border-slate-200 mb-2"
+                style={{ color: accent }}
+              >
+                Certifications
+              </h3>
+              <div className="space-y-1.5">
+                {certifications.map((cert) => (
+                  <div key={cert.id} className="text-xs">
+                    <span className="font-semibold text-slate-800 block leading-tight">
+                      {cert.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {cert.issuer} {cert.date ? `(${cert.date})` : ""}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
           )}
         </div>
-
-        {/* Certifications in bottom of sidebar */}
-        {certifications && certifications.length > 0 && (
-          <div>
-            <h3
-              className="text-[10px] font-bold uppercase tracking-wider pb-1 border-b border-slate-200 mb-2"
-              style={{ color: accent }}
-            >
-              Certifications
-            </h3>
-            <div className="space-y-1.5 text-xs">
-              {certifications.map((c) => (
-                <div key={c.id}>
-                  <div className="font-semibold text-slate-800 text-[11px]">
-                    {c.name}
-                  </div>
-                  <div className="text-slate-500 text-[10px]">
-                    {c.issuer} {c.date ? `(${c.date})` : ""}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </aside>
 
-      {/* Main Column (65% width) */}
-      <main className="w-full md:w-[65%] p-4 sm:p-5 flex-1">
-        {/* Summary */}
+      {/* Main Right Content (65% width) */}
+      <main className="w-full md:w-[65%] p-5 space-y-4">
+        {/* Professional Summary */}
         {summary && (
-          <section className="mb-4">
+          <section className="space-y-1.5">
             <h2
-              className="text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5"
-              style={{ color: accent }}
+              className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b"
+              style={{ color: accent, borderColor: `${accent}30` }}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Professional Profile</span>
+              <span>Professional Summary</span>
             </h2>
-            <p className="text-slate-700 text-justify leading-relaxed text-xs">
-              {summary}
-            </p>
+            <p className="text-xs text-slate-700 leading-relaxed">{summary}</p>
           </section>
         )}
 
-        {/* Experience Timeline */}
+        {/* Experience Section */}
         {experiences && experiences.length > 0 && (
-          <section className="mb-4">
+          <section className="space-y-2.5">
             <h2
-              className="text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5"
-              style={{ color: accent }}
+              className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b"
+              style={{ color: accent, borderColor: `${accent}30` }}
             >
               <Briefcase className="w-3.5 h-3.5" />
-              <span>Career History</span>
+              <span>Work Experience</span>
             </h2>
 
-            <div
-              className="space-y-3.5 border-l-2 pl-3 ml-1"
-              style={{ borderColor: `${accent}33` }}
-            >
+            <div className="space-y-3.5">
               {experiences.map((exp) => (
-                <div key={exp.id} className="relative">
-                  {/* Timeline dot */}
-                  <span
-                    className="absolute -left-4.25 top-1 w-2 h-2 rounded-full ring-2 ring-white"
-                    style={{ backgroundColor: accent }}
-                  />
-
-                  <div className="flex justify-between items-baseline">
-                    <div className="font-bold text-slate-900 text-xs">
+                <div key={exp.id} className="space-y-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <h3 className="font-bold text-slate-900 text-xs sm:text-sm">
                       {exp.role}
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-medium">
+                    </h3>
+                    <span className="text-[11px] text-slate-500 font-mono">
                       {exp.startDate} –{" "}
                       {exp.isCurrent ? "Present" : exp.endDate || "Present"}
-                    </div>
+                    </span>
                   </div>
-
-                  <div className="text-xs font-medium text-slate-600 mb-1">
-                    {exp.company}
-                    {exp.location ? `, ${exp.location}` : ""}
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
+                    <span style={{ color: accent }}>{exp.company}</span>
+                    {exp.location && (
+                      <span className="text-slate-400 font-normal">
+                        {exp.location}
+                      </span>
+                    )}
                   </div>
-
                   {exp.description && (
-                    <p className="text-xs text-slate-600 mb-1 italic">
+                    <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
                       {exp.description}
                     </p>
                   )}
-
                   {exp.highlights && exp.highlights.length > 0 && (
-                    <ul className="list-disc list-outside ml-3.5 space-y-0.5 text-slate-700 text-xs">
-                      {exp.highlights.map((bullet) => (
-                        <li
-                          key={`${exp.id}-${bullet.slice(0, 30)}`}
-                          className="leading-snug"
-                        >
-                          {bullet}
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs text-slate-700 mt-1">
+                      {exp.highlights.map((h, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Resume highlight string
+                        <li key={i} className="leading-relaxed">
+                          {h}
                         </li>
                       ))}
                     </ul>
@@ -280,51 +204,58 @@ export function CreativeSidebarTemplate({ data, themeConfig }: TemplateProps) {
           </section>
         )}
 
-        {/* Projects */}
+        {/* Projects Section */}
         {projects && projects.length > 0 && (
-          <section className="mb-3">
+          <section className="space-y-2">
             <h2
-              className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5"
-              style={{ color: accent }}
+              className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b"
+              style={{ color: accent, borderColor: `${accent}30` }}
             >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Key Initiatives & Projects</span>
+              <span>Featured Projects</span>
             </h2>
 
             <div className="space-y-2.5">
               {projects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="p-2 rounded-lg bg-slate-50/70 border border-slate-200/60"
-                >
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-slate-900 text-xs">
-                      {proj.title}
-                    </span>
+                <div key={proj.id} className="space-y-0.5">
+                  <div className="flex items-baseline justify-between">
+                    <h3 className="font-bold text-slate-900 text-xs">
+                      {proj.title} {proj.role ? `(${proj.role})` : ""}
+                    </h3>
                     {proj.link && (
-                      <span className="text-[10px] text-blue-600 font-mono">
-                        {proj.link.replace(/^https?:\/\//, "")}
-                      </span>
+                      <a
+                        href={proj.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] hover:underline"
+                        style={{ color: accent }}
+                      >
+                        Live Link ↗
+                      </a>
                     )}
                   </div>
-
                   {proj.techStack && proj.techStack.length > 0 && (
-                    <div className="text-[10px] text-slate-500 mt-0.5 font-medium">
-                      Tech: {proj.techStack.join(", ")}
+                    <div className="flex flex-wrap gap-1 my-0.5">
+                      {proj.techStack.map((tech) => (
+                        <span
+                          key={`${proj.id}-${tech}`}
+                          className="px-1.5 py-0.2 rounded font-mono text-[9px] bg-slate-100 text-slate-600"
+                        >
+                          {tech}
+                        </span>
+                      ))}
                     </div>
                   )}
-
                   {proj.description && (
-                    <p className="text-xs text-slate-700 mt-0.5">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       {proj.description}
                     </p>
                   )}
-
                   {proj.highlights && proj.highlights.length > 0 && (
-                    <ul className="list-disc list-outside ml-3.5 mt-0.5 space-y-0.5 text-slate-700 text-xs">
-                      {proj.highlights.map((bullet) => (
-                        <li key={`${proj.id}-${bullet.slice(0, 30)}`}>
-                          {bullet}
+                    <ul className="list-disc pl-4 space-y-0.5 text-xs text-slate-700">
+                      {proj.highlights.map((h, i) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: Project highlight string
+                        <li key={i} className="leading-relaxed">
+                          {h}
                         </li>
                       ))}
                     </ul>

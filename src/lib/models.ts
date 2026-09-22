@@ -7,9 +7,57 @@ import type {
   JobPosting as IJobPosting,
   MonthlyStats as IMonthlyStats,
   Resume as IResume,
+  ResumeTemplate as IResumeTemplate,
   Review as IReview,
   Wishlist as IWishlist,
 } from "@/lib/validation";
+
+// Resume Template Model (Admin managed dynamic templates)
+const resumeTemplateSchema = new mongoose.Schema<IResumeTemplate>(
+  {
+    slug: { type: String, required: true, unique: true, index: true },
+    name: { type: String, required: true, trim: true },
+    subtitle: { type: String, default: "" },
+    description: { type: String, default: "" },
+    category: {
+      type: String,
+      enum: ["tech", "creative", "executive", "general"],
+      default: "general",
+      index: true,
+    },
+    layoutArchetype: {
+      type: String,
+      enum: [
+        "single_column",
+        "sidebar_left",
+        "executive_classic",
+        "minimal_tech",
+      ],
+      default: "single_column",
+    },
+    thumbnailUrl: { type: String },
+    badge: { type: String },
+    isPro: { type: Boolean, default: false, index: true },
+    tokenCost: { type: Number, default: 0 },
+    defaultTheme: {
+      accentColor: { type: String, default: "#4f46e5" },
+      fontFamily: { type: String, default: "sans" },
+      layoutDensity: { type: String, default: "normal" },
+    },
+    isActive: { type: Boolean, default: true, index: true },
+    sortOrder: { type: Number, default: 0 },
+    createdBy: { type: String },
+  },
+  { timestamps: true },
+);
+
+if (mongoose.models.ResumeTemplate) {
+  delete (mongoose.models as Record<string, unknown>).ResumeTemplate;
+}
+
+export const ResumeTemplate =
+  mongoose.models.ResumeTemplate ||
+  mongoose.model<IResumeTemplate>("ResumeTemplate", resumeTemplateSchema);
 
 // Resume Model
 const resumeSchema = new mongoose.Schema<IResume>(

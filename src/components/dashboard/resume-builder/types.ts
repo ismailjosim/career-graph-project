@@ -20,15 +20,33 @@ export type {
   ResumeThemeConfig,
 };
 
-export type TemplateId = "modern" | "executive" | "tech" | "creative";
+export type TemplateId =
+  | "modern"
+  | "executive"
+  | "tech"
+  | "creative"
+  | (string & {});
 
 export interface TemplateMetadata {
-  id: TemplateId;
+  id: string;
+  slug?: string;
   name: string;
   subtitle: string;
   badge?: string;
   isPro?: boolean;
+  tokenCost?: number;
+  category?: "tech" | "creative" | "executive" | "general";
+  layoutArchetype?:
+    | "single_column"
+    | "sidebar_left"
+    | "executive_classic"
+    | "minimal_tech";
+  thumbnailUrl?: string;
   description: string;
+  isActive?: boolean;
+  sortOrder?: number;
+  defaultTheme?: ResumeThemeConfig;
+  usageCount?: number;
 }
 
 export const AVAILABLE_TEMPLATES: TemplateMetadata[] = [

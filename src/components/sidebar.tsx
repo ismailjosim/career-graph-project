@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareQuote, Users, X } from "lucide-react";
+import { LayoutTemplate, MessageSquareQuote, Users, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -55,6 +55,11 @@ export function Sidebar() {
                 icon: MessageSquareQuote,
                 label: "Feedback & Reviews",
                 href: "/admin/reviews",
+              },
+              {
+                icon: LayoutTemplate,
+                label: "Resume Templates",
+                href: "/admin/resume-templates",
               },
             ],
           },

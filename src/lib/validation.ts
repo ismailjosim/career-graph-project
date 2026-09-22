@@ -89,9 +89,7 @@ export const resumeSchema = z.object({
   isDefault: z.boolean().default(false),
   rawText: z.string().optional(),
   isBuiltInApp: z.boolean().default(false),
-  templateId: z
-    .enum(["modern", "executive", "tech", "creative"])
-    .default("modern"),
+  templateId: z.string().default("modern"),
   themeConfig: resumeThemeConfigSchema.optional(),
   builderData: resumeBuilderDataSchema.optional(),
 });
@@ -107,6 +105,45 @@ export type ResumeCertificationItem = z.infer<
   typeof resumeCertificationItemSchema
 >;
 export type ResumeThemeConfig = z.infer<typeof resumeThemeConfigSchema>;
+
+// Resume Template Schema (for dynamic templates managed by Admin)
+export const resumeTemplateSchema = z.object({
+  _id: z.string().optional(),
+  slug: z
+    .string()
+    .min(2, "Slug must be at least 2 characters")
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric and hyphens"),
+  name: z.string().min(2, "Template name is required"),
+  subtitle: z.string().default(""),
+  description: z.string().default(""),
+  category: z
+    .enum(["tech", "creative", "executive", "general"])
+    .default("general"),
+  layoutArchetype: z
+    .enum([
+      "single_column",
+      "sidebar_left",
+      "executive_classic",
+      "minimal_tech",
+    ])
+    .default("single_column"),
+  thumbnailUrl: z.string().optional(),
+  badge: z.string().optional(),
+  isPro: z.boolean().default(false),
+  tokenCost: z.number().min(0).default(0),
+  defaultTheme: resumeThemeConfigSchema.default({
+    accentColor: "#4f46e5",
+    fontFamily: "sans",
+    layoutDensity: "normal",
+  }),
+  isActive: z.boolean().default(true),
+  sortOrder: z.number().default(0),
+  createdBy: z.string().optional(),
+  createdAt: z.date().default(() => new Date()),
+  updatedAt: z.date().default(() => new Date()),
+});
+
+export type ResumeTemplate = z.infer<typeof resumeTemplateSchema>;
 
 // Cover Letter Schema
 export const coverLetterSchema = z.object({

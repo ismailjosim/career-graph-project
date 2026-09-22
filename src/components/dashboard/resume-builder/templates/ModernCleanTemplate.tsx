@@ -1,5 +1,10 @@
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import type { ResumeBuilderData, ResumeThemeConfig } from "../types";
+import {
+  TemplateCertificationItemView,
+  TemplateEducationItemView,
+  TemplateProjectItemView,
+} from "./templateComponents";
 
 interface TemplateProps {
   data: ResumeBuilderData;
@@ -142,11 +147,9 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
 
                 {exp.highlights && exp.highlights.length > 0 && (
                   <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5 text-slate-700">
-                    {exp.highlights.map((bullet) => (
-                      <li
-                        key={`${exp.id}-${bullet.slice(0, 30)}`}
-                        className="leading-snug"
-                      >
+                    {exp.highlights.map((bullet, idx) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: Resume highlight string
+                      <li key={idx} className="leading-snug">
                         {bullet}
                       </li>
                     ))}
@@ -162,19 +165,19 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
       {skillGroups && skillGroups.length > 0 && (
         <section className="mb-4">
           <h2
-            className="text-xs font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b border-slate-200"
+            className="text-xs font-bold uppercase tracking-wider mb-2 pb-0.5 border-b border-slate-200"
             style={{ color: accent }}
           >
-            Skills & Competencies
+            Skills
           </h2>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             {skillGroups.map((group) => (
-              <div key={group.category} className="flex items-baseline gap-2">
-                <span className="font-bold text-slate-800 text-xs min-w-36 shrink-0">
+              <div key={group.category} className="flex gap-2 text-xs">
+                <span className="font-bold text-slate-800 min-w-32">
                   {group.category}:
                 </span>
-                <span className="text-slate-700 text-xs">
+                <span className="text-slate-700">
                   {group.skills.join(" • ")}
                 </span>
               </div>
@@ -193,52 +196,13 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
             Key Projects
           </h2>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {projects.map((proj) => (
-              <div key={proj.id}>
-                <div className="flex justify-between items-baseline">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900">
-                      {proj.title}
-                    </span>
-                    {proj.role && (
-                      <span className="text-xs text-slate-500">
-                        ({proj.role})
-                      </span>
-                    )}
-                  </div>
-                  {proj.link && (
-                    <span className="text-[10px] text-indigo-600 font-mono">
-                      {proj.link.replace(/^https?:\/\//, "")}
-                    </span>
-                  )}
-                </div>
-
-                {proj.techStack && proj.techStack.length > 0 && (
-                  <div className="text-[10.5px] text-slate-500 font-mono mt-0.5">
-                    Stack: {proj.techStack.join(", ")}
-                  </div>
-                )}
-
-                {proj.description && (
-                  <p className="text-xs text-slate-700 mt-0.5">
-                    {proj.description}
-                  </p>
-                )}
-
-                {proj.highlights && proj.highlights.length > 0 && (
-                  <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5 text-slate-700">
-                    {proj.highlights.map((bullet) => (
-                      <li
-                        key={`${proj.id}-${bullet.slice(0, 30)}`}
-                        className="leading-snug text-xs"
-                      >
-                        {bullet}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <TemplateProjectItemView
+                key={proj.id}
+                proj={proj}
+                accentColor={accent}
+              />
             ))}
           </div>
         </section>
@@ -246,9 +210,9 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
 
       {/* Education */}
       {educations && educations.length > 0 && (
-        <section className="mb-3">
+        <section className="mb-4">
           <h2
-            className="text-xs font-bold uppercase tracking-wider mb-1.5 pb-0.5 border-b border-slate-200"
+            className="text-xs font-bold uppercase tracking-wider mb-2 pb-0.5 border-b border-slate-200"
             style={{ color: accent }}
           >
             Education
@@ -256,23 +220,11 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
 
           <div className="space-y-2">
             {educations.map((edu) => (
-              <div key={edu.id} className="flex justify-between items-baseline">
-                <div>
-                  <div className="font-bold text-slate-900">
-                    {edu.degree}
-                    {edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}
-                  </div>
-                  <div className="text-xs text-slate-600">
-                    {edu.institution}
-                    {edu.location ? `, ${edu.location}` : ""}
-                    {edu.honors ? ` &bull; ${edu.honors}` : ""}
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 font-medium shrink-0 ml-2">
-                  {edu.startDate ? `${edu.startDate} – ` : ""}
-                  {edu.endDate || ""}
-                </div>
-              </div>
+              <TemplateEducationItemView
+                key={edu.id}
+                edu={edu}
+                accentColor={accent}
+              />
             ))}
           </div>
         </section>
@@ -287,18 +239,14 @@ export function ModernCleanTemplate({ data, themeConfig }: TemplateProps) {
           >
             Certifications
           </h2>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-700">
+
+          <div className="space-y-1">
             {certifications.map((cert) => (
-              <div key={cert.id}>
-                <span className="font-semibold text-slate-900">
-                  {cert.name}
-                </span>
-                <span className="text-slate-500">
-                  {" "}
-                  ({cert.issuer}
-                  {cert.date ? `, ${cert.date}` : ""})
-                </span>
-              </div>
+              <TemplateCertificationItemView
+                key={cert.id}
+                cert={cert}
+                accentColor={accent}
+              />
             ))}
           </div>
         </section>

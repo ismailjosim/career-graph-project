@@ -2,143 +2,148 @@
 
 import {
   ArrowRight,
-  Briefcase,
-  Building,
   CheckCircle2,
-  ShieldCheck,
-  Users,
+  Code2,
+  GraduationCap,
+  Palette,
+  TrendingUp,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 export function LandingRolesSection() {
-  const [activeRole, setActiveRole] = useState<
-    "seeker" | "recruiter" | "employer" | "admin"
-  >("seeker");
+  const [activePersona, setActivePersona] = useState<
+    "engineers" | "product" | "transitioners" | "leaders"
+  >("engineers");
 
-  const roles = [
+  const personas = [
     {
-      id: "seeker",
-      title: "Job Seekers",
-      badge: "Candidate Engine",
-      icon: Briefcase,
+      id: "engineers",
+      title: "Software Engineers",
+      badge: "Technical Roles",
+      icon: Code2,
       color: "blue",
-      heading: "Land Higher-Paying Roles in Half the Time",
+      heading: "Pass Technical ATS Filters & Highlight Hard Skills",
       description:
-        "Engineered for software engineers, product leaders, and digital specialists who want an unfair advantage in the hiring market.",
+        "Engineered for developers, architects, and DevOps specialists to deconstruct complex job specs, match technical frameworks, and beat strict keyword parsing.",
       features: [
-        "AI ATS Fit scoring reveals keyword gaps before you apply",
-        "Generate custom-tailored cover letters in under 3 seconds",
-        "Organize multi-stage interviews and compensation offers",
-        "One-click job extraction from LinkedIn, Indeed, and company boards",
+        "Extract core frameworks, languages & cloud stacks from any job listing",
+        "Deep 4-pillar ATS Fit score reveals missing technical keywords before you apply",
+        "Generate custom-tailored cover letters weaving your real GitHub accomplishments",
+        "Practice realistic coding, architecture & system design mock interviews with instant AI feedback",
       ],
-      ctaText: "Start as a Job Seeker",
-      ctaHref: "/register?role=job_seeker",
+      ctaText: "Start as an Engineer",
+      ctaHref: "/register",
     },
     {
-      id: "recruiter",
-      title: "Recruiters & Headhunters",
-      badge: "Talent Acquisition",
-      icon: Users,
+      id: "product",
+      title: "Product & Designers",
+      badge: "Product & UX",
+      icon: Palette,
       color: "purple",
-      heading: "Benchmark Compensation & Candidate Keyword Overlap",
+      heading: "Showcase Measurable Impact & Design Strategy",
       description:
-        "Gain real-time visibility into hiring marketplaces, analyze JD clarity, and benchmark candidate profiles against live industry requirements.",
+        "Crafted for product managers, UI/UX designers, and growth leaders who need their resumes to tell a compelling story backed by measurable metrics.",
       features: [
-        "Analyze job description keywords to maximize qualified applicant flow",
-        "Cross-reference live salary brackets from 10+ tech marketplaces",
-        "Track candidate pipelines and interview stages collaboratively",
-        "Accelerate candidate screening with automated skill extraction",
+        "AI transforms raw bullet points into high-impact metric statements using the Google XYZ formula",
+        "Tailored cover letters highlighting product roadmap vision and cross-functional leadership",
+        "Audit design, research, and portfolio resume layouts for maximum ATS readability",
+        "Organize multi-stage portfolio presentations, design challenges, and stakeholder rounds",
       ],
-      ctaText: "Join as a Recruiter",
-      ctaHref: "/register?role=recruiter",
+      ctaText: "Start as a Product Lead",
+      ctaHref: "/register",
     },
     {
-      id: "employer",
-      title: "Employers & Founders",
-      badge: "Hiring Teams",
-      icon: Building,
+      id: "transitioners",
+      title: "Career Switchers & Grads",
+      badge: "Career Transition",
+      icon: GraduationCap,
       color: "teal",
-      heading: "Attract High-Caliber Talent with Optimized Listings",
+      heading: "Bridge the Keyword Gap with Transferable Skills",
       description:
-        "Understand what top talent looks for, verify your job specifications against market standards, and organize internal hiring pipelines.",
+        "Built for bootcamp graduates, new college alumni, and professionals pivoting into tech without letting past experience go to waste.",
       features: [
-        "Audit job postings against ATS filters to ensure broad reach",
-        "Monitor competitor listings across startup and remote marketplaces",
-        "Manage applicant records with zero spreadsheet sprawl",
-        "Role-based security controls for your recruiting team",
+        "Surface and articulate transferable skills from past industries and capstone projects",
+        "ATS score benchmark highlights rookie formatting pitfalls and keyword omissions",
+        "Generate punchy, persuasive cover letters explaining your unique career trajectory",
+        "Craft clean, ATS-compliant resumes with pre-built professional templates",
       ],
-      ctaText: "Register as an Employer",
-      ctaHref: "/register?role=employer",
+      ctaText: "Accelerate Your Transition",
+      ctaHref: "/register",
     },
     {
-      id: "admin",
-      title: "Admins & Governance",
-      badge: "Enterprise Security",
-      icon: ShieldCheck,
+      id: "leaders",
+      title: "Senior & Leadership",
+      badge: "Executive Tier",
+      icon: TrendingUp,
       color: "amber",
-      heading: "Fine-Grained Role-Based Access Control (RBAC)",
+      heading: "Benchmark Executive Pay & Track Multi-Offer Pipelines",
       description:
-        "A dedicated administrative suite at /users providing full lifecycle governance, role distribution metrics, and singleton Super Admin security.",
+        "Tailored for directors, staff engineers, and VP-level talent navigating confidential searches, high-stakes panel interviews, and complex negotiations.",
       features: [
-        "Strict Singleton Super Admin architecture prevents unauthorized takeovers",
-        "Manage, filter, and audit all platform users with instant role updates",
-        "Granular 403 Forbidden permission barriers on sensitive endpoints",
-        "Real-time role distribution metrics across all 5 system roles",
+        "Executive resume review emphasizing business ROI, team scaling, and revenue impact",
+        "Benchmark base and equity compensation against verified tech market brackets",
+        "Track confidential multi-stage executive panels and offers side-by-side",
+        "Simulate high-stakes behavioral and leadership situational interviews",
       ],
-      ctaText: "Admin User Management",
-      ctaHref: "/users",
+      ctaText: "Advance to Leadership",
+      ctaHref: "/register",
     },
   ];
 
-  const current = roles.find((r) => r.id === activeRole) || roles[0];
+  const current = personas.find((p) => p.id === activePersona) || personas[0];
 
   return (
-    <section id="roles" className="py-20 sm:py-28 relative">
+    <section id="personas" className="py-20 sm:py-28 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 text-xs font-semibold uppercase tracking-wider mb-3">
-            <Users className="w-3.5 h-3.5" />
-            Built for Every Career Stakeholder
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold uppercase tracking-wider mb-3">
+            <UserCheck className="w-3.5 h-3.5" />
+            Tailored for Every Career Path
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white font-space-grotesk">
-            Tailored Experiences for Every Role
+            Engineered for Every Tech Job Seeker
           </h2>
           <p className="mt-3 text-base text-slate-600 dark:text-slate-300">
-            Whether you&apos;re hunting for your dream engineering role,
-            sourcing specialized talent, or managing platform security, Career
-            Graph adapts to your workflow.
+            Whether you&apos;re breaking into tech, scaling your engineering
+            career, or landing executive leadership roles, Career Graph adapts
+            to your trajectory.
           </p>
         </div>
 
-        {/* Role Selector Tabs */}
+        {/* Persona Selector Tabs */}
         <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto mb-10 p-1.5 bg-slate-100 dark:bg-slate-800/80 rounded-2xl">
-          {roles.map((r) => {
-            const Icon = r.icon;
-            const isSelected = activeRole === r.id;
+          {personas.map((p) => {
+            const Icon = p.icon;
+            const isSelected = activePersona === p.id;
             return (
               <button
-                key={r.id}
+                key={p.id}
                 type="button"
                 onClick={() =>
-                  setActiveRole(
-                    r.id as "seeker" | "recruiter" | "employer" | "admin",
+                  setActivePersona(
+                    p.id as
+                      | "engineers"
+                      | "product"
+                      | "transitioners"
+                      | "leaders",
                   )
                 }
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                   isSelected
                     ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-md shadow-black/5"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 <Icon className="w-4 h-4 text-blue-500" />
-                <span>{r.title}</span>
+                <span>{p.title}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Selected Role Card */}
+        {/* Selected Persona Card */}
         <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-xl shadow-blue-500/5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
             <div>

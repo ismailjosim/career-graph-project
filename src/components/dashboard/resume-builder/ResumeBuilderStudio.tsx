@@ -20,12 +20,14 @@ export function ResumeBuilderStudio() {
   const searchParams = useSearchParams();
   const existingId = searchParams.get("id");
   const templateParam = searchParams.get("template") as TemplateId | null;
+  const colorParam = searchParams.get("color");
+  const fontParam = searchParams.get("font") as
+    | "sans"
+    | "serif"
+    | "mono"
+    | null;
 
-  const validTemplate =
-    templateParam &&
-    ["modern", "executive", "tech", "creative"].includes(templateParam)
-      ? templateParam
-      : "modern";
+  const validTemplate = templateParam?.trim() || "modern";
 
   const [resumeId, setResumeId] = useState<string | null>(existingId);
   const [resumeName, setResumeName] = useState<string>(
@@ -35,19 +37,21 @@ export function ResumeBuilderStudio() {
     useState<TemplateId>(validTemplate);
   const [themeConfig, setThemeConfig] = useState<ResumeThemeConfig>({
     accentColor:
-      validTemplate === "modern"
+      colorParam ||
+      (validTemplate === "modern"
         ? "#4f46e5"
         : validTemplate === "executive"
           ? "#0f172a"
           : validTemplate === "tech"
             ? "#059669"
-            : "#2563eb",
+            : "#2563eb"),
     fontFamily:
-      validTemplate === "executive"
+      fontParam ||
+      (validTemplate === "executive"
         ? "serif"
         : validTemplate === "tech"
           ? "mono"
-          : "sans",
+          : "sans"),
     layoutDensity: "normal",
   });
   const [builderData, setBuilderData] =

@@ -7,6 +7,7 @@ import type {
   ResumePersonalInfo,
   ResumeProjectItem,
   ResumeSkillGroup,
+  ResumeTemplate,
   ResumeThemeConfig,
 } from "@/lib/validation";
 
@@ -19,6 +20,7 @@ export type {
   ResumePersonalInfo,
   ResumeProjectItem,
   ResumeSkillGroup,
+  ResumeTemplate,
   ResumeThemeConfig,
 };
 

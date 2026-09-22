@@ -77,6 +77,14 @@ export function LandingFooter() {
               </li>
               <li>
                 <Link
+                  href="/mock-interview"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  AI Mock Interview Prep
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/resumes"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
@@ -135,10 +143,10 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Governance & Access */}
+          {/* Account & Community */}
           <div className="space-y-3">
             <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider font-space-grotesk">
-              Account & Roles
+              Account & Community
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
@@ -159,18 +167,18 @@ export function LandingFooter() {
               </li>
               <li>
                 <Link
-                  href="/users"
+                  href="/reviews"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  User Management (Admin)
+                  User Reviews & Wall of Love
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/dashboard"
+                  href="/settings"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  Profile Settings
+                  Account Settings
                 </Link>
               </li>
             </ul>
