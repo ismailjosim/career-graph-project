@@ -7,6 +7,7 @@ export * from "./ProfileHeader";
 export * from "./ProfileLoading";
 export * from "./ProfileOnboardingBanner";
 export * from "./ProfileOverviewCard";
+export * from "./ProfileClient";
 export * from "./ProfileResumesCard";
 export * from "./ProfileReviewCard";
 export * from "./ProfileStatsGrid";

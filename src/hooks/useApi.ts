@@ -673,7 +673,7 @@ export function useJobMarket() {
       fetch(`${API_BASE_URL}/job-market/${id}/visit`, {
         method: "POST",
         headers: { "x-user-id": userId || "" },
-      }).catch(() => {});
+      }).catch(() => { });
       setMarkets((prev) =>
         prev.map((m) =>
           m._id === id ? { ...m, visitCount: (m.visitCount || 0) + 1 } : m,

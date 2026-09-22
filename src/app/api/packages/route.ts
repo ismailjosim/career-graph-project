@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { TokenPackage } from "@/lib/models";
+import { DEFAULT_POLAR_PRODUCTS, createPolarProduct } from "@/lib/polar";
 import { getSessionUser, requireAdminUser } from "@/lib/server-auth";
 
 const DEFAULT_PACKAGES = [
@@ -8,6 +9,7 @@ const DEFAULT_PACKAGES = [
     name: "Starter Pack",
     tokens: 500,
     price: 5,
+    polarProductId: DEFAULT_POLAR_PRODUCTS["Starter Pack"],
     description:
       "Essential token bundle for kickstarting your targeted job applications.",
     badge: "Starter",
@@ -26,6 +28,7 @@ const DEFAULT_PACKAGES = [
     name: "Pro Pack",
     tokens: 1150,
     price: 10,
+    polarProductId: DEFAULT_POLAR_PRODUCTS["Pro Pack"],
     description:
       "Our most popular package for serious applicants targeting top roles (+15% Free Bonus).",
     badge: "Most Popular",
@@ -45,6 +48,7 @@ const DEFAULT_PACKAGES = [
     name: "Ultra Career Pack",
     tokens: 2600,
     price: 20,
+    polarProductId: DEFAULT_POLAR_PRODUCTS["Ultra Career Pack"],
     description:
       "Maximum career acceleration bundle with the highest token value per dollar (+30% Free Bonus).",
     badge: "Best Value",
@@ -70,6 +74,24 @@ export async function GET() {
     if (count === 0) {
       await TokenPackage.insertMany(DEFAULT_PACKAGES);
       count = DEFAULT_PACKAGES.length;
+    } else {
+      // Auto-migrate existing database records that don't have polarProductId yet
+      const missingPolar = await TokenPackage.find({
+        $or: [
+          { polarProductId: { $exists: false } },
+          { polarProductId: null },
+          { polarProductId: "" },
+        ],
+      });
+
+      for (const p of missingPolar) {
+        if (DEFAULT_POLAR_PRODUCTS[p.name]) {
+          await TokenPackage.updateOne(
+            { _id: p._id },
+            { $set: { polarProductId: DEFAULT_POLAR_PRODUCTS[p.name] } },
+          );
+        }
+      }
     }
 
     const currentUser = await getSessionUser();
@@ -114,6 +136,7 @@ export async function POST(request: NextRequest) {
       isPopular,
       isActive,
       sortOrder,
+      polarProductId,
     } = body;
 
     if (!name || typeof name !== "string" || !name.trim()) {
@@ -142,6 +165,25 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
+    // Auto-create product in Polar if not provided
+    let resolvedPolarProductId =
+      typeof polarProductId === "string" && polarProductId.trim()
+        ? polarProductId.trim()
+        : DEFAULT_POLAR_PRODUCTS[name.trim()] || null;
+
+    if (!resolvedPolarProductId) {
+      try {
+        resolvedPolarProductId = await createPolarProduct({
+          name: name.trim(),
+          price: parsedPrice,
+          description:
+            typeof description === "string" ? description.trim() : "",
+        });
+      } catch (polarErr) {
+        console.warn("Could not automatically create Polar product:", polarErr);
+      }
+    }
+
     const newPackage = await TokenPackage.create({
       name: name.trim(),
       tokens: parsedTokens,
@@ -154,6 +196,7 @@ export async function POST(request: NextRequest) {
       isPopular: Boolean(isPopular),
       isActive: isActive === undefined ? true : Boolean(isActive),
       sortOrder: Number(sortOrder) || 0,
+      polarProductId: resolvedPolarProductId || undefined,
     });
 
     return NextResponse.json(

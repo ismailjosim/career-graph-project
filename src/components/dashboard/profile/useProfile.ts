@@ -1,3 +1,4 @@
+"use client";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -80,9 +81,9 @@ export function useProfile() {
           ? u.skills
           : typeof u.skills === "string"
             ? u.skills
-                .split(",")
-                .map((s: string) => s.trim())
-                .filter(Boolean)
+              .split(",")
+              .map((s: string) => s.trim())
+              .filter(Boolean)
             : [],
         technicalSkills: Array.isArray(u.technicalSkills)
           ? u.technicalSkills

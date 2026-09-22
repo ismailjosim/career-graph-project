@@ -3,6 +3,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import {
+  blockedAccountResponse,
   deductUserTokens,
   getSessionUser,
   unauthorizedResponse,
@@ -44,13 +45,16 @@ interface FitAnalysisResult {
 export async function POST(request: NextRequest) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    if (user.status === "blocked") {
+      return blockedAccountResponse();
+    }
+    const userId = user.id;
 
     const FIT_TOKEN_COST = 10;
-    const currentTokens = typeof user?.tokens === "number" ? user.tokens : 50;
+    const currentTokens = typeof user.tokens === "number" ? user.tokens : 50;
 
     if (currentTokens < FIT_TOKEN_COST) {
       return NextResponse.json(

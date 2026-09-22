@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
+  blockedAccountResponse,
   deductUserTokens,
   getSessionUser,
   unauthorizedResponse,
@@ -21,10 +22,13 @@ const CANDIDATE_MODELS = [
 export async function POST(request: NextRequest) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    if (user.status === "blocked") {
+      return blockedAccountResponse();
+    }
+    const userId = user.id;
 
     const body = await request.json();
     const { type = "bullet", text, role, company, targetJob } = body;

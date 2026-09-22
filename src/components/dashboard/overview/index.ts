@@ -1,4 +1,5 @@
 export * from "./AddApplicationModal";
+export * from "./DashboardClient";
 export * from "./DashboardLoading";
 export * from "./DashboardOverviewHeader";
 export * from "./DashboardStatsGrid";

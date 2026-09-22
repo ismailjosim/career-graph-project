@@ -7,10 +7,10 @@ import { jobApplicationSchema } from "@/lib/validation";
 export async function GET(request: NextRequest) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     await connectDB();
 
@@ -86,10 +86,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     await connectDB();
 

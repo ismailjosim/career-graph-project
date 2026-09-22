@@ -1,3 +1,4 @@
+import type { Document, Filter, UpdateFilter } from "mongodb";
 import { ObjectId } from "mongodb";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
@@ -193,16 +194,13 @@ export async function ensureSuperAdminExists() {
   }
 }
 
-function getUserQuery(id: string): Record<string, unknown> {
-  try {
+function getUserQuery(id: string): Filter<Document> {
+  if (ObjectId.isValid(id)) {
     return {
-      $or: [{ _id: new ObjectId(id) }, { _id: id }, { id: id }],
-    };
-  } catch {
-    return {
-      $or: [{ _id: id }, { id: id }],
+      $or: [{ _id: new ObjectId(id) }, { id }],
     };
   }
+  return { id };
 }
 
 /**
@@ -231,29 +229,46 @@ export async function deductUserTokens({
       return { success: false, newBalance: 0, error: "Database unavailable" };
     }
 
-    const userCollection = db.collection<Record<string, unknown>>("user");
+    const userCollection = db.collection("user");
     const query = getUserQuery(userId);
-    const user = await userCollection.findOne(query);
 
-    if (!user) {
-      return { success: false, newBalance: 0, error: "User not found" };
-    }
+    const filter: Filter<Document> = {
+      ...query,
+      $or: [
+        { tokens: { $gte: amount } },
+        { tokens: { $exists: false }, $expr: { $gte: [50, amount] } },
+      ],
+    };
 
-    const currentTokens = typeof user.tokens === "number" ? user.tokens : 50;
+    const update: UpdateFilter<Document> = {
+      $inc: { tokens: -amount },
+      $set: { updatedAt: new Date() },
+    };
 
-    if (currentTokens < amount) {
+    // Atomically find and deduct tokens only if current tokens >= amount
+    const updatedUser = (await userCollection.findOneAndUpdate(
+      filter,
+      update,
+      { returnDocument: "after" },
+    )) as Record<string, unknown> | null;
+
+    if (!updatedUser) {
+      // Check if user doesn't exist or just had insufficient tokens
+      const existing = await userCollection.findOne(query);
+      if (!existing) {
+        return { success: false, newBalance: 0, error: "User not found" };
+      }
+      const available =
+        typeof existing.tokens === "number" ? existing.tokens : 50;
       return {
         success: false,
-        newBalance: currentTokens,
-        error: `Insufficient tokens. Required: ${amount}, available: ${currentTokens}`,
+        newBalance: available,
+        error: `Insufficient tokens. Required: ${amount}, available: ${available}`,
       };
     }
 
-    const newBalance = currentTokens - amount;
-
-    await userCollection.updateOne(query, {
-      $set: { tokens: newBalance, updatedAt: new Date() },
-    });
+    const newBalance =
+      typeof updatedUser.tokens === "number" ? updatedUser.tokens : 0;
 
     try {
       await TokenTransaction.create({
@@ -306,20 +321,27 @@ export async function grantUserTokens({
       return { success: false, newBalance: 0, error: "Database unavailable" };
     }
 
-    const userCollection = db.collection<Record<string, unknown>>("user");
+    const userCollection = db.collection("user");
     const query = getUserQuery(userId);
-    const user = await userCollection.findOne(query);
 
-    if (!user) {
+    const update: UpdateFilter<Document> = {
+      $inc: { tokens: amount },
+      $set: { updatedAt: new Date() },
+    };
+
+    // Atomically increment tokens
+    const updatedUser = (await userCollection.findOneAndUpdate(
+      query,
+      update,
+      { returnDocument: "after" },
+    )) as Record<string, unknown> | null;
+
+    if (!updatedUser) {
       return { success: false, newBalance: 0, error: "User not found" };
     }
 
-    const currentTokens = typeof user.tokens === "number" ? user.tokens : 50;
-    const newBalance = currentTokens + amount;
-
-    await userCollection.updateOne(query, {
-      $set: { tokens: newBalance, updatedAt: new Date() },
-    });
+    const newBalance =
+      typeof updatedUser.tokens === "number" ? updatedUser.tokens : amount;
 
     try {
       await TokenTransaction.create({
@@ -333,6 +355,31 @@ export async function grantUserTokens({
         createdAt: new Date(),
       });
     } catch (txErr) {
+      // Check for duplicate transaction key error (E11000) for idempotent transactions
+      const isDuplicate =
+        txErr &&
+        typeof txErr === "object" &&
+        "code" in txErr &&
+        txErr.code === 11000;
+      if (isDuplicate) {
+        console.warn(
+          "Duplicate token transaction detected (idempotent duplicate prevented):",
+          metadata,
+        );
+        const rollbackUpdate: UpdateFilter<Document> = {
+          $inc: { tokens: -amount },
+        };
+        // Rollback the increment if this transaction was already credited
+        await userCollection.updateOne(
+          query,
+          rollbackUpdate,
+        );
+        return {
+          success: false,
+          newBalance: newBalance - amount,
+          error: "Transaction has already been credited.",
+        };
+      }
       console.error("Failed to log token grant transaction:", txErr);
     }
 

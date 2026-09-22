@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { UserRole, UserStatus } from "@/lib/validation";
@@ -67,10 +68,10 @@ export function useSettings() {
           experience: u.experience || "",
           education: Array.isArray(u.education)
             ? u.education
-                .map((e: { degree?: string; institution?: string }) =>
-                  [e.degree, e.institution].filter(Boolean).join(" - "),
-                )
-                .join("; ")
+              .map((e: { degree?: string; institution?: string }) =>
+                [e.degree, e.institution].filter(Boolean).join(" - "),
+              )
+              .join("; ")
             : typeof u.education === "string"
               ? u.education
               : "",

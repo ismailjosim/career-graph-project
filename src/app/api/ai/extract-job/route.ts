@@ -31,10 +31,10 @@ const cleanHtml = (html: string): string => {
 export async function POST(request: NextRequest) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     const body = await request.json();
     const { url } = body;

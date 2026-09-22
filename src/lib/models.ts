@@ -234,6 +234,7 @@ export interface ITokenPackage {
   isPopular?: boolean;
   isActive: boolean;
   sortOrder: number;
+  polarProductId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -249,9 +250,14 @@ const tokenPackageSchema = new mongoose.Schema<ITokenPackage>(
     isPopular: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    polarProductId: { type: String, trim: true },
   },
   { timestamps: true },
 );
+
+if (mongoose.models.TokenPackage) {
+  delete (mongoose.models as Record<string, unknown>).TokenPackage;
+}
 
 export const TokenPackage =
   mongoose.models.TokenPackage ||
@@ -379,6 +385,14 @@ const tokenTransactionSchema = new mongoose.Schema<ITokenTransaction>(
 );
 
 tokenTransactionSchema.index({ userId: 1, createdAt: -1 });
+tokenTransactionSchema.index(
+  { "metadata.polarCheckoutId": 1 },
+  { unique: true, sparse: true },
+);
+
+if (mongoose.models.TokenTransaction) {
+  delete (mongoose.models as Record<string, unknown>).TokenTransaction;
+}
 
 export const TokenTransaction =
   mongoose.models.TokenTransaction ||

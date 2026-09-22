@@ -2,6 +2,7 @@ export * from "./AdjustTokensModal";
 export * from "./EditUserModal";
 export * from "./types";
 export * from "./UsersAccessDenied";
+export * from "./UsersClient";
 export * from "./UsersFeedbackBanner";
 export * from "./UsersHeader";
 export * from "./UsersLoading";

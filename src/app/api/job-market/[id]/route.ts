@@ -10,10 +10,10 @@ export async function GET(
 ) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     await connectDB();
 
@@ -46,10 +46,10 @@ export async function PUT(
 ) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     await connectDB();
 
@@ -95,10 +95,10 @@ export async function DELETE(
 ) {
   try {
     const user = await getSessionUser();
-    const userId = user?.id || request.headers.get("x-user-id");
-    if (!userId) {
+    if (!user) {
       return unauthorizedResponse();
     }
+    const userId = user.id;
 
     await connectDB();
 

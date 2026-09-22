@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { TokenPackage } from "@/lib/models";
+import { archivePolarProduct } from "@/lib/polar";
 import { requireAdminUser } from "@/lib/server-auth";
 
 export async function PUT(
@@ -25,6 +26,7 @@ export async function PUT(
       isPopular,
       isActive,
       sortOrder,
+      polarProductId,
     } = body;
 
     await connectDB();
@@ -67,6 +69,12 @@ export async function PUT(
     if (isPopular !== undefined) updates.isPopular = Boolean(isPopular);
     if (isActive !== undefined) updates.isActive = Boolean(isActive);
     if (sortOrder !== undefined) updates.sortOrder = Number(sortOrder) || 0;
+    if (polarProductId !== undefined) {
+      updates.polarProductId =
+        typeof polarProductId === "string" && polarProductId.trim()
+          ? polarProductId.trim()
+          : undefined;
+    }
 
     const updatedPackage = await TokenPackage.findByIdAndUpdate(
       id,
@@ -103,6 +111,13 @@ export async function DELETE(
     const deleted = await TokenPackage.findByIdAndDelete(id);
     if (!deleted) {
       return NextResponse.json({ error: "Package not found" }, { status: 404 });
+    }
+
+    // Automatically archive in Polar if linked
+    if (deleted.polarProductId) {
+      archivePolarProduct(deleted.polarProductId).catch((err) =>
+        console.warn("Could not archive product on Polar:", err),
+      );
     }
 
     return NextResponse.json({
