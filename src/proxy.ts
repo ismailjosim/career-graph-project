@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "./lib/rate-limit";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -8,13 +9,41 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Rate limiting for API routes to prevent abuse
+  if (pathname.startsWith("/api/")) {
+    const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const isApiAuthRoute = pathname.startsWith("/api/auth");
+    const limitResult = rateLimit(ip + (isApiAuthRoute ? "_auth" : "_api"), {
+      windowMs: 60 * 1000,
+      maxRequests: isApiAuthRoute ? 10 : 100, // 10 req/min for auth, 100 for other APIs
+    });
+
+    if (!limitResult.success) {
+      return new NextResponse(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": limitResult.limit.toString(),
+            "X-RateLimit-Remaining": limitResult.remaining.toString(),
+            "X-RateLimit-Reset": limitResult.reset.toString(),
+          },
+        },
+      );
+    }
+  }
+
   // Better Auth session cookie names (http and https secure prefix)
   const sessionCookie =
     request.cookies.get("better-auth.session_token")?.value ||
     request.cookies.get("__Secure-better-auth.session_token")?.value;
 
   const isAuthRoute =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forget-password") ||
+    pathname.startsWith("/reset-password");
   const isVerifyOtpRoute = pathname.startsWith("/verify-otp");
 
   // Allow verify-otp without redirect loop
@@ -27,8 +56,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Redirect unauthenticated user to login for protected dashboard routes
-  if (!sessionCookie && !isAuthRoute) {
+  // Redirect unauthenticated user to login for protected dashboard routes (exclude API routes)
+  if (!sessionCookie && !isAuthRoute && !pathname.startsWith("/api/")) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
@@ -65,5 +94,8 @@ export const config = {
     "/login",
     "/register",
     "/verify-otp",
+    "/forget-password",
+    "/reset-password",
+    "/api/:path*",
   ],
 };

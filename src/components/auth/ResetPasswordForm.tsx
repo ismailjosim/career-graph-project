@@ -1,20 +1,15 @@
 "use client";
 
-import { AlertCircle, Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle, Eye, EyeOff, Lock, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { GoogleSignInButton } from "@/components/google-sign-in-button";
-import { signIn } from "@/lib/auth-client";
+import { resetPassword } from "@/lib/auth-client";
 
-export function LoginForm() {
+export function ResetPasswordForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,28 +17,39 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await signIn.email({
-        email,
-        password,
-      });
+      const res = await resetPassword({
+        newPassword: password,
+      }) as { error?: { message?: string } | null };
 
       if (res.error) {
-        const msg = res.error.message || "Invalid email or password";
+        const msg =
+          res.error.message ||
+          "Failed to reset password. The link might be expired.";
         setError(msg);
         toast.error(msg);
       } else {
-        toast.success("Welcome back! Signed in successfully.");
-        router.push(callbackUrl);
-        router.refresh();
+        toast.success("Password reset successfully. You can now login.");
+        router.push("/login");
       }
     } catch (err) {
       const msg =
         err instanceof Error
           ? err.message
-          : "An unexpected error occurred during sign in";
+          : "An unexpected error occurred. Please try again later.";
       setError(msg);
       toast.error(msg);
     } finally {
@@ -55,10 +61,10 @@ export function LoginForm() {
     <div className="card p-5 sm:p-8 shadow-xl border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-          Welcome back
+          Create new password
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Sign in to access your applications and career tracker
+          Please enter your new password below.
         </p>
       </div>
 
@@ -69,54 +75,11 @@ export function LoginForm() {
         </div>
       )}
 
-      {/* Social Login */}
-      <div className="space-y-3">
-        <GoogleSignInButton
-          callbackUrl={callbackUrl}
-          label="Sign in with Google"
-        />
-
-        <div className="flex items-center gap-3 my-5">
-          <div className="h-px bg-slate-200 dark:bg-slate-700 flex-1" />
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Or continue with email
-          </span>
-          <div className="h-px bg-slate-200 dark:bg-slate-700 flex-1" />
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-            Email address
+            New Password
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Mail className="w-5 h-5" />
-            </div>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="input pl-11"
-            />
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Password
-            </label>
-            <Link
-              href="/forget-password"
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <Lock className="w-5 h-5" />
@@ -143,31 +106,40 @@ export function LoginForm() {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            Confirm New Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <Lock className="w-5 h-5" />
+            </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="******"
+              className="input pl-11 pr-11"
+            />
+          </div>
+        </div>
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !password || !confirmPassword}
           className="btn-primary w-full py-2.5 text-sm font-semibold flex items-center justify-center gap-2 mt-2 shadow-md shadow-blue-500/10 cursor-pointer"
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              <LogIn className="w-4 h-4" />
-              <span>Sign In</span>
+              <Save className="w-4 h-4" />
+              <span>Save Password</span>
             </>
           )}
         </button>
       </form>
-
-      <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        Don&apos;t have an account?{" "}
-        <Link
-          href="/register"
-          className="font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          Create one now
-        </Link>
-      </div>
     </div>
   );
 }

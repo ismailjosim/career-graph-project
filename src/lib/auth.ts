@@ -77,6 +77,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    sendResetPassword: async ({ user, url, token: _token }, _request) => {
+      // In a real application, you would send this URL via an email provider (like Resend, SendGrid, etc.)
+      console.log(`\n\n======================================================`);
+      console.log(`🔒 PASSWORD RESET LINK GENERATED FOR: ${user.email}`);
+      console.log(`🔗 Click to reset: ${url}`);
+      console.log(`======================================================\n\n`);
+    },
   },
   socialProviders: {
     google: {
