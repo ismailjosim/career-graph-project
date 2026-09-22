@@ -18,10 +18,10 @@ export function ForgetPasswordForm() {
     setLoading(true);
 
     try {
-      const res = await forgetPassword({
+      const res = (await forgetPassword({
         email,
         redirectTo: "/reset-password",
-      }) as { error?: { message?: string } | null };
+      })) as { error?: { message?: string } | null };
 
       if (res.error) {
         const msg = res.error.message || "Failed to send reset link";

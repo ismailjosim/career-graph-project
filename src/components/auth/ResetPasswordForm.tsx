@@ -31,9 +31,9 @@ export function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      const res = await resetPassword({
+      const res = (await resetPassword({
         newPassword: password,
-      }) as { error?: { message?: string } | null };
+      })) as { error?: { message?: string } | null };
 
       if (res.error) {
         const msg =
