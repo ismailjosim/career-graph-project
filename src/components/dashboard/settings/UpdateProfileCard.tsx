@@ -1,3 +1,5 @@
+"use client";
+
 import { Loader2, Save, User } from "lucide-react";
 import type { ProfileSettingsForm } from "./types";
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { ExternalLink, Trash2 } from "lucide-react";
 import type { Wishlist } from "@/lib/validation";
 import type { WishlistCardProps } from "./types";

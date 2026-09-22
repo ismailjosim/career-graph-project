@@ -1,3 +1,5 @@
+"use client";
+
 import { Briefcase, ExternalLink, Plus } from "lucide-react";
 import Link from "next/link";
 import type { RecentApplicationsTableProps } from "./types";

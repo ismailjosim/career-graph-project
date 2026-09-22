@@ -1,3 +1,5 @@
+"use client";
+
 import { Globe, Link2 } from "lucide-react";
 
 interface PostJobSourceSectionProps {

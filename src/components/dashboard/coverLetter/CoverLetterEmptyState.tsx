@@ -1,3 +1,5 @@
+"use client";
+
 import { FileText, FilterX, Plus } from "lucide-react";
 import type { CoverLetterEmptyStateProps } from "./types";
 

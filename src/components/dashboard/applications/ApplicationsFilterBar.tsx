@@ -1,3 +1,5 @@
+"use client";
+
 import { Search, X } from "lucide-react";
 import { DEFAULT_STATUS_OPTIONS } from "./applications.utils";
 import type { LegacyApplicationsFilterBarProps, StatusOption } from "./types";

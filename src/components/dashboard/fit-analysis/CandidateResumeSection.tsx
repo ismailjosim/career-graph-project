@@ -1,3 +1,5 @@
+"use client";
+
 import { FileText, UploadCloud } from "lucide-react";
 import { ResumeUploadArea } from "./ResumeUploadArea";
 import { SavedResumesList } from "./SavedResumesList";

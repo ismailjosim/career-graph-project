@@ -1,3 +1,5 @@
+"use client";
+
 import { Search, X } from "lucide-react";
 import type { WishlistFilterBarProps } from "./types";
 import { DEFAULT_WISHLIST_STATUS_OPTIONS } from "./wishlist.utils";

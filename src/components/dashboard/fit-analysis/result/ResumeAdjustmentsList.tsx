@@ -1,3 +1,5 @@
+"use client";
+
 import { Check, Copy, Layers } from "lucide-react";
 import type { ResumeAdjustmentsListProps } from "./types";
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { FilterX, Heart, Plus } from "lucide-react";
 import type { WishlistEmptyStateProps } from "./types";
 

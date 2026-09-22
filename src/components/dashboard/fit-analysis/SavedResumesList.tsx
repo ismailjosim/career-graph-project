@@ -1,3 +1,5 @@
+"use client";
+
 import { Check, FileText, Loader2, UploadCloud } from "lucide-react";
 import type { SavedResumesListProps } from "./types";
 

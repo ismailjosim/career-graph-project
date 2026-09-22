@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowLeft, Download, FileText, Printer } from "lucide-react";
 
 interface AtsExportActionsProps {

@@ -1,3 +1,5 @@
+"use client";
+
 import { Check, Coins, Edit2, Sparkles, Trash2 } from "lucide-react";
 import type { TokenPackageData } from "./types";
 

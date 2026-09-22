@@ -1,3 +1,5 @@
+"use client";
+
 import { Bookmark, Globe, Plus } from "lucide-react";
 import type { JobMarketHeaderProps } from "./types";
 

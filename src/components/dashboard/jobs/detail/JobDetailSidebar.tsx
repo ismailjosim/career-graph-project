@@ -1,3 +1,5 @@
+"use client";
+
 import { Building2, ExternalLink, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
 import type { JobPosting } from "@/lib/validation";

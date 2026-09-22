@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertCircle, Briefcase, Link2, Loader2 } from "lucide-react";
 import type { JobPostingSectionProps } from "./types";
 

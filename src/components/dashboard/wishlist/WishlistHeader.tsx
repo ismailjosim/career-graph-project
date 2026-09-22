@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowLeft, Heart, Plus } from "lucide-react";
 import Link from "next/link";
 import type { WishlistHeaderProps } from "./types";

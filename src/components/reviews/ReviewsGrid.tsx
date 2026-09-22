@@ -1,3 +1,5 @@
+"use client";
+
 import { Loader2, ShieldCheck, Sparkles, Star } from "lucide-react";
 import {
   AVATAR_GRADIENTS,

@@ -1,3 +1,5 @@
+"use client";
+
 import { Coins, Plus, Sparkles } from "lucide-react";
 
 interface PricingHeaderProps {

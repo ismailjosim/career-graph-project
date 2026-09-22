@@ -1,3 +1,5 @@
+"use client";
+
 interface UsersFeedbackBannerProps {
   feedback: {
     type: "success" | "error";

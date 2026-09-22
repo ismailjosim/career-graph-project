@@ -1,3 +1,5 @@
+"use client";
+
 import { Briefcase, Loader2, Pencil, Save, X } from "lucide-react";
 import { EXPERIENCE_RANGES } from "@/lib/validation";
 import { CoreSkillsSelect } from "./CoreSkillsSelect";

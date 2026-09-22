@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowLeft, FileText, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import type { ResumeHeaderProps } from "./types";

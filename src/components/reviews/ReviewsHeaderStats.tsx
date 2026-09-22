@@ -1,3 +1,5 @@
+"use client";
+
 import { ShieldCheck, Star } from "lucide-react";
 import Link from "next/link";
 import type { ReviewStats } from "./reviews.types";
