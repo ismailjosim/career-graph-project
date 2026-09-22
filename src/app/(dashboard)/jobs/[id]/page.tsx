@@ -1,6 +1,6 @@
+import { Loader2 } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
 import { JobDetailClient } from "@/components/dashboard/jobs";
 
 export const metadata: Metadata = {

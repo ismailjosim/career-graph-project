@@ -50,9 +50,7 @@ export function CertificationsSection({
           className="flex items-center gap-2.5 cursor-pointer"
         >
           <Award className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-          <span>
-            Certifications & Accreditations ({certifications.length})
-          </span>
+          <span>Certifications & Accreditations ({certifications.length})</span>
         </button>
 
         <div className="flex items-center gap-2">

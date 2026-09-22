@@ -1,3 +1,5 @@
+"use client";
+
 import { Bookmark, Globe, Loader2, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { JobMarketModalProps } from "./types";

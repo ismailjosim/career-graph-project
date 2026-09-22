@@ -1,5 +1,0 @@
-
-
-- I want to add resume builder option. by clicking user can build there resume here. resume should be downloadable in pdf format. user should also can print there resume. there should be multiple templates for resume. user should can choose template and download resume in pdf format. do some research before implementation. also check does this features should be premium feature? or not? 
-
-at the resume template page I need to add more template in future. for this admin/super admin should can add template. and user can choose template and download resume in pdf format.

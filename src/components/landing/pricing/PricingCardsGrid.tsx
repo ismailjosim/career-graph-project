@@ -2,7 +2,7 @@
 
 import { ArrowRight, CheckCircle2, Coins } from "lucide-react";
 import Link from "next/link";
-import { packages, type PricingPackage } from "./pricing.data";
+import { type PricingPackage, packages } from "./pricing.data";
 
 interface PricingCardsGridProps {
   selectedPlan: "starter" | "pro" | "ultra";

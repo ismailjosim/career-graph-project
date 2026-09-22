@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { TokenPackage } from "@/lib/models";
-import { DEFAULT_POLAR_PRODUCTS, createPolarProduct } from "@/lib/polar";
+import { createPolarProduct, DEFAULT_POLAR_PRODUCTS } from "@/lib/polar";
 import { getSessionUser, requireAdminUser } from "@/lib/server-auth";
 
 const DEFAULT_PACKAGES = [

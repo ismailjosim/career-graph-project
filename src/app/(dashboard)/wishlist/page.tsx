@@ -1,68 +1,20 @@
-"use client";
-
-import { useMemo, useState } from "react";
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
-  AddWishlistModal,
-  filterWishlist,
-  WishlistFilterBar,
-  type WishlistFilterStatus,
-  WishlistHeader,
-  WishlistList,
+  WishlistClient,
   WishlistLoading,
 } from "@/components/dashboard/wishlist";
-import { useWishlist } from "@/hooks/useApi";
+
+export const metadata: Metadata = {
+  title: "Job Wishlist | Career Graph",
+  description:
+    "Save and track job postings from across the web before submitting your application.",
+};
 
 export default function WishlistPage() {
-  const { wishlist, loading, addItem, deleteItem, updateStatus } =
-    useWishlist();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<WishlistFilterStatus>("all");
-  const [showAddModal, setShowAddModal] = useState(false);
-
-  const filteredWishlist = useMemo(
-    () => filterWishlist(wishlist, searchTerm, filterStatus),
-    [wishlist, searchTerm, filterStatus],
-  );
-
-  const hasActiveFilters = searchTerm.trim() !== "" || filterStatus !== "all";
-
-  const handleResetFilters = () => {
-    setSearchTerm("");
-    setFilterStatus("all");
-  };
-
   return (
-    <div className="w-full space-y-8 animate-fade-in">
-      <WishlistHeader
-        totalCount={wishlist.length}
-        filteredCount={filteredWishlist.length}
-        onAddJob={() => setShowAddModal(true)}
-      />
-
-      <WishlistFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filterStatus={filterStatus}
-        onFilterStatusChange={setFilterStatus}
-      />
-
-      {loading ? (
-        <WishlistLoading />
-      ) : (
-        <WishlistList
-          items={filteredWishlist}
-          onStatusChange={updateStatus}
-          onDelete={deleteItem}
-          onResetFilters={hasActiveFilters ? handleResetFilters : undefined}
-          onAddJob={() => setShowAddModal(true)}
-        />
-      )}
-
-      <AddWishlistModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={addItem}
-      />
-    </div>
+    <Suspense fallback={<WishlistLoading />}>
+      <WishlistClient />
+    </Suspense>
   );
 }

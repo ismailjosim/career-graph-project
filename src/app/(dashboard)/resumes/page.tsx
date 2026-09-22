@@ -1,55 +1,17 @@
-"use client";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ResumeLoading, ResumesClient } from "@/components/dashboard/resume";
 
-import { useMemo, useState } from "react";
-import {
-  AddResumeModal,
-  filterResumes,
-  ResumeFilterBar,
-  ResumeHeader,
-  ResumeList,
-  ResumeLoading,
-} from "@/components/dashboard/resume";
-import { useResumes } from "@/hooks/useApi";
+export const metadata: Metadata = {
+  title: "Resumes Management | Career Graph",
+  description:
+    "Upload, manage, preview, and set your default resume for job applications.",
+};
 
 export default function ResumesPage() {
-  const { resumes, loading, addResume, deleteResume, setDefaultResume } =
-    useResumes();
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-
-  const filteredResumes = useMemo(
-    () => filterResumes(resumes, searchTerm),
-    [resumes, searchTerm],
-  );
-
   return (
-    <div className="w-full space-y-8 animate-fade-in">
-      <ResumeHeader
-        totalCount={resumes.length}
-        filteredCount={filteredResumes.length}
-        onAddResume={() => setShowAddModal(true)}
-      />
-
-      <ResumeFilterBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
-
-      {loading ? (
-        <ResumeLoading />
-      ) : (
-        <ResumeList
-          resumes={filteredResumes}
-          onSetDefault={setDefaultResume}
-          onDelete={deleteResume}
-          onResetSearch={searchTerm ? () => setSearchTerm("") : undefined}
-          onAddResume={() => setShowAddModal(true)}
-        />
-      )}
-
-      <AddResumeModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAdd={addResume}
-      />
-    </div>
+    <Suspense fallback={<ResumeLoading />}>
+      <ResumesClient />
+    </Suspense>
   );
 }

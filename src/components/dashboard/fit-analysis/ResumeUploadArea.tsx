@@ -1,3 +1,4 @@
+"use client";
 import { FileCheck, UploadCloud, X } from "lucide-react";
 import { useRef } from "react";
 import type { ResumeUploadAreaProps } from "./types";

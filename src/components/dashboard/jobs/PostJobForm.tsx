@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Briefcase,
-  Building2,
-  Loader2,
-} from "lucide-react";
+import { ArrowLeft, Briefcase, Building2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -316,10 +311,7 @@ export function PostJobForm() {
         </div>
 
         {/* Benefits Builder (Optional) */}
-        <PostJobBenefitsSection
-          benefits={benefits}
-          setBenefits={setBenefits}
-        />
+        <PostJobBenefitsSection benefits={benefits} setBenefits={setBenefits} />
 
         {/* Submit Bar */}
         <div className="flex items-center justify-end gap-3 pt-3">

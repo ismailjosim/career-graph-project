@@ -11,9 +11,9 @@ import {
   ProfileResumesCard,
   ProfileReviewCard,
   ProfileStatsGrid,
-  useProfile,
 } from "@/components/dashboard/profile";
 import { UsersFeedbackBanner } from "@/components/dashboard/users";
+import { useProfile } from "@/hooks";
 
 export function ProfileClient() {
   const {

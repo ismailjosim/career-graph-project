@@ -37,7 +37,9 @@ export function AtsShowcaseTab() {
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>Identifies critical ATS blockers & bullet-point rewrites</span>
+            <span>
+              Identifies critical ATS blockers & bullet-point rewrites
+            </span>
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

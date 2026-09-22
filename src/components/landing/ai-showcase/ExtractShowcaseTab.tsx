@@ -15,9 +15,9 @@ export function ExtractShowcaseTab() {
         </h3>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
           Found an interesting opening on LinkedIn, Indeed, or Greenhouse? Paste
-          the URL or description text. Our autonomous extractor isolates company,
-          title, salary ranges, location, requirements, and tags into your tracker
-          in 2 seconds.
+          the URL or description text. Our autonomous extractor isolates
+          company, title, salary ranges, location, requirements, and tags into
+          your tracker in 2 seconds.
         </p>
         <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
           <li className="flex items-center gap-2">
@@ -26,7 +26,9 @@ export function ExtractShowcaseTab() {
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>Eliminates tedious manual copy-pasting into spreadsheets</span>
+            <span>
+              Eliminates tedious manual copy-pasting into spreadsheets
+            </span>
           </li>
           <li className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />

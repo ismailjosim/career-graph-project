@@ -40,16 +40,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/verify-otp": "Verify Email",
 };
 
-/**
- * Helper hook allowing any page or modal to dynamically set a custom title.
- * e.g., useDocumentTitle("Senior Software Engineer at Stripe")
- */
-export function useDocumentTitle(title?: string | null) {
-  useEffect(() => {
-    if (!title) return;
-    document.title = `${title} - ${PROJECT_NAME}`;
-  }, [title]);
-}
+export { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 /**
  * Global component placed in Providers to automatically synchronize

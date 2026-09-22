@@ -1,6 +1,7 @@
 export * from "./AnalysisProgressCard";
 export * from "./AnalysisSubmitButton";
 export * from "./CandidateResumeSection";
+export * from "./FitAnalysisClient";
 export * from "./FitAnalysisHeader";
 export * from "./fit-analysis.utils";
 export * from "./JobPostingSection";

@@ -78,10 +78,10 @@ export function CoverLetterShowcaseTab() {
             <strong>Dear Airbnb Engineering Team,</strong>
           </p>
           <p>
-            Having scaled full-stack web applications to 3M+ active monthly users
-            while reducing server-rendered latency by 38%, I was immediately
-            drawn to Airbnb&apos;s mission of building seamless, hyper-reliable
-            guest and host experiences.
+            Having scaled full-stack web applications to 3M+ active monthly
+            users while reducing server-rendered latency by 38%, I was
+            immediately drawn to Airbnb&apos;s mission of building seamless,
+            hyper-reliable guest and host experiences.
           </p>
           <p>
             In my recent work with Next.js App Router and TypeScript, I

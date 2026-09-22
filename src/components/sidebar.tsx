@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import { useSidebar } from "./sidebar-context";
 import {
   type MenuGroup,
   menuGroups,
@@ -14,6 +13,7 @@ import {
   SidebarTokenWidget,
   SidebarUserProfile,
 } from "./sidebar/index";
+import { useSidebar } from "./sidebar-context";
 
 export function Sidebar() {
   const { isCollapsed, mobileOpen, setMobileOpen } = useSidebar();

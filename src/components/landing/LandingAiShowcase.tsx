@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Cpu,
-  FileText,
-  Layers,
-  Sparkles,
-  Zap,
-} from "lucide-react";
+import { Cpu, FileText, Layers, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import {
   AtsShowcaseTab,

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return unauthorizedResponse();
     }
-    const userId = user.id;
+    // const userId = user.id;
 
     const body = await request.json();
     const { url } = body;

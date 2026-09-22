@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { validateEvent } from "@polar-sh/sdk/webhooks";
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { TokenPackage, TokenTransaction } from "@/lib/models";
 import { grantUserTokens } from "@/lib/server-auth";
@@ -37,7 +37,11 @@ export async function POST(request: NextRequest) {
           headers[key.toLowerCase()] = val;
         });
 
-        event = validateEvent(rawBody, headers, webhookSecret) as unknown as PolarWebhookEvent;
+        event = validateEvent(
+          rawBody,
+          headers,
+          webhookSecret,
+        ) as unknown as PolarWebhookEvent;
       } catch (validationErr) {
         console.error(
           "Polar webhook signature validation failed:",

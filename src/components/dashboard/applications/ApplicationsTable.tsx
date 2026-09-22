@@ -4,8 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { confirmAction } from "@/lib/alerts";
 import { ApplicationMobileCard } from "./ApplicationMobileCard";
-import { ApplicationTableRow } from "./ApplicationTableRow";
 import { ApplicationsEmptyState } from "./ApplicationsEmptyState";
+import { ApplicationTableRow } from "./ApplicationTableRow";
 import type { ApplicationsTableProps } from "./types";
 
 const SKELETON_ROW_KEYS = [

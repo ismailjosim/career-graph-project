@@ -10,10 +10,7 @@ import {
   SkillsSection,
   SummarySection,
 } from "./sections";
-import type {
-  ResumeBuilderData,
-  ResumePersonalInfo,
-} from "./types";
+import type { ResumeBuilderData, ResumePersonalInfo } from "./types";
 
 interface ResumeFormEditorProps {
   data: ResumeBuilderData;

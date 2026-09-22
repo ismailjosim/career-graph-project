@@ -13,9 +13,9 @@ import {
   UsersPagination,
   UsersTable,
   UsersTableFilters,
-  useUsersManager,
   ViewUserModal,
 } from "@/components/dashboard/users";
+import { useUsersManager } from "@/hooks";
 
 export function UsersClient() {
   const {

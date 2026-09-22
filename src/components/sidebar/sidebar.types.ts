@@ -1,4 +1,3 @@
-import type { ComponentType } from "react";
 import {
   BookOpen,
   Bot,
@@ -14,6 +13,7 @@ import {
   User,
   Zap,
 } from "lucide-react";
+import type { ComponentType } from "react";
 
 export interface MenuItem {
   icon: ComponentType<{ className?: string }>;

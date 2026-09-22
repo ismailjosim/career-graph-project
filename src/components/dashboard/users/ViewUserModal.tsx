@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Coins,
-  ExternalLink,
-  Pencil,
-  User as UserIcon,
-  X,
-} from "lucide-react";
+import { Coins, ExternalLink, Pencil, User as UserIcon, X } from "lucide-react";
 import Link from "next/link";
 import type { ViewUserModalProps } from "./types";
 import {
@@ -80,10 +74,7 @@ export function ViewUserModal({
           <UserContactSection user={user} />
 
           {/* Account Metadata Grid */}
-          <UserMetaSection
-            user={user}
-            onAdjustTokens={onAdjustTokens}
-          />
+          <UserMetaSection user={user} onAdjustTokens={onAdjustTokens} />
         </div>
 
         {/* Footer Actions */}

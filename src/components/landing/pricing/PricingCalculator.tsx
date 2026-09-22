@@ -62,8 +62,8 @@ export function PricingCalculator({
 
       <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300">
         <span>
-          💡 <strong>1 Complete Application Suite</strong> = 1 ATS Audit (10) + 1
-          Cover Letter (20) + 1 Fit Check (10) ={" "}
+          💡 <strong>1 Complete Application Suite</strong> = 1 ATS Audit (10) +
+          1 Cover Letter (20) + 1 Fit Check (10) ={" "}
           <strong>40 Tokens (~$0.35–$0.40)</strong>
         </span>
         <span className="text-indigo-600 dark:text-indigo-400 font-semibold">

@@ -1,6 +1,7 @@
 export * from "./AddWishlistModal";
 export * from "./types";
 export * from "./WishlistCard";
+export * from "./WishlistClient";
 export * from "./WishlistEmptyState";
 export * from "./WishlistFilterBar";
 export * from "./WishlistHeader";

@@ -1,6 +1,13 @@
 "use client";
 
-import { Briefcase, ChevronDown, ChevronUp, Plus, Sparkles, Trash2 } from "lucide-react";
+import {
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useTokens } from "@/context/tokens-context";
@@ -54,7 +61,9 @@ export function ExperienceSection({
   const addHighlightToExperience = (expId: string) => {
     onChange(
       experiences.map((exp) =>
-        exp.id === expId ? { ...exp, highlights: [...exp.highlights, ""] } : exp,
+        exp.id === expId
+          ? { ...exp, highlights: [...exp.highlights, ""] }
+          : exp,
       ),
     );
   };
@@ -183,8 +192,8 @@ export function ExperienceSection({
         <div className="p-5 space-y-5 bg-white dark:bg-slate-900">
           {experiences.length === 0 ? (
             <div className="text-center py-6 text-slate-500 text-xs">
-              No work experience added yet. Click &quot;Add Role&quot; above
-              to list your career history.
+              No work experience added yet. Click &quot;Add Role&quot; above to
+              list your career history.
             </div>
           ) : (
             experiences.map((exp, expIdx) => (

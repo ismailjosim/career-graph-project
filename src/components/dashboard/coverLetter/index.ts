@@ -5,5 +5,6 @@ export * from "./CoverLetterHeader";
 export * from "./CoverLetterList";
 export * from "./CoverLetterLoading";
 export * from "./CoverLetterModal";
+export * from "./CoverLettersClient";
 export * from "./coverLetter.utils";
 export * from "./types";

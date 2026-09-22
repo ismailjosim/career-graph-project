@@ -1,4 +1,6 @@
 export * from "./ApplicationCard";
+export * from "./ApplicationDetailClient";
+export * from "./ApplicationsClient";
 export * from "./ApplicationsEmptyState";
 export * from "./ApplicationsFilterBar";
 export * from "./ApplicationsGrid";
@@ -8,4 +10,5 @@ export * from "./ApplicationsPagination";
 export * from "./ApplicationsTable";
 export * from "./ApplicationsTableFilters";
 export * from "./applications.utils";
+export * from "./NewApplicationForm";
 export * from "./types";

@@ -2,11 +2,11 @@
 
 import { Calendar, Check, Coins, Copy } from "lucide-react";
 import { useState } from "react";
-import type { DashboardUser } from "@/hooks/useApi";
+import type { ManagedUser } from "../types";
 
 interface UserMetaSectionProps {
-  user: DashboardUser;
-  onAdjustTokens?: (user: DashboardUser) => void;
+  user: ManagedUser;
+  onAdjustTokens?: (user: ManagedUser) => void;
 }
 
 export function UserMetaSection({

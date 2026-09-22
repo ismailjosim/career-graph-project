@@ -1,31 +1,11 @@
+import type {
+  ManagedUser,
+  UserRoleFilter,
+  UserStatusFilter,
+} from "@/interfaces";
 import type { UserRole, UserStatus } from "@/lib/validation";
 
-export interface ManagedUser {
-  id: string;
-  _id: string;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  image?: string | null;
-  role: UserRole;
-  status: UserStatus;
-  headline?: string;
-  phone?: string;
-  location?: string;
-  bio?: string;
-  skills?: string[] | string;
-  website?: string;
-  linkedin?: string;
-  experience?: string;
-  education?: string;
-  tokens?: number;
-  isProfileComplete?: boolean;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-}
-
-export type UserRoleFilter = "all" | UserRole;
-export type UserStatusFilter = "all" | UserStatus;
+export type { ManagedUser, UserRoleFilter, UserStatusFilter };
 
 export interface UsersHeaderProps {
   totalCount: number;

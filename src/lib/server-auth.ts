@@ -246,11 +246,9 @@ export async function deductUserTokens({
     };
 
     // Atomically find and deduct tokens only if current tokens >= amount
-    const updatedUser = (await userCollection.findOneAndUpdate(
-      filter,
-      update,
-      { returnDocument: "after" },
-    )) as Record<string, unknown> | null;
+    const updatedUser = (await userCollection.findOneAndUpdate(filter, update, {
+      returnDocument: "after",
+    })) as Record<string, unknown> | null;
 
     if (!updatedUser) {
       // Check if user doesn't exist or just had insufficient tokens
@@ -330,11 +328,9 @@ export async function grantUserTokens({
     };
 
     // Atomically increment tokens
-    const updatedUser = (await userCollection.findOneAndUpdate(
-      query,
-      update,
-      { returnDocument: "after" },
-    )) as Record<string, unknown> | null;
+    const updatedUser = (await userCollection.findOneAndUpdate(query, update, {
+      returnDocument: "after",
+    })) as Record<string, unknown> | null;
 
     if (!updatedUser) {
       return { success: false, newBalance: 0, error: "User not found" };
@@ -370,10 +366,7 @@ export async function grantUserTokens({
           $inc: { tokens: -amount },
         };
         // Rollback the increment if this transaction was already credited
-        await userCollection.updateOne(
-          query,
-          rollbackUpdate,
-        );
+        await userCollection.updateOne(query, rollbackUpdate);
         return {
           success: false,
           newBalance: newBalance - amount,

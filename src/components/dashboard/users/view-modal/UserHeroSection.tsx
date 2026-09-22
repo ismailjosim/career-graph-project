@@ -12,15 +12,15 @@ import {
   ShieldCheck,
   UserCheck,
 } from "lucide-react";
-import type { DashboardUser } from "@/hooks/useApi";
 import type { UserStatus } from "@/lib/validation";
+import type { ManagedUser } from "../types";
 
 interface UserHeroSectionProps {
-  user: DashboardUser;
+  user: ManagedUser;
   currentUserRole?: string;
   canChangeStatus: boolean;
-  onChangeStatus?: (user: DashboardUser, newStatus: UserStatus) => void;
-  onToggleVerify?: (user: DashboardUser) => void;
+  onChangeStatus?: (user: ManagedUser, newStatus: UserStatus) => void;
+  onToggleVerify?: (user: ManagedUser) => void;
 }
 
 export function UserHeroSection({

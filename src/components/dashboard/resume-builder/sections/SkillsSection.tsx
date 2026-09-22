@@ -112,8 +112,8 @@ export function SkillsSection({
                   className="input-field text-xs w-full"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
-                  Separate skills with commas. They will automatically format
-                  as pills or badges.
+                  Separate skills with commas. They will automatically format as
+                  pills or badges.
                 </p>
               </div>
             </div>

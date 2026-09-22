@@ -3,7 +3,8 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export const metadata = {
   title: "Create Account | Career Graph",
-  description: "Join Career Graph to track jobs, audit resumes with AI, and tailor cover letters.",
+  description:
+    "Join Career Graph to track jobs, audit resumes with AI, and tailor cover letters.",
 };
 
 export default function RegisterPage() {

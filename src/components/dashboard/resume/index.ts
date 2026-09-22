@@ -5,5 +5,6 @@ export * from "./ResumeFilterBar";
 export * from "./ResumeHeader";
 export * from "./ResumeList";
 export * from "./ResumeLoading";
+export * from "./ResumesClient";
 export * from "./resume.utils";
 export * from "./types";

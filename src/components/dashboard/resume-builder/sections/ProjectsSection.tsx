@@ -32,9 +32,7 @@ export function ProjectsSection({
   };
 
   const updateProject = (id: string, fields: Partial<ResumeProjectItem>) => {
-    onChange(
-      projects.map((p) => (p.id === id ? { ...p, ...fields } : p)),
-    );
+    onChange(projects.map((p) => (p.id === id ? { ...p, ...fields } : p)));
   };
 
   const removeProject = (id: string) => {

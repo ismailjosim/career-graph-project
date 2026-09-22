@@ -129,7 +129,10 @@ export function PurchaseModal({ isOpen, pkg, onClose }: PurchaseModalProps) {
             </span>
             <div className="grid grid-cols-1 gap-1 pt-1">
               {pkg.features.slice(0, 3).map((feat) => (
-                <div key={`pkg-feat-${feat}`} className="flex items-center gap-2 text-[11px]">
+                <div
+                  key={`pkg-feat-${feat}`}
+                  className="flex items-center gap-2 text-[11px]"
+                >
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   <span className="truncate">{feat}</span>
                 </div>

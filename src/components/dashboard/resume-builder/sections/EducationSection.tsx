@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronUp, GraduationCap, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  GraduationCap,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { generateId } from "../resumeBuilder.utils";
 import type { ResumeEducationItem } from "../types";
 

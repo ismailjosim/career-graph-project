@@ -5,9 +5,9 @@ import {
   ChangePasswordCard,
   SettingsHeader,
   UpdateProfileCard,
-  useSettings,
 } from "@/components/dashboard/settings";
 import { UsersFeedbackBanner } from "@/components/dashboard/users";
+import { useSettings } from "@/hooks";
 
 export function SettingsClient() {
   const {

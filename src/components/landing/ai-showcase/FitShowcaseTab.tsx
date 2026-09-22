@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export function FitShowcaseTab() {
@@ -18,9 +14,10 @@ export function FitShowcaseTab() {
           Calculate Exact ATS Match Before You Apply
         </h3>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-          Applicant Tracking Systems reject over 75% of resumes before human eyes
-          see them. Career Graph scans your resume against any target job spec to
-          evaluate hard skills, soft skills, seniority, and missing keywords.
+          Applicant Tracking Systems reject over 75% of resumes before human
+          eyes see them. Career Graph scans your resume against any target job
+          spec to evaluate hard skills, soft skills, seniority, and missing
+          keywords.
         </p>
         <ul className="space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
           <li className="flex items-center gap-2">

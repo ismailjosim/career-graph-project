@@ -3,7 +3,8 @@ import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata = {
   title: "Sign In | Career Graph",
-  description: "Sign in to access your job applications, tailored resumes, and career tracker.",
+  description:
+    "Sign in to access your job applications, tailored resumes, and career tracker.",
 };
 
 export default function LoginPage() {

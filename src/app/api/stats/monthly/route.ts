@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/db";
 import { JobApplication, MonthlyStats } from "@/lib/models";
 import { getSessionUser, unauthorizedResponse } from "@/lib/server-auth";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getSessionUser();
     if (!user) {
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const user = await getSessionUser();
     if (!user) {
