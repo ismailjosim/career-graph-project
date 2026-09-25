@@ -9,9 +9,31 @@ import type {
   UserRole,
   UserStatus,
 } from "@/interfaces";
+import { clientCache } from "@/lib/client-cache";
+
+interface CachedUserData {
+  name?: string;
+  headline?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  skills?: string[] | string;
+  website?: string;
+  linkedin?: string;
+  experience?: string;
+  education?: Array<{ degree?: string; institution?: string }> | string;
+  email?: string;
+  emailVerified?: boolean;
+  role?: string;
+  status?: string;
+  isSocialOnly?: boolean;
+}
 
 export function useSettings() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    const cached = clientCache.get<CachedUserData>("user_profile_data");
+    return !cached?.data;
+  });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -19,17 +41,45 @@ export function useSettings() {
     message: string;
   } | null>(null);
 
-  const [profileForm, setProfileForm] = useState<ProfileSettingsForm>({
-    name: "",
-    headline: "",
-    phone: "",
-    location: "",
-    bio: "",
-    skills: "",
-    website: "",
-    linkedin: "",
-    experience: "",
-    education: "",
+  const [profileForm, setProfileForm] = useState<ProfileSettingsForm>(() => {
+    const cached = clientCache.get<CachedUserData>("user_profile_data");
+    if (cached?.data) {
+      const u = cached.data;
+      return {
+        name: u.name || "",
+        headline: u.headline || "",
+        phone: u.phone || "",
+        location: u.location || "",
+        bio: u.bio || "",
+        skills: Array.isArray(u.skills)
+          ? u.skills.join(", ")
+          : typeof u.skills === "string"
+            ? u.skills
+            : "",
+        website: u.website || "",
+        linkedin: u.linkedin || "",
+        experience: u.experience || "",
+        education: Array.isArray(u.education)
+          ? u.education
+              .map((e) => [e.degree, e.institution].filter(Boolean).join(" - "))
+              .join("; ")
+          : typeof u.education === "string"
+            ? u.education
+            : "",
+      };
+    }
+    return {
+      name: "",
+      headline: "",
+      phone: "",
+      location: "",
+      bio: "",
+      skills: "",
+      website: "",
+      linkedin: "",
+      experience: "",
+      education: "",
+    };
   });
 
   const [passwordForm, setPasswordForm] = useState<PasswordSettingsForm>({
@@ -38,12 +88,25 @@ export function useSettings() {
     confirmPassword: "",
   });
 
-  const [securityInfo, setSecurityInfo] = useState<AccountSecurityInfo>({
-    email: "",
-    emailVerified: false,
-    role: "job_seeker",
-    status: "active",
-    isSocialOnly: false,
+  const [securityInfo, setSecurityInfo] = useState<AccountSecurityInfo>(() => {
+    const cached = clientCache.get<CachedUserData>("user_profile_data");
+    if (cached?.data) {
+      const u = cached.data;
+      return {
+        email: u.email || "",
+        emailVerified: Boolean(u.emailVerified),
+        role: (u.role as UserRole) || "job_seeker",
+        status: (u.status as UserStatus) || "active",
+        isSocialOnly: Boolean(u.isSocialOnly),
+      };
+    }
+    return {
+      email: "",
+      emailVerified: false,
+      role: "job_seeker",
+      status: "active",
+      isSocialOnly: false,
+    };
   });
 
   const fetchProfileAndAccount = useCallback(async () => {
@@ -84,8 +147,10 @@ export function useSettings() {
           emailVerified: Boolean(u.emailVerified),
           role: (u.role as UserRole) || "job_seeker",
           status: (u.status as UserStatus) || "active",
-          isSocialOnly: false,
+          isSocialOnly: Boolean(u.isSocialOnly),
         });
+
+        clientCache.set("user_profile_data", u, 180_000, true);
       }
     } catch (err) {
       console.warn("Failed to fetch profile settings:", err);

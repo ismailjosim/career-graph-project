@@ -15,7 +15,7 @@ export function SidebarTokenWidget({
   mobileOpen,
   onNavigate,
 }: SidebarTokenWidgetProps) {
-  const { tokens } = useTokens();
+  const { tokens, isLoaded, loading } = useTokens();
 
   return (
     <div className="relative group">
@@ -32,9 +32,13 @@ export function SidebarTokenWidget({
         {(!isCollapsed || mobileOpen) && (
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono">
-                {tokens} Tokens
-              </span>
+              {!isLoaded && loading ? (
+                <div className="h-3.5 w-16 bg-amber-500/25 dark:bg-amber-400/25 rounded-md animate-pulse my-0.5" />
+              ) : (
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono">
+                  {tokens} Tokens
+                </span>
+              )}
               <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded-md">
                 Get More
               </span>

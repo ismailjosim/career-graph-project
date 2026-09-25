@@ -3,55 +3,93 @@
 import { useCallback, useEffect, useState } from "react";
 import type { JobApplication } from "@/interfaces";
 import { useSession } from "@/lib/auth-client";
+import { clientCache } from "@/lib/client-cache";
 
 const API_BASE_URL = "/api";
 
 export function useJobApplications() {
   const { data: session, isPending } = useSession();
   const userId = session?.user?.id;
+  const cacheKey = userId ? `applications_${userId}` : null;
 
-  const [applications, setApplications] = useState<JobApplication[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Instant SWR cache hydration: 0ms load if cached
+  const [applications, setApplications] = useState<JobApplication[]>(() => {
+    if (!cacheKey) return [];
+    const cached = clientCache.get<JobApplication[]>(cacheKey);
+    return cached?.data || [];
+  });
+
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (!cacheKey) return true;
+    const cached = clientCache.get<JobApplication[]>(cacheKey);
+    return !cached?.data;
+  });
+
   const [error, setError] = useState<string | null>(null);
 
-  const fetchApplications = useCallback(async () => {
-    if (!userId) {
-      if (!isPending) setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/applications`, {
-        headers: { "x-user-id": userId },
-      });
-      if (response.status === 401) {
-        window.location.href = "/login";
+  const fetchApplications = useCallback(
+    async (forceRefresh = false) => {
+      if (!userId || !cacheKey) {
+        if (!isPending) setLoading(false);
         return;
       }
-      if (!response.ok) throw new Error("Failed to fetch applications");
-      const data = await response.json();
-      setApplications(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, isPending]);
+
+      const cached = clientCache.get<JobApplication[]>(cacheKey);
+      if (
+        !forceRefresh &&
+        cached &&
+        !cached.isStale &&
+        applications.length > 0
+      ) {
+        setLoading(false);
+        return;
+      }
+
+      if (!cached?.data || cached.data.length === 0) {
+        setLoading(true);
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/applications`, {
+          headers: { "x-user-id": userId },
+        });
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        if (!response.ok) throw new Error("Failed to fetch applications");
+        const data: JobApplication[] = await response.json();
+        setApplications(data);
+        clientCache.set(cacheKey, data, 120_000, true);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, cacheKey, isPending, applications.length],
+  );
 
   useEffect(() => {
     if (userId) {
+      if (cacheKey && applications.length === 0) {
+        const cached = clientCache.get<JobApplication[]>(cacheKey);
+        if (cached?.data) {
+          setApplications(cached.data);
+          setLoading(false);
+        }
+      }
       fetchApplications();
     } else if (!isPending) {
       setLoading(false);
     }
-  }, [fetchApplications, userId, isPending]);
+  }, [fetchApplications, userId, cacheKey, isPending, applications.length]);
 
   const createApplication = async (
     app: Omit<JobApplication, "_id" | "userId" | "appliedAt">,
   ) => {
-    if (!userId) throw new Error("Authentication required");
+    if (!userId || !cacheKey) throw new Error("Authentication required");
 
     try {
       const response = await fetch(`${API_BASE_URL}/applications`, {
@@ -64,7 +102,11 @@ export function useJobApplications() {
       });
       if (!response.ok) throw new Error("Failed to create application");
       const newApp = await response.json();
-      setApplications([newApp, ...applications]);
+      setApplications((prev) => {
+        const next = [newApp, ...prev];
+        clientCache.set(cacheKey, next, 120_000, true);
+        return next;
+      });
       return newApp;
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unknown error");
@@ -73,9 +115,9 @@ export function useJobApplications() {
 
   const updateApplication = async (
     id: string,
-    updates: Partial<JobApplication>,
+    app: Partial<JobApplication>,
   ) => {
-    if (!userId) throw new Error("Authentication required");
+    if (!userId || !cacheKey) throw new Error("Authentication required");
 
     try {
       const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
@@ -84,13 +126,15 @@ export function useJobApplications() {
           "Content-Type": "application/json",
           "x-user-id": userId,
         },
-        body: JSON.stringify(updates),
+        body: JSON.stringify(app),
       });
       if (!response.ok) throw new Error("Failed to update application");
       const updated = await response.json();
-      setApplications(
-        applications.map((app) => (app._id === id ? updated : app)),
-      );
+      setApplications((prev) => {
+        const next = prev.map((item) => (item._id === id ? updated : item));
+        clientCache.set(cacheKey, next, 120_000, true);
+        return next;
+      });
       return updated;
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unknown error");
@@ -98,7 +142,7 @@ export function useJobApplications() {
   };
 
   const deleteApplication = async (id: string) => {
-    if (!userId) throw new Error("Authentication required");
+    if (!userId || !cacheKey) throw new Error("Authentication required");
 
     try {
       const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
@@ -106,7 +150,11 @@ export function useJobApplications() {
         headers: { "x-user-id": userId },
       });
       if (!response.ok) throw new Error("Failed to delete application");
-      setApplications(applications.filter((app) => app._id !== id));
+      setApplications((prev) => {
+        const next = prev.filter((item) => item._id !== id);
+        clientCache.set(cacheKey, next, 120_000, true);
+        return next;
+      });
     } catch (err) {
       throw err instanceof Error ? err : new Error("Unknown error");
     }

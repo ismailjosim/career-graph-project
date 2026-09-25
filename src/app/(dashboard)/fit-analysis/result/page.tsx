@@ -6,7 +6,7 @@ import { FitAnalysisResultClient } from "@/components/dashboard/fit-analysis/res
 export const metadata: Metadata = {
   title: "Fit Analysis Report | Career Graph",
   description:
-    "Comprehensive Gemini AI job fit score, matching skills, gaps, and resume adjustments.",
+    "Comprehensive AI job fit score, matching skills, gaps, and resume adjustments.",
 };
 
 export default function FitAnalysisResultPage() {

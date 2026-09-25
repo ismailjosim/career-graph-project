@@ -20,7 +20,7 @@ export function FitAnalysisHeader({ previousResult }: FitAnalysisHeaderProps) {
             </h1>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-xs shrink-0">
               <Sparkles className="w-3 h-3" />
-              Gemini 2.5
+              AI Engine
             </span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">

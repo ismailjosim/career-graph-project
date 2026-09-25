@@ -6,7 +6,7 @@ import { FitAnalysisClient } from "@/components/dashboard/fit-analysis";
 export const metadata: Metadata = {
   title: "AI Job Fit Analysis | Career Graph",
   description:
-    "Evaluate alignment between your resume and target job descriptions with Gemini AI.",
+    "Evaluate alignment between your resume and target job descriptions with AI.",
 };
 
 export default function FitAnalysisPage() {

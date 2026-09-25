@@ -8,3 +8,4 @@ export * from "./JobPostingSection";
 export * from "./ResumeUploadArea";
 export * from "./SavedResumesList";
 export * from "./types";
+export * from "./useFitAnalysis";

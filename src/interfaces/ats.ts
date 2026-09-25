@@ -27,6 +27,19 @@ export interface AtsCategoryFeedback {
   structure: string;
 }
 
+export interface AtsAiReadiness {
+  score: number;
+  level:
+    | "agentic_native"
+    | "ai_augmented"
+    | "emerging"
+    | "traditional_outdated";
+  headline: string;
+  detectedAiSkills: string[];
+  missingModernSkills: string[];
+  suggestions: string[];
+}
+
 export interface AtsAnalysisResult {
   overallScore: number;
   rating: AtsRating;
@@ -40,6 +53,7 @@ export interface AtsAnalysisResult {
   missingKeywords: string[];
   actionVerbCount: number;
   quantifiableMetricsScore: number;
+  aiReadiness?: AtsAiReadiness;
 }
 
 export interface AtsTargetJob {

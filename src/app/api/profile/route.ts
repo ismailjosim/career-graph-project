@@ -49,7 +49,34 @@ export async function GET() {
       return unauthorizedResponse();
     }
 
-    await connectDB();
+    const mongoose = await connectDB();
+    const db = mongoose.connection.db;
+
+    let isSocialOnly = false;
+    if (db) {
+      const accountCollection = db.collection("account");
+      const accounts = await accountCollection
+        .find({
+          $or: [
+            { userId: user.id },
+            ...(ObjectId.isValid(user.id)
+              ? [{ userId: new ObjectId(user.id) }]
+              : []),
+          ],
+        })
+        .toArray();
+
+      const hasCredential = accounts.some(
+        (a) => a.providerId === "credential" || Boolean(a.password),
+      );
+      const hasSocial = accounts.some((a) => a.providerId === "google");
+
+      if (hasSocial && !hasCredential) {
+        isSocialOnly = true;
+      } else if (accounts.length > 0 && !hasCredential) {
+        isSocialOnly = true;
+      }
+    }
 
     // Fetch user's documents and stats concurrently
     const [resumes, coverLetters, totalApplications] = await Promise.all([
@@ -87,6 +114,7 @@ export async function GET() {
         experience: user.experience || "",
         education: parseEducation(user.education),
         isProfileComplete: Boolean(user.isProfileComplete),
+        isSocialOnly,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

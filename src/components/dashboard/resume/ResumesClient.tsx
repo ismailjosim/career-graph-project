@@ -49,6 +49,8 @@ export function ResumesClient() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={addResume}
+        resumes={resumes}
+        onDeleteResume={deleteResume}
       />
     </div>
   );

@@ -22,7 +22,7 @@ export function AtsHeader() {
       <div className="flex items-center gap-2 flex-wrap">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/80 dark:border-indigo-800/60">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Gemini AI Engine</span>
+          <span>AI Engine</span>
         </span>
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold border border-emerald-200/80 dark:border-emerald-800/60">
           <Download className="w-3.5 h-3.5" />

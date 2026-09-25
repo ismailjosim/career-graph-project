@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AtsAiReadinessCard,
   AtsCategoryBreakdown,
   AtsExportActions,
   AtsHeader,
@@ -85,6 +86,9 @@ export function AtsCheckerClient() {
 
           {/* Actionable Issues & Fix Recommendations */}
           <AtsIssuesList issues={result.criticalIssues} />
+
+          {/* Modern AI & Agentic Skills Readiness */}
+          <AtsAiReadinessCard aiReadiness={result.aiReadiness} />
 
           {/* Keywords Scanned vs Missing */}
           <AtsKeywordsCard

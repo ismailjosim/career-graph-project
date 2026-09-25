@@ -63,7 +63,7 @@ export const packages: PricingPackage[] = [
       "~28 Complete Application Suites",
       "Up to 115 Standalone ATS Audits",
       "Or up to 57 AI Cover Letters",
-      "Priority Gemini Flash engine",
+      "Priority AI Engine",
       "Tokens never expire (Lifetime)",
       "Job Description link extraction",
     ],

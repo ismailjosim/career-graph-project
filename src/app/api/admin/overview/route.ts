@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import {
   AnalyticsEvent,
@@ -10,12 +10,24 @@ import {
   TokenTransaction,
 } from "@/lib/models";
 import { requireAdminUser } from "@/lib/server-auth";
+import { serverCache } from "@/lib/server-cache";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const authResult = await requireAdminUser();
     if ("response" in authResult) {
       return authResult.response;
+    }
+
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get("refresh") === "true";
+
+    const CACHE_KEY = "admin_overview_metrics";
+    if (!forceRefresh) {
+      const cached = serverCache.get(CACHE_KEY);
+      if (cached) {
+        return NextResponse.json(cached);
+      }
     }
 
     const mongoose = await connectDB();
@@ -259,7 +271,7 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({
+    const responseData = {
       metrics: {
         users: {
           total: totalUsers,
@@ -330,7 +342,12 @@ export async function GET() {
           appliedAt: a.appliedAt,
         })),
       },
-    });
+    };
+
+    // Cache computed metrics for 45 seconds
+    serverCache.set(CACHE_KEY, responseData, 45);
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("Error fetching admin overview metrics:", error);
     return NextResponse.json(

@@ -145,7 +145,7 @@ function LiveDateTimeDisplay() {
 export function TopBar() {
   const pathname = usePathname();
   const { isCollapsed, toggleCollapse, toggleMobile } = useSidebar();
-  const { tokens } = useTokens();
+  const { tokens, isLoaded, loading } = useTokens();
 
   // Match title or check nested routes
   let currentMeta = pageTitles[pathname] || {
@@ -219,9 +219,13 @@ export function TopBar() {
           </div>
           <div className="flex flex-col text-left leading-none">
             <div className="flex items-center gap-1">
-              <span className="text-xs sm:text-sm font-bold tracking-tight font-mono text-slate-900 dark:text-white">
-                {tokens}
-              </span>
+              {!isLoaded && loading ? (
+                <div className="h-3.5 w-10 bg-amber-500/30 dark:bg-amber-400/30 rounded-md animate-pulse my-0.5" />
+              ) : (
+                <span className="text-xs sm:text-sm font-bold tracking-tight font-mono text-slate-900 dark:text-white">
+                  {tokens}
+                </span>
+              )}
               <span className="text-[10px] sm:text-xs font-semibold text-amber-700 dark:text-amber-300">
                 Tokens
               </span>

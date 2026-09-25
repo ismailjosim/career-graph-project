@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       JobPosting.countDocuments({ status: "active", workplaceType: "remote" }),
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       jobs,
       pagination: {
         total: totalFiltered,
@@ -87,6 +87,20 @@ export async function GET(request: NextRequest) {
         remoteCount,
       },
     });
+
+    if (
+      !search &&
+      (!workplaceType || workplaceType === "all") &&
+      (!employmentType || employmentType === "all") &&
+      (!experienceLevel || experienceLevel === "all")
+    ) {
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=30, stale-while-revalidate=120",
+      );
+    }
+
+    return response;
   } catch (error) {
     console.error("Error listing job postings:", error);
     return NextResponse.json(

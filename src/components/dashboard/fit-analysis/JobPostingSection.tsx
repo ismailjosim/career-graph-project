@@ -16,29 +16,29 @@ export function JobPostingSection({
 }: JobPostingSectionProps) {
   return (
     <div className="card p-4 sm:p-6 md:p-7 border border-slate-200 dark:border-slate-800/80 shadow-sm relative overflow-hidden space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 shrink-0">
             <Briefcase className="w-5 h-5" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
               1. Target Job Posting
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Paste description or fetch from link
+              Paste description or fetch from job URL
             </p>
           </div>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium self-start sm:self-auto shrink-0">
+        {/* Mode Toggle - Full Width Segmented Control */}
+        <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-medium w-full shadow-inner">
           <button
             type="button"
             onClick={() => onJobModeChange("paste")}
-            className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+            className={`py-1.5 px-3 rounded-lg transition cursor-pointer text-center truncate ${
               jobMode === "paste"
-                ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold"
+                ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
@@ -47,14 +47,14 @@ export function JobPostingSection({
           <button
             type="button"
             onClick={() => onJobModeChange("link")}
-            className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1 cursor-pointer ${
+            className={`py-1.5 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer truncate ${
               jobMode === "link"
-                ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold"
+                ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-bold"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
-            <Link2 className="w-3.5 h-3.5" />
-            <span>Job Link</span>
+            <Link2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Job Link</span>
           </button>
         </div>
       </div>

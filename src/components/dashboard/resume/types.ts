@@ -37,6 +37,8 @@ export interface AddResumeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (data: ResumeFormData) => Promise<Resume>;
+  resumes?: Resume[];
+  onDeleteResume?: (id: string) => Promise<void>;
 }
 
 export interface ResumeEmptyStateProps {

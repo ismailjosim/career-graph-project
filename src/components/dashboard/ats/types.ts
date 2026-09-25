@@ -1,4 +1,5 @@
 import type {
+  AtsAiReadiness,
   AtsAnalysisResult,
   AtsCategoryFeedback,
   AtsCategoryScores,
@@ -11,6 +12,7 @@ import type {
 } from "@/interfaces";
 
 export type {
+  AtsAiReadiness,
   AtsAnalysisResult,
   AtsCategoryFeedback,
   AtsCategoryScores,

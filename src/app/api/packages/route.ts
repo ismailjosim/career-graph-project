@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { TokenPackage } from "@/lib/models";
 import { createPolarProduct, DEFAULT_POLAR_PRODUCTS } from "@/lib/polar";
 import { getSessionUser, requireAdminUser } from "@/lib/server-auth";
+import { serverCache } from "@/lib/server-cache";
 
 const DEFAULT_PACKAGES = [
   {
@@ -38,7 +39,7 @@ const DEFAULT_PACKAGES = [
       "1,150 AI Diamond Tokens (+150 bonus)",
       "115 Deep ATS Resume Audits (10 tokens each)",
       "57 AI Tailored Cover Letters (20 tokens each)",
-      "High-Priority Gemini Flash Inference",
+      "High-Priority AI Inference",
       "Tokens never expire (Lifetime validity)",
     ],
     isActive: true,
@@ -98,6 +99,19 @@ export async function GET() {
     const isAdmin =
       currentUser?.role === "admin" || currentUser?.role === "super_admin";
 
+    // For non-admin users, serve from memory cache if available
+    if (!isAdmin) {
+      const cached = serverCache.get("public_token_packages");
+      if (cached) {
+        const res = NextResponse.json({ packages: cached, isAdmin: false });
+        res.headers.set(
+          "Cache-Control",
+          "public, s-maxage=60, stale-while-revalidate=300",
+        );
+        return res;
+      }
+    }
+
     // If admin, show all packages. Else only active ones.
     const query = isAdmin ? {} : { isActive: true };
     const packages = await TokenPackage.find(query).sort({
@@ -105,10 +119,23 @@ export async function GET() {
       price: 1,
     });
 
-    return NextResponse.json({
+    if (!isAdmin) {
+      serverCache.set("public_token_packages", packages, 120);
+    }
+
+    const response = NextResponse.json({
       packages,
       isAdmin,
     });
+
+    if (!isAdmin) {
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=60, stale-while-revalidate=300",
+      );
+    }
+
+    return response;
   } catch (error) {
     console.error("Error fetching packages:", error);
     return NextResponse.json(
@@ -198,6 +225,8 @@ export async function POST(request: NextRequest) {
       sortOrder: Number(sortOrder) || 0,
       polarProductId: resolvedPolarProductId || undefined,
     });
+
+    serverCache.invalidate("public_token_packages");
 
     return NextResponse.json(
       { package: newPackage, message: "Package created successfully" },

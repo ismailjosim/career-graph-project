@@ -122,7 +122,12 @@ export async function GET(_request: NextRequest) {
       });
     }
 
-    return NextResponse.json(markets);
+    const response = NextResponse.json(markets);
+    response.headers.set(
+      "Cache-Control",
+      "private, max-age=60, stale-while-revalidate=300",
+    );
+    return response;
   } catch (error) {
     console.error("Error fetching job markets:", error);
     const msg =

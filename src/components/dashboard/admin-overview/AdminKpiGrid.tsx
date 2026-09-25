@@ -183,7 +183,7 @@ export function AdminKpiGrid({ metrics }: AdminKpiGridProps) {
           <span>
             ATS Scans: <strong>{aiTools.atsChecksRuns}</strong>
           </span>
-          <span>Active Gemini 2.5 API</span>
+          <span>Active AI Engine API</span>
         </div>
       </div>
 

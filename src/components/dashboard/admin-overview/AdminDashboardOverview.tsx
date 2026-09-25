@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AdminChartsSection } from "./AdminChartsSection";
 import { AdminKpiGrid } from "./AdminKpiGrid";
 import { AdminOverviewHeader } from "./AdminOverviewHeader";
+import { AdminPlanLimitsCard } from "./AdminPlanLimitsCard";
 import { AdminTopJobsTable } from "./AdminTopJobsTable";
 import type { AdminOverviewResponse } from "./types";
 
@@ -29,7 +30,10 @@ export function AdminDashboardOverview({
       else setLoading(true);
       setError(null);
 
-      const res = await fetch("/api/admin/overview");
+      const url = showToast
+        ? "/api/admin/overview?refresh=true"
+        : "/api/admin/overview";
+      const res = await fetch(url);
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(
@@ -127,7 +131,10 @@ export function AdminDashboardOverview({
         jobs={metrics.jobs}
       />
 
-      {/* 4. Top Performing Jobs by External Outbound Clicks */}
+      {/* 4. Plan & Storage Quota Architecture */}
+      <AdminPlanLimitsCard />
+
+      {/* 5. Top Performing Jobs by External Outbound Clicks */}
       <AdminTopJobsTable jobs={metrics.topClickedJobs} />
     </div>
   );

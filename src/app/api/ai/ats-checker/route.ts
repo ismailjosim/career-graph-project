@@ -13,37 +13,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
   "",
 ).trim();
 
-export interface AtsAnalysisResult {
-  overallScore: number;
-  rating: "excellent" | "good" | "needs_improvement" | "poor";
-  badge: string;
-  executiveSummary: string;
-  quickWins: string[];
-  categoryScores: {
-    formatting: number;
-    keywords: number;
-    contentImpact: number;
-    structure: number;
-  };
-  categoryFeedback: {
-    formatting: string;
-    keywords: string;
-    contentImpact: string;
-    structure: string;
-  };
-  criticalIssues: Array<{
-    id: string;
-    section: string;
-    severity: "high" | "medium" | "low";
-    title: string;
-    issue: string;
-    recommendation: string;
-  }>;
-  detectedKeywords: string[];
-  missingKeywords: string[];
-  actionVerbCount: number;
-  quantifiableMetricsScore: number;
-}
+import type { AtsAiReadiness, AtsAnalysisResult } from "@/interfaces/ats";
+export type { AtsAnalysisResult, AtsAiReadiness };
 
 export async function POST(request: NextRequest) {
   try {
@@ -190,8 +161,14 @@ EVALUATION CRITERIA:
    - contentImpact: Action verbs starting bullet points, measurable business impact (%, $, numbers, time saved), avoidance of generic buzzwords.
    - structure: Complete contact information, clear chronological trajectory, concise summary, education credentials.
 
-3. Detailed Diagnostics:
-   - Identify 4-7 specific issues categorized by severity ('high', 'medium', 'low').
+3. Modern AI & Agentic Tooling Audit (2026+ Market Standards):
+   - Assess candidate proficiency with modern AI tools, agentic workflows, and AI-accelerated engineering/productivity.
+   - For technical & developer roles: check for tools like Cursor, Windsurf, Claude Code, GitHub Copilot, v0, LangChain, Autonomous Agents, LLM APIs, Prompt Engineering.
+   - For non-technical roles: check for AI workflow automation, ChatGPT/Claude research, AI tooling adoption.
+   - If the resume is older or lacks modern AI capabilities, flag this explicitly in criticalIssues ('section': 'Modern & AI Skills', 'severity': 'medium' or 'high'), include missing AI tools in missingKeywords, and populate the 'aiReadiness' object with concrete advice on how to integrate AI skills into their past experience bullets.
+
+4. Detailed Diagnostics:
+   - Identify 4-7 specific issues categorized by severity ('high', 'medium', 'low'). Include at least one actionable suggestion regarding modern AI tooling/workflows if the resume lacks AI competency.
    - For each issue, provide the exact section, issue explanation, and actionable 'recommendation' demonstrating how to rewrite or fix it.
    - Detect hard & soft skills found in the resume.
    - Identify 4-8 recommended missing keywords that top candidates in this domain possess.
@@ -243,7 +220,15 @@ The JSON must adhere precisely to this schema:
   "detectedKeywords": ["string"],
   "missingKeywords": ["string"],
   "actionVerbCount": number,
-  "quantifiableMetricsScore": number (0-100)
+  "quantifiableMetricsScore": number (0-100),
+  "aiReadiness": {
+    "score": number (0-100),
+    "level": "agentic_native" | "ai_augmented" | "emerging" | "traditional_outdated",
+    "headline": "string (concise summary of candidate's modern AI adoption)",
+    "detectedAiSkills": ["string"],
+    "missingModernSkills": ["string"],
+    "suggestions": ["string", "string"]
+  }
 }`;
 
     const contentsPayload: Array<Record<string, unknown>> = [];
@@ -483,6 +468,60 @@ The JSON must adhere precisely to this schema:
           Number(parsedResult.quantifiableMetricsScore) || overallScore,
         ),
       ),
+      aiReadiness: parsedResult.aiReadiness
+        ? {
+            score: Math.max(
+              0,
+              Math.min(100, Number(parsedResult.aiReadiness.score) || 60),
+            ),
+            level: [
+              "agentic_native",
+              "ai_augmented",
+              "emerging",
+              "traditional_outdated",
+            ].includes(parsedResult.aiReadiness.level)
+              ? parsedResult.aiReadiness.level
+              : "emerging",
+            headline:
+              parsedResult.aiReadiness.headline ||
+              "AI tooling & modern workflows analysis.",
+            detectedAiSkills: Array.isArray(
+              parsedResult.aiReadiness.detectedAiSkills,
+            )
+              ? parsedResult.aiReadiness.detectedAiSkills
+              : [],
+            missingModernSkills: Array.isArray(
+              parsedResult.aiReadiness.missingModernSkills,
+            )
+              ? parsedResult.aiReadiness.missingModernSkills
+              : [
+                  "AI Coding Assistants (Cursor / Copilot)",
+                  "Autonomous Agent Workflows",
+                  "Prompt Engineering",
+                ],
+            suggestions: Array.isArray(parsedResult.aiReadiness.suggestions)
+              ? parsedResult.aiReadiness.suggestions
+              : [
+                  "Mention experience with modern AI tools (e.g. Cursor, GitHub Copilot, v0) in your Technical Skills section.",
+                  "Add measurable bullet points demonstrating AI-accelerated delivery and automated workflows.",
+                ],
+          }
+        : {
+            score: 50,
+            level: "emerging",
+            headline:
+              "Resume could benefit from demonstrating modern AI & Agent tool adoption.",
+            detectedAiSkills: [],
+            missingModernSkills: [
+              "AI Coding Assistants (Cursor / Copilot)",
+              "Autonomous Agent Workflows",
+              "Prompt Engineering",
+            ],
+            suggestions: [
+              "Add modern AI-assisted workflows (e.g., Cursor, v0, Copilot) to your skills matrix to align with 2026 hiring trends.",
+              "Quantify how you leverage AI tools to increase velocity and maintain software quality.",
+            ],
+          },
     };
 
     // Deduct ATS check tokens (10 tokens)

@@ -53,7 +53,7 @@ export function ResumeUploadArea({
             PDF, TXT, or DOCX (up to 10MB)
           </p>
           <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-3">
-            Gemini 2.5 will analyze document structure, dates & bullets
+            AI Engine will analyze document structure, dates & bullets
           </p>
         </div>
       ) : (
