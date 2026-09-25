@@ -162,3 +162,34 @@ export async function deleteApplicationAction(id: string) {
     };
   }
 }
+
+export async function updateApplicationStatusAction(
+  id: string,
+  status: string,
+) {
+  try {
+    const user = await getSessionUser();
+    if (!user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await connectDB();
+    const updated = await JobApplication.findOneAndUpdate(
+      { _id: id, userId: user.id },
+      { $set: { status } },
+      { new: true },
+    );
+
+    if (!updated) {
+      return { success: false, error: "Application not found" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error in updateApplicationStatusAction:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update status",
+    };
+  }
+}

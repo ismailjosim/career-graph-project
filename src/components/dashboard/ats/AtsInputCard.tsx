@@ -26,6 +26,8 @@ interface AtsInputCardProps {
   uploadedFile: File | null;
   onFileChange: (file: File) => void;
   uploadError: string | null;
+  saveToAccount: boolean;
+  onSaveToAccountChange: (save: boolean) => void;
   rawText: string;
   onRawTextChange: (text: string) => void;
   showTargetJob: boolean;
@@ -48,6 +50,8 @@ export function AtsInputCard({
   uploadedFile,
   onFileChange,
   uploadError,
+  saveToAccount,
+  onSaveToAccountChange,
   rawText,
   onRawTextChange,
   showTargetJob,
@@ -132,6 +136,8 @@ export function AtsInputCard({
           uploadedFile={uploadedFile}
           onFileChange={onFileChange}
           uploadError={uploadError}
+          saveToAccount={saveToAccount}
+          onSaveToAccountChange={onSaveToAccountChange}
         />
       )}
 

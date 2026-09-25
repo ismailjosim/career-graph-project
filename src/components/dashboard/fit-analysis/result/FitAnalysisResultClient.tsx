@@ -9,16 +9,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  ExecutiveSummaryCard,
-  FitResultHero,
-  InterviewTipsCard,
-  QuickApplyBanner,
-  ResumeAdjustmentsList,
-  SkillsComparisonCard,
-} from "@/components/dashboard/fit-analysis/result";
+import { toast } from "sonner";
 import type { StoredAnalysisPayload } from "@/interfaces/fit-analysis";
 import { useSession } from "@/lib/auth-client";
+import { clientCache } from "@/lib/client-cache";
+import { ExecutiveSummaryCard } from "./ExecutiveSummaryCard";
+import { FitResultHero } from "./FitResultHero";
+import { InterviewTipsCard } from "./InterviewTipsCard";
+import { QuickApplyBanner } from "./QuickApplyBanner";
+import { ResumeAdjustmentsList } from "./ResumeAdjustmentsList";
+import { SkillsComparisonCard } from "./SkillsComparisonCard";
 
 export function FitAnalysisResultClient() {
   const { data: session } = useSession();
@@ -64,21 +64,25 @@ export function FitAnalysisResultClient() {
   };
 
   const handleCreateApplication = async () => {
-    if (!data?.result || !userId) return;
+    if (!data?.result) return;
     setApplying(true);
     try {
       const jobTitle =
         data.meta?.jobTitle || data.jobInput?.title || "Target Position";
       const company = data.meta?.company || data.jobInput?.company || "Company";
       const description = data.jobInput?.description || "";
-      const jobLink = data.jobInput?.link || "";
+      const rawLink = data.jobInput?.link?.trim() || "";
+      const jobLink =
+        rawLink.startsWith("http://") || rawLink.startsWith("https://")
+          ? rawLink
+          : undefined;
       const resumeUsed = data.meta?.savedResumeId || "default";
 
       const res = await fetch("/api/applications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-id": userId,
+          ...(userId ? { "x-user-id": userId } : {}),
         },
         body: JSON.stringify({
           jobTitle,
@@ -94,9 +98,23 @@ export function FitAnalysisResultClient() {
 
       if (res.ok) {
         setAppliedSuccess(true);
+        clientCache.invalidate("applications");
+        toast.success(
+          `"${jobTitle}" at ${company} added to your application tracker!`,
+        );
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        toast.error(
+          errJson.error || "Failed to add job to application tracker.",
+        );
       }
     } catch (err) {
       console.error("Failed to create application:", err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred while saving application.",
+      );
     } finally {
       setApplying(false);
     }

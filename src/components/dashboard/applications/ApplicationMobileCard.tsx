@@ -12,24 +12,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { JobApplication } from "@/lib/validation";
-import {
-  formatEmploymentType,
-  formatStatusLabel,
-  getFitScoreColor,
-  getStatusBadgeClass,
-  getStatusDotClass,
-} from "./applications.utils";
+import { ApplicationStatusDropdown } from "./ApplicationStatusDropdown";
+import { formatEmploymentType, getFitScoreColor } from "./applications.utils";
 
 interface ApplicationMobileCardProps {
   app: JobApplication;
   isDeleting: boolean;
   onDelete?: (id: string, e: React.MouseEvent) => void;
+  onUpdateStatus?: (id: string, newStatus: string) => Promise<void>;
 }
 
 export function ApplicationMobileCard({
   app,
   isDeleting,
   onDelete,
+  onUpdateStatus,
 }: ApplicationMobileCardProps) {
   const fitColor = getFitScoreColor(app.fitScore);
 
@@ -89,20 +86,13 @@ export function ApplicationMobileCard({
         </div>
       </div>
 
-      {/* Badges: Status & Fit Score */}
+      {/* Badges: Status Dropdown & Fit Score */}
       <div className="flex items-center justify-between gap-2 pt-0.5">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeClass(
-            app.status,
-          )}`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ring-2 ${getStatusDotClass(
-              app.status,
-            )}`}
-          />
-          {formatStatusLabel(app.status)}
-        </span>
+        <ApplicationStatusDropdown
+          applicationId={app._id as string}
+          currentStatus={app.status}
+          onUpdateStatus={onUpdateStatus}
+        />
 
         {app.fitScore !== undefined && app.fitScore !== null ? (
           <span

@@ -25,6 +25,7 @@ export function ApplicationsTable({
   applications,
   loading = false,
   onDelete,
+  onUpdateStatus,
   onResetFilters,
   hasActiveFilters = false,
 }: ApplicationsTableProps) {
@@ -94,6 +95,7 @@ export function ApplicationsTable({
                     app={app}
                     isDeleting={deletingId === app._id}
                     onDelete={onDelete ? handleDelete : undefined}
+                    onUpdateStatus={onUpdateStatus}
                   />
                 ))}
           </div>
@@ -165,6 +167,7 @@ export function ApplicationsTable({
                         app={app}
                         isDeleting={deletingId === app._id}
                         onDelete={onDelete ? handleDelete : undefined}
+                        onUpdateStatus={onUpdateStatus}
                       />
                     ))}
               </tbody>

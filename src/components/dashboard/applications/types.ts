@@ -78,6 +78,7 @@ export interface ApplicationsTableProps {
   applications: JobApplication[];
   loading?: boolean;
   onDelete?: (id: string) => Promise<void>;
+  onUpdateStatus?: (id: string, newStatus: string) => Promise<void>;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
 }

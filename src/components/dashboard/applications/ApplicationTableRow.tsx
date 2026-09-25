@@ -12,24 +12,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { JobApplication } from "@/lib/validation";
-import {
-  formatEmploymentType,
-  formatStatusLabel,
-  getFitScoreColor,
-  getStatusBadgeClass,
-  getStatusDotClass,
-} from "./applications.utils";
+import { ApplicationStatusDropdown } from "./ApplicationStatusDropdown";
+import { formatEmploymentType, getFitScoreColor } from "./applications.utils";
 
 interface ApplicationTableRowProps {
   app: JobApplication;
   isDeleting: boolean;
   onDelete?: (id: string, e: React.MouseEvent) => void;
+  onUpdateStatus?: (id: string, newStatus: string) => Promise<void>;
 }
 
 export function ApplicationTableRow({
   app,
   isDeleting,
   onDelete,
+  onUpdateStatus,
 }: ApplicationTableRowProps) {
   const fitColor = getFitScoreColor(app.fitScore);
 
@@ -68,20 +65,13 @@ export function ApplicationTableRow({
         </div>
       </td>
 
-      {/* Status */}
+      {/* Status Dropdown */}
       <td className="py-3.5 px-4">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeClass(
-            app.status,
-          )}`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ring-2 ${getStatusDotClass(
-              app.status,
-            )}`}
-          />
-          {formatStatusLabel(app.status)}
-        </span>
+        <ApplicationStatusDropdown
+          applicationId={app._id as string}
+          currentStatus={app.status}
+          onUpdateStatus={onUpdateStatus}
+        />
       </td>
 
       {/* Fit Score */}

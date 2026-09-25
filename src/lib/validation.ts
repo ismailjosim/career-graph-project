@@ -213,8 +213,8 @@ export const jobApplicationSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
   description: z.string().optional(),
-  jobLink: z.string().url().optional(),
-  resumeUsed: z.string(), // Resume ID
+  jobLink: z.string().url().or(z.literal("")).optional(),
+  resumeUsed: z.string().optional().default("default"), // Resume ID or default
   coverLetterUsed: z.string().optional(), // Cover Letter ID
   fitScore: z.number().min(0).max(100).optional(), // 0-100 percentage
   notes: z.string().optional(),

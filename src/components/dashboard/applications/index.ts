@@ -1,5 +1,7 @@
 export * from "./ApplicationCard";
 export * from "./ApplicationDetailClient";
+export * from "./ApplicationMobileCard";
+export * from "./ApplicationStatusDropdown";
 export * from "./ApplicationsClient";
 export * from "./ApplicationsEmptyState";
 export * from "./ApplicationsFilterBar";
@@ -9,6 +11,7 @@ export * from "./ApplicationsLoading";
 export * from "./ApplicationsPagination";
 export * from "./ApplicationsTable";
 export * from "./ApplicationsTableFilters";
+export * from "./ApplicationTableRow";
 export * from "./applications.utils";
 export * from "./NewApplicationForm";
 export * from "./types";

@@ -7,6 +7,7 @@ export * from "./AtsHeader";
 export * from "./AtsInputCard";
 export * from "./AtsIssuesList";
 export * from "./AtsKeywordsCard";
+export * from "./AtsResumeLimitModal";
 export * from "./AtsSavedResumesTab";
 export * from "./AtsScoreHero";
 export * from "./AtsTargetJobComparison";

@@ -6,6 +6,7 @@ import {
   type ApplicationsPaginationMeta,
   deleteApplicationAction,
   getPaginatedApplicationsAction,
+  updateApplicationStatusAction,
 } from "@/app/actions/applications";
 import {
   type ApplicationEmploymentType,
@@ -17,6 +18,7 @@ import {
   ApplicationsTable,
   ApplicationsTableFilters,
 } from "@/components/dashboard/applications";
+import { clientCache } from "@/lib/client-cache";
 import type { JobApplication } from "@/lib/validation";
 
 const PAGE_SIZE = 10;
@@ -187,6 +189,40 @@ export function ApplicationsClient() {
     }
   };
 
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    // Optimistic UI update
+    setApplications((prev) =>
+      prev.map((app) =>
+        app._id === id
+          ? {
+              ...app,
+              status: newStatus as JobApplication["status"],
+            }
+          : app,
+      ),
+    );
+
+    const res = await updateApplicationStatusAction(id, newStatus);
+    if (res.success) {
+      toast.success("Application status updated!");
+      clientCache.invalidate("applications");
+      clientCache.invalidate("monthly_stats");
+      clientCache.invalidate("dashboard_metrics");
+    } else {
+      toast.error(res.error || "Failed to update status");
+      // Revert by re-fetching current page
+      loadApplications(
+        page,
+        searchTerm,
+        filterStatus,
+        employmentType,
+        sortBy,
+        sortOrder,
+      );
+      throw new Error(res.error || "Failed to update status");
+    }
+  };
+
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
     filterStatus !== "all" ||
@@ -246,6 +282,7 @@ export function ApplicationsClient() {
         applications={applications}
         loading={loading || !initialLoaded}
         onDelete={handleDeleteApplication}
+        onUpdateStatus={handleUpdateStatus}
         onResetFilters={handleResetFilters}
         hasActiveFilters={hasActiveFilters}
       />

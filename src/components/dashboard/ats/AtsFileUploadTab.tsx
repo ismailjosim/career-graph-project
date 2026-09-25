@@ -7,12 +7,16 @@ interface AtsFileUploadTabProps {
   uploadedFile: File | null;
   onFileChange: (file: File) => void;
   uploadError: string | null;
+  saveToAccount: boolean;
+  onSaveToAccountChange: (save: boolean) => void;
 }
 
 export function AtsFileUploadTab({
   uploadedFile,
   onFileChange,
   uploadError,
+  saveToAccount,
+  onSaveToAccountChange,
 }: AtsFileUploadTabProps) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -82,20 +86,44 @@ export function AtsFileUploadTab({
       </label>
 
       {uploadedFile && (
-        <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 truncate">
-            <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-semibold text-emerald-900 dark:text-emerald-200 truncate">
-              {uploadedFile.name}
-            </span>
-            <span className="text-slate-400 text-[10px]">
-              ({(uploadedFile.size / 1024).toFixed(0)} KB)
+        <>
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 truncate">
+              <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="font-semibold text-emerald-900 dark:text-emerald-200 truncate">
+                {uploadedFile.name}
+              </span>
+              <span className="text-slate-400 text-[10px]">
+                ({(uploadedFile.size / 1024).toFixed(0)} KB)
+              </span>
+            </div>
+            <span className="text-emerald-700 dark:text-emerald-300 font-bold text-[10px] uppercase">
+              Ready
             </span>
           </div>
-          <span className="text-emerald-700 dark:text-emerald-300 font-bold text-[10px] uppercase">
-            Ready
-          </span>
-        </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-3 transition">
+            <input
+              id="ats-save-resume-checkbox"
+              type="checkbox"
+              checked={saveToAccount}
+              onChange={(e) => onSaveToAccountChange(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+            />
+            <label
+              htmlFor="ats-save-resume-checkbox"
+              className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none space-y-0.5"
+            >
+              <span className="font-semibold block text-slate-900 dark:text-slate-100">
+                Save this resume to My Saved Resumes
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 block">
+                Store this document in your account so you can reuse it for
+                future ATS audits, fit analysis, and job applications.
+              </span>
+            </label>
+          </div>
+        </>
       )}
 
       {uploadError && (

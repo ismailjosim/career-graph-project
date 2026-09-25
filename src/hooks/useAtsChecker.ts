@@ -14,6 +14,18 @@ import type {
   SavedResumeOption,
 } from "@/interfaces";
 import { confirmTokenUsage } from "@/lib/alerts";
+import { clientCache } from "@/lib/client-cache";
+import { uploadFileWithProgress } from "@/lib/upload-client";
+
+export interface AtsPlanUsage {
+  plan: string;
+  planName: string;
+  resumes: {
+    count: number;
+    max: number;
+    isLimitReached: boolean;
+  };
+}
 
 export function useAtsChecker() {
   const { tokens, refreshTokens, updateTokensLocally } = useTokens();
@@ -28,6 +40,9 @@ export function useAtsChecker() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string>("");
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [saveResumeToAccount, setSaveResumeToAccount] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [planUsage, setPlanUsage] = useState<AtsPlanUsage | null>(null);
 
   // Raw text input
   const [rawText, setRawText] = useState("");
@@ -100,6 +115,30 @@ export function useAtsChecker() {
     reader.readAsDataURL(file);
   };
 
+  // Toggle save to account with quota check
+  const handleSaveToAccountChange = async (save: boolean) => {
+    if (!save) {
+      setSaveResumeToAccount(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/user/plan-usage");
+      if (res.ok) {
+        const usage: AtsPlanUsage = await res.json();
+        setPlanUsage(usage);
+        if (usage.resumes?.isLimitReached) {
+          setShowLimitModal(true);
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    setSaveResumeToAccount(true);
+  };
+
   // Run ATS audit
   const runAnalysis = async () => {
     setError(null);
@@ -150,6 +189,61 @@ export function useAtsChecker() {
     });
 
     if (!confirmed) return;
+
+    // If uploading and user requested to save to account, save it first
+    if (inputMode === "upload" && saveResumeToAccount && uploadedFile) {
+      try {
+        const planRes = await fetch("/api/user/plan-usage");
+        if (planRes.ok) {
+          const usage: AtsPlanUsage = await planRes.json();
+          if (usage.resumes?.isLimitReached) {
+            setPlanUsage(usage);
+            setShowLimitModal(true);
+            return;
+          }
+        }
+      } catch {
+        // proceed
+      }
+
+      try {
+        const uploadToast = toast.loading("Saving resume to your account...");
+        const uploadRes = await uploadFileWithProgress(uploadedFile, "resume");
+        const createRes = await fetch("/api/resumes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: uploadedFile.name
+              .replace(/\.[^/.]+$/, "")
+              .replace(/[-_]/g, " "),
+            fileName: uploadRes.fileName || uploadedFile.name,
+            fileUrl: uploadRes.url,
+            cloudinaryPublicId: uploadRes.publicId,
+            fileSize: uploadRes.fileSize || uploadedFile.size,
+          }),
+        });
+
+        if (!createRes.ok) {
+          const errData = await createRes.json().catch(() => ({}));
+          if (
+            createRes.status === 403 ||
+            errData.code === "PLAN_LIMIT_REACHED"
+          ) {
+            toast.dismiss(uploadToast);
+            setShowLimitModal(true);
+            return;
+          }
+        } else {
+          toast.success(`"${uploadedFile.name}" saved to your account!`, {
+            id: uploadToast,
+          });
+          clientCache.invalidate("resumes");
+          fetchSavedResumes();
+        }
+      } catch (err) {
+        console.warn("Failed to auto-save resume:", err);
+      }
+    }
 
     const toastId = toast.loading("Analyzing resume against ATS benchmarks...");
 
@@ -242,6 +336,12 @@ export function useAtsChecker() {
     uploadError,
     handleFileChange,
     setUploadedFile,
+    saveResumeToAccount,
+    setSaveResumeToAccount,
+    handleSaveToAccountChange,
+    showLimitModal,
+    setShowLimitModal,
+    planUsage,
     rawText,
     setRawText,
     showTargetJob,

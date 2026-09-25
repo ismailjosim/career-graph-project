@@ -8,6 +8,7 @@ import {
   AtsInputCard,
   AtsIssuesList,
   AtsKeywordsCard,
+  AtsResumeLimitModal,
   AtsScoreHero,
 } from "@/components/dashboard/ats";
 import { useAtsChecker } from "@/hooks";
@@ -23,6 +24,12 @@ export function AtsCheckerClient() {
     uploadedFile,
     uploadError,
     handleFileChange,
+    saveResumeToAccount,
+    setSaveResumeToAccount,
+    handleSaveToAccountChange,
+    showLimitModal,
+    setShowLimitModal,
+    planUsage,
     rawText,
     setRawText,
     showTargetJob,
@@ -45,6 +52,19 @@ export function AtsCheckerClient() {
       {/* Header */}
       <AtsHeader />
 
+      {/* Resume Limit Modal */}
+      <AtsResumeLimitModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        onContinueWithoutSaving={() => {
+          setSaveResumeToAccount(false);
+          setShowLimitModal(false);
+        }}
+        planName={planUsage?.planName}
+        currentCount={planUsage?.resumes?.count}
+        maxAllowed={planUsage?.resumes?.max}
+      />
+
       {/* If No Result: Show Input Form */}
       {!result ? (
         <AtsInputCard
@@ -57,6 +77,8 @@ export function AtsCheckerClient() {
           uploadedFile={uploadedFile}
           onFileChange={handleFileChange}
           uploadError={uploadError}
+          saveToAccount={saveResumeToAccount}
+          onSaveToAccountChange={handleSaveToAccountChange}
           rawText={rawText}
           onRawTextChange={setRawText}
           showTargetJob={showTargetJob}
