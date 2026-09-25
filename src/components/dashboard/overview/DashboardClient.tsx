@@ -18,28 +18,46 @@ import {
 import { RecruiterDashboardOverview } from "@/components/dashboard/recruiter-overview";
 import { useJobApplications, useMonthlyStats } from "@/hooks/useApi";
 import { useSession } from "@/lib/auth-client";
+import { clientCache } from "@/lib/client-cache";
 import type { UserRole } from "@/lib/validation";
 
 export function DashboardClient() {
   const { data: session } = useSession();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
+  const sessionRole = (session?.user as Record<string, unknown>)?.role as
+    | UserRole
+    | undefined;
+
+  const cachedRole =
+    clientCache.get<UserRole>("user_role")?.data ?? sessionRole ?? null;
+  const [userRole, setUserRole] = useState<UserRole | null>(cachedRole);
+  const [roleLoading, setRoleLoading] = useState(!cachedRole);
   const [adminViewMode, setAdminViewMode] = useState<"admin" | "candidate">(
     "admin",
   );
 
-  // Fetch verified role
+  // Sync verified role from session or live DB
   useEffect(() => {
     if (session?.user) {
-      fetch("/api/users/me")
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.user?.role) {
-            setUserRole(data.user.role as UserRole);
-          }
-        })
-        .catch(() => {})
-        .finally(() => setRoleLoading(false));
+      const sRole = (session.user as Record<string, unknown>)?.role as
+        | UserRole
+        | undefined;
+      if (sRole) {
+        setUserRole(sRole);
+        clientCache.set("user_role", sRole, 300_000, true);
+        setRoleLoading(false);
+      } else {
+        fetch("/api/users/me")
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data?.user?.role) {
+              const r = data.user.role as UserRole;
+              setUserRole(r);
+              clientCache.set("user_role", r, 300_000, true);
+            }
+          })
+          .catch(() => {})
+          .finally(() => setRoleLoading(false));
+      }
     } else {
       setRoleLoading(false);
     }

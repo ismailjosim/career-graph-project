@@ -30,6 +30,25 @@ if (process.env.NODE_ENV === "development") {
 const mongoClient = new MongoClient(uri);
 const db = mongoClient.db();
 
+const getAuthBaseUrl = () => {
+  if (process.env.NODE_ENV === "development") {
+    // If in development and BETTER_AUTH_URL is already localhost, respect it.
+    // Otherwise fallback to http://localhost:3000 to prevent secure production cookie mismatch on localhost.
+    if (
+      process.env.BETTER_AUTH_URL?.includes("localhost") ||
+      process.env.BETTER_AUTH_URL?.includes("127.0.0.1")
+    ) {
+      return process.env.BETTER_AUTH_URL;
+    }
+    return "http://localhost:3000";
+  }
+  return (
+    process.env.BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "https://careergraph.ismailjosim.com"
+  );
+};
+
 export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client: mongoClient,
@@ -95,5 +114,14 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL,
+  baseURL: getAuthBaseUrl(),
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://careergraph.ismailjosim.com",
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    ...(process.env.NEXT_PUBLIC_APP_URL
+      ? [process.env.NEXT_PUBLIC_APP_URL]
+      : []),
+  ],
 });

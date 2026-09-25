@@ -2,12 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { clientCache } from "@/lib/client-cache";
 import { AdminChartsSection } from "./AdminChartsSection";
 import { AdminKpiGrid } from "./AdminKpiGrid";
 import { AdminOverviewHeader } from "./AdminOverviewHeader";
 import { AdminPlanLimitsCard } from "./AdminPlanLimitsCard";
 import { AdminTopJobsTable } from "./AdminTopJobsTable";
 import type { AdminOverviewResponse } from "./types";
+
+const ADMIN_METRICS_CACHE_KEY = "admin_overview_metrics";
 
 interface AdminDashboardOverviewProps {
   viewMode: "admin" | "candidate";
@@ -18,16 +21,26 @@ export function AdminDashboardOverview({
   viewMode,
   onToggleViewMode,
 }: AdminDashboardOverviewProps) {
-  const [data, setData] = useState<AdminOverviewResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = clientCache.get<AdminOverviewResponse>(
+    ADMIN_METRICS_CACHE_KEY,
+  );
+  const [data, setData] = useState<AdminOverviewResponse | null>(
+    cached?.data ?? null,
+  );
+  const [loading, setLoading] = useState(!cached?.data);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<"all" | "30d" | "7d">("all");
 
   const fetchOverview = useCallback(async (showToast = false) => {
     try {
-      if (showToast) setIsRefreshing(true);
-      else setLoading(true);
+      if (showToast) {
+        setIsRefreshing(true);
+      } else if (
+        !clientCache.get<AdminOverviewResponse>(ADMIN_METRICS_CACHE_KEY)?.data
+      ) {
+        setLoading(true);
+      }
       setError(null);
 
       const url = showToast
@@ -43,6 +56,7 @@ export function AdminDashboardOverview({
 
       const json = await res.json();
       setData(json);
+      clientCache.set(ADMIN_METRICS_CACHE_KEY, json, 120_000, true);
       if (showToast) {
         toast.success("Metrics refreshed successfully!");
       }

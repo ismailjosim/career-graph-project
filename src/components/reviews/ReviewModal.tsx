@@ -268,6 +268,7 @@ export function ReviewModal({ isOpen, onClose, onSuccess }: ReviewModalProps) {
               <div className="pt-2">
                 <Link
                   href="/login"
+                  prefetch={false}
                   onClick={onClose}
                   className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow-lg shadow-blue-500/25 transition-all"
                 >

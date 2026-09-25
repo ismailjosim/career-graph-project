@@ -41,14 +41,28 @@ interface RecruiterOverviewData {
   }>;
 }
 
+import { clientCache } from "@/lib/client-cache";
+
+const RECRUITER_METRICS_CACHE_KEY = "recruiter_overview_metrics";
+
 export function RecruiterDashboardOverview() {
-  const [data, setData] = useState<RecruiterOverviewData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const cached = clientCache.get<RecruiterOverviewData>(
+    RECRUITER_METRICS_CACHE_KEY,
+  );
+  const [data, setData] = useState<RecruiterOverviewData | null>(
+    cached?.data ?? null,
+  );
+  const [loading, setLoading] = useState(!cached?.data);
   const [error, setError] = useState<string | null>(null);
 
   const fetchOverview = useCallback(async () => {
     try {
-      setLoading(true);
+      if (
+        !clientCache.get<RecruiterOverviewData>(RECRUITER_METRICS_CACHE_KEY)
+          ?.data
+      ) {
+        setLoading(true);
+      }
       setError(null);
       const res = await fetch("/api/recruiter/overview");
       if (!res.ok) {
@@ -56,6 +70,7 @@ export function RecruiterDashboardOverview() {
       }
       const json = await res.json();
       setData(json);
+      clientCache.set(RECRUITER_METRICS_CACHE_KEY, json, 120_000, true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error occurred");
     } finally {

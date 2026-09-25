@@ -152,6 +152,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/login"
+                  prefetch={false}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Sign In
@@ -160,6 +161,7 @@ export function LandingFooter() {
               <li>
                 <Link
                   href="/register"
+                  prefetch={false}
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   Create Account
@@ -198,7 +200,7 @@ export function LandingFooter() {
             <Link href="#ai-features" className="hover:underline">
               AI Features
             </Link>
-            <Link href="/login" className="hover:underline">
+            <Link href="/login" prefetch={false} className="hover:underline">
               Portal
             </Link>
           </div>

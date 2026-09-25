@@ -53,14 +53,22 @@ export function proxy(request: NextRequest) {
 
   // Redirect authenticated user away from login/register to dashboard
   if (sessionCookie && isAuthRoute) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    const redirectUrl = new URL("/dashboard", request.url);
+    const response = NextResponse.redirect(redirectUrl);
+    response.headers.set("x-nextjs-redirect", redirectUrl.pathname);
+    return response;
   }
 
   // Redirect unauthenticated user to login for protected dashboard routes (exclude API routes)
   if (!sessionCookie && !isAuthRoute && !pathname.startsWith("/api/")) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set(
+      "x-nextjs-redirect",
+      loginUrl.pathname + loginUrl.search,
+    );
+    return response;
   }
 
   return NextResponse.next();

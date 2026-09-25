@@ -94,6 +94,7 @@ export function PricingCardsGrid({
             <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
               <Link
                 href="/register"
+                prefetch={false}
                 className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
                   pkg.popular
                     ? "bg-linear-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white shadow-lg shadow-indigo-500/25"

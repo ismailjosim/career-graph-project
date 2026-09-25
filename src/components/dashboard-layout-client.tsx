@@ -1,7 +1,6 @@
 "use client";
 
 import { Ban, KeyRound, LogOut } from "lucide-react";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useState } from "react";
 import { signOut, useSession } from "@/lib/auth-client";
@@ -110,22 +109,9 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-        <div className="w-16 h-16 rounded-2xl relative bg-white dark:bg-slate-800 p-2 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 border border-slate-200/80 dark:border-slate-700/60 animate-pulse">
-          <Image
-            src="/career-graph.png"
-            alt="Career Graph Logo"
-            width={52}
-            height={52}
-            priority
-            className="w-full h-full object-contain"
-          />
-        </div>
-        <div className="w-8 h-8 border-3 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full animate-spin" />
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium">
-          Verifying session...
-        </p>
-      </div>
+      <SidebarProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      </SidebarProvider>
     );
   }
 

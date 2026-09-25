@@ -13,7 +13,25 @@ export function SidebarUserProfile({
   isCollapsed,
   mobileOpen,
 }: SidebarUserProfileProps) {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return (
+      <div
+        className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 animate-pulse ${
+          isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+        }`}
+      >
+        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0" />
+        {(!isCollapsed || mobileOpen) && (
+          <div className="flex-1 min-w-0 space-y-1.5">
+            <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-2.5 w-28 bg-slate-200 dark:bg-slate-700 rounded" />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const userInitial = session?.user?.name
     ? session.user.name.charAt(0).toUpperCase()
@@ -57,6 +75,7 @@ export function SidebarUserProfile({
     <div className="relative group">
       <Link
         href="/login"
+        prefetch={false}
         className={`flex items-center gap-2 p-2 rounded-xl text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors ${
           isCollapsed && !mobileOpen ? "justify-center" : ""
         }`}

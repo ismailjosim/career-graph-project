@@ -41,6 +41,7 @@ export function LandingCta() {
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3.5">
               <Link
                 href="/register"
+                prefetch={false}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl font-bold text-sm text-slate-950 bg-white hover:bg-slate-100 shadow-lg shadow-white/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <Sparkles className="w-4 h-4 text-blue-600" />
