@@ -1,5 +1,6 @@
 export * from "./ApplicationCard";
 export * from "./ApplicationDetailClient";
+export * from "./ApplicationKanbanBoard";
 export * from "./ApplicationMobileCard";
 export * from "./ApplicationStatusDropdown";
 export * from "./ApplicationsClient";

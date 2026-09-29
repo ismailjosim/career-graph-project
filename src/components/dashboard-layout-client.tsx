@@ -30,21 +30,53 @@ function DashboardLayoutContent({ children }: { children: ReactNode }) {
   );
 }
 
-export function DashboardLayoutClient({ children }: { children: ReactNode }) {
+export function DashboardLayoutClient({
+  children,
+  initialUser,
+}: {
+  children: ReactNode;
+  initialUser?: {
+    email?: string;
+    emailVerified?: boolean;
+    status?: string;
+    role?: string;
+  } | null;
+}) {
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [userStatus, setUserStatus] = useState<string>("active");
-  const [isBlocked, setIsBlocked] = useState(false);
-  const [isUnverified, setIsUnverified] = useState(false);
-  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [userStatus, setUserStatus] = useState<string>(
+    initialUser?.status || "active",
+  );
+  const [isBlocked, setIsBlocked] = useState(initialUser?.status === "blocked");
+  const [isUnverified, setIsUnverified] = useState(
+    initialUser?.emailVerified === false,
+  );
+  const [unverifiedEmail, setUnverifiedEmail] = useState(
+    initialUser?.email || "",
+  );
 
   useEffect(() => {
-    if (!isPending && !session) {
+    if (!isPending && !session && !initialUser) {
       router.replace("/login");
     }
-  }, [session, isPending, router]);
+  }, [session, isPending, initialUser, router]);
+
+  // Immediate check if session user has emailVerified: false
+  useEffect(() => {
+    if (session?.user) {
+      const emailUnverified =
+        (session.user as { emailVerified?: boolean }).emailVerified === false;
+      if (emailUnverified) {
+        setIsUnverified(true);
+        setUnverifiedEmail(session.user.email || "");
+        router.replace(
+          `/verify-otp?email=${encodeURIComponent(session.user.email || "")}&callbackUrl=${encodeURIComponent(pathname)}`,
+        );
+      }
+    }
+  }, [session?.user, pathname, router]);
 
   // Query live status & profile completion
   useEffect(() => {
@@ -71,7 +103,7 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
           if (u.emailVerified === false) {
             setIsUnverified(true);
             setUnverifiedEmail(u.email || "");
-            router.push(
+            router.replace(
               `/verify-otp?email=${encodeURIComponent(u.email || "")}&callbackUrl=${encodeURIComponent(pathname)}`,
             );
             return;
@@ -107,15 +139,21 @@ export function DashboardLayoutClient({ children }: { children: ReactNode }) {
     }
   };
 
-  if (isPending) {
+  // If initialUser was verified, we can render immediately; otherwise wait for session determination
+  if (isPending && !initialUser) {
     return (
-      <SidebarProvider>
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-      </SidebarProvider>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-slate-500 font-medium">
+            Securing session...
+          </p>
+        </div>
+      </div>
     );
   }
 
-  if (!session) {
+  if (!session && !initialUser) {
     return null;
   }
 

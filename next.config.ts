@@ -67,4 +67,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Next.js configuration refreshed
 export default nextConfig;

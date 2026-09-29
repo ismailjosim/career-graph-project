@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/auth-client";
+import { InteractiveInterviewSimulator } from "./InteractiveInterviewSimulator";
 import { MockInterviewDemoCard } from "./MockInterviewDemoCard";
 import { FEATURE_HIGHLIGHTS, ROADMAP_STEPS } from "./mock-interview.data";
 
@@ -19,7 +20,9 @@ export function MockInterviewClient() {
   const { data: session } = useSession();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const [activeTab, setActiveTab] = useState<"preview" | "sample">("preview");
+  const [activeTab, setActiveTab] = useState<
+    "simulator" | "preview" | "sample"
+  >("simulator");
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
 
   const handleNotifySubmit = (e: React.FormEvent) => {
@@ -123,14 +126,26 @@ export function MockInterviewClient() {
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Simulator Capabilities
+              AI Mock Interview Studio
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              A preview of the real-time AI audio interview suite in development
+              Practice real-time role-targeted questions with STAR diagnostics
+              and speech support
             </p>
           </div>
 
           <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setActiveTab("simulator")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === "simulator"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
+            >
+              Live Simulator
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab("preview")}
@@ -151,12 +166,14 @@ export function MockInterviewClient() {
                   : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
               }`}
             >
-              Live Demo Preview
+              Audio Demo
             </button>
           </div>
         </div>
 
-        {activeTab === "preview" ? (
+        {activeTab === "simulator" ? (
+          <InteractiveInterviewSimulator />
+        ) : activeTab === "preview" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {FEATURE_HIGHLIGHTS.map((feature) => {
               const Icon = feature.icon;

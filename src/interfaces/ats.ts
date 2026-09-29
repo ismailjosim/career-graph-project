@@ -3,6 +3,11 @@ import type { SavedResumeOption } from "./resume";
 export type AtsSeverity = "high" | "medium" | "low";
 export type AtsRating = "excellent" | "good" | "needs_improvement" | "poor";
 export type AtsInputMode = "saved" | "upload" | "text";
+export type AtsRegionStandard =
+  | "us_canada"
+  | "uk_commonwealth"
+  | "european_europass"
+  | "apac_global";
 
 export interface AtsIssue {
   id: string;
@@ -54,11 +59,13 @@ export interface AtsAnalysisResult {
   actionVerbCount: number;
   quantifiableMetricsScore: number;
   aiReadiness?: AtsAiReadiness;
+  regionStandard?: AtsRegionStandard;
 }
 
 export interface AtsTargetJob {
   title?: string;
   description?: string;
+  regionStandard?: AtsRegionStandard;
 }
 
 export type { SavedResumeOption };

@@ -101,6 +101,14 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
       verifiedBonusGiven: Boolean(dbDetails.verifiedBonusGiven),
     } as AuthenticatedUser;
   } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "digest" in error &&
+      (error as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE"
+    ) {
+      throw error;
+    }
     console.error("Failed to get session:", error);
     return null;
   }
@@ -159,39 +167,84 @@ export async function requireAdminUser(): Promise<
   return { user };
 }
 
+let superAdminCheckPromise: Promise<void> | null = null;
+
 /**
- * Ensures at least one super_admin exists in the system.
- * If none exists, promotes the earliest registered user or SUPER_ADMIN_EMAIL.
+ * Checks if the super admin exists in the database.
+ * If exist, does nothing.
+ * If not, injects that admin into the database for one time using Better Auth.
  */
-export async function ensureSuperAdminExists() {
-  try {
-    const mongoose = await connectDB();
-    const db = mongoose.connection.db;
-    if (!db) return;
+export async function ensureSuperAdminExists(): Promise<void> {
+  if (superAdminCheckPromise) return superAdminCheckPromise;
 
-    const userCollection = db.collection("user");
-    const superAdmin = await userCollection.findOne({ role: "super_admin" });
+  superAdminCheckPromise = (async () => {
+    try {
+      const adminEmail = (
+        process.env.SUPER_ADMIN_EMAIL || "superadmin@careergraph.com"
+      )
+        .toLowerCase()
+        .trim();
+      const adminPassword =
+        process.env.SUPER_ADMIN_password ||
+        process.env.SUPER_ADMIN_PASSWORD ||
+        "z5h#nXxMLn8C6ko#dv&uaw$27pCrP^BN";
 
-    if (!superAdmin) {
-      // Find designated email if configured, else the earliest user
-      const targetUser =
-        (process.env.SUPER_ADMIN_EMAIL
-          ? await userCollection.findOne({
-              email: process.env.SUPER_ADMIN_EMAIL,
-            })
-          : null) ||
-        (await userCollection.find().sort({ createdAt: 1 }).limit(1).next());
+      const mongoose = await connectDB();
+      const db = mongoose.connection.db;
+      if (!db) return;
 
-      if (targetUser) {
-        await userCollection.updateOne(
-          { _id: targetUser._id },
-          { $set: { role: "super_admin", updatedAt: new Date() } },
-        );
+      const userCollection = db.collection("user");
+      // 1. First check if this admin exists
+      const existing = await userCollection.findOne({
+        email: { $regex: new RegExp(`^${adminEmail}$`, "i") },
+      });
+
+      if (existing) {
+        // If exist then don't do anything
+        return;
       }
+
+      // 2. If not, then inject that admin into db for one time using Better Auth
+      console.log(
+        `[BOOTSTRAP] Super admin (${adminEmail}) does not exist. Injecting into DB via Better Auth...`,
+      );
+      try {
+        await auth.api.signUpEmail({
+          body: {
+            name: "Super Admin",
+            email: adminEmail,
+            password: adminPassword,
+          },
+        });
+      } catch (signupErr) {
+        console.warn("[BOOTSTRAP] Better Auth signUpEmail note:", signupErr);
+      }
+
+      // Promote to super_admin and set verified credentials
+      await userCollection.updateOne(
+        { email: { $regex: new RegExp(`^${adminEmail}$`, "i") } },
+        {
+          $set: {
+            role: "super_admin",
+            emailVerified: true,
+            status: "active",
+            tokens: 999999,
+            isProfileComplete: true,
+            phone: "+1-555-0199",
+            headline: "Platform Super Administrator",
+            updatedAt: new Date(),
+          },
+        },
+      );
+      console.log(
+        `[BOOTSTRAP] Super admin (${adminEmail}) successfully injected into DB.`,
+      );
+    } catch (err) {
+      console.error("[BOOTSTRAP] Error in ensureSuperAdminExists:", err);
     }
-  } catch (err) {
-    console.error("Error checking super_admin presence:", err);
-  }
+  })();
+
+  return superAdminCheckPromise;
 }
 
 interface DbUserDocument {

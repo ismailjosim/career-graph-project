@@ -10,7 +10,9 @@
     "check": "biome check --write",
     "lint": "biome lint --write",
     "format": "biome format --write",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed": "node --env-file=.env.local scripts/reset-and-seed.mjs",
+    "reset-db": "node --env-file=.env.local scripts/reset-and-seed.mjs"
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.7.3",

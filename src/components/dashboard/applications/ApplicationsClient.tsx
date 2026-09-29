@@ -1,5 +1,6 @@
 "use client";
 
+import { Kanban, Table } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -11,6 +12,7 @@ import {
 import {
   type ApplicationEmploymentType,
   type ApplicationFilterStatus,
+  ApplicationKanbanBoard,
   type ApplicationSortBy,
   type ApplicationSortOrder,
   ApplicationsHeader,
@@ -26,6 +28,7 @@ const PAGE_SIZE = 10;
 export function ApplicationsClient() {
   const [isPending, startTransition] = useTransition();
   const [initialLoaded, setInitialLoaded] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
 
   // Search and Filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -277,22 +280,63 @@ export function ApplicationsClient() {
         </div>
       )}
 
-      {/* Applications Table */}
-      <ApplicationsTable
-        applications={applications}
-        loading={loading || !initialLoaded}
-        onDelete={handleDeleteApplication}
-        onUpdateStatus={handleUpdateStatus}
-        onResetFilters={handleResetFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+      {/* View Mode Toggle: Table View vs Kanban Board */}
+      <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setViewMode("table")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              viewMode === "table"
+                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Table className="w-3.5 h-3.5" />
+            Table View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("kanban")}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              viewMode === "kanban"
+                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+            }`}
+          >
+            <Kanban className="w-3.5 h-3.5" />
+            Kanban Board
+          </button>
+        </div>
+      </div>
 
-      {/* Server Pagination Controls Below Table */}
-      <ApplicationsPagination
-        pagination={pagination}
-        onPageChange={handlePageChange}
-        loading={loading || isPending}
-      />
+      {viewMode === "table" ? (
+        <>
+          {/* Applications Table */}
+          <ApplicationsTable
+            applications={applications}
+            loading={loading || !initialLoaded}
+            onDelete={handleDeleteApplication}
+            onUpdateStatus={handleUpdateStatus}
+            onResetFilters={handleResetFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+
+          {/* Server Pagination Controls Below Table */}
+          <ApplicationsPagination
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            loading={loading || isPending}
+          />
+        </>
+      ) : (
+        /* Applications Kanban Board */
+        <ApplicationKanbanBoard
+          applications={applications}
+          onStatusChange={handleUpdateStatus}
+          onDelete={handleDeleteApplication}
+        />
+      )}
     </div>
   );
 }

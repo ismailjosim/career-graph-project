@@ -59,6 +59,47 @@ export function AtsTargetJobComparison({
           </div>
           <div>
             <label
+              htmlFor="target-region-select"
+              className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+            >
+              International ATS Jurisdiction Standard
+            </label>
+            <select
+              id="target-region-select"
+              value={targetJob.regionStandard || "us_canada"}
+              onChange={(e) =>
+                onTargetJobChange({
+                  ...targetJob,
+                  regionStandard: e.target
+                    .value as AtsTargetJob["regionStandard"],
+                })
+              }
+              className="input text-xs w-full cursor-pointer bg-white dark:bg-slate-900"
+            >
+              <option value="us_canada">
+                🇺🇸 US &amp; Canada Standard (Strict 1-Page, Anti-Bias
+                Compliance, High Keyword Density)
+              </option>
+              <option value="uk_commonwealth">
+                🇬🇧 UK &amp; Commonwealth Standard (2-Page Standard, Education
+                Depth, British English)
+              </option>
+              <option value="european_europass">
+                🇪🇺 European Union (Europass Framework, CEFR Language
+                Competencies)
+              </option>
+              <option value="apac_global">
+                🌏 Global Remote &amp; APAC (Cross-Border Remote Workflows,
+                Global Timezones)
+              </option>
+            </select>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Calibrates the ATS algorithm to enforce regional resume length,
+              demographic anti-bias rules, and credential formatting.
+            </p>
+          </div>
+          <div>
+            <label
               htmlFor="target-job-desc-input"
               className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
             >
