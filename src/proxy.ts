@@ -1,0 +1,109 @@
+import { type NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "./lib/rate-limit";
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Public Home Landing Page ("/") - accessible to everyone
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
+  // Rate limiting for API routes to prevent abuse
+  if (pathname.startsWith("/api/")) {
+    const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const isApiAuthRoute = pathname.startsWith("/api/auth");
+    const limitResult = rateLimit(ip + (isApiAuthRoute ? "_auth" : "_api"), {
+      windowMs: 60 * 1000,
+      maxRequests: isApiAuthRoute ? 10 : 100, // 10 req/min for auth, 100 for other APIs
+    });
+
+    if (!limitResult.success) {
+      return new NextResponse(
+        JSON.stringify({ error: "Too many requests. Please try again later." }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": limitResult.limit.toString(),
+            "X-RateLimit-Remaining": limitResult.remaining.toString(),
+            "X-RateLimit-Reset": limitResult.reset.toString(),
+          },
+        },
+      );
+    }
+  }
+
+  // Better Auth session cookie names (http and https secure prefix)
+  const sessionCookie =
+    request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("__Secure-better-auth.session_token")?.value;
+
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forget-password") ||
+    pathname.startsWith("/reset-password");
+  const isVerifyOtpRoute = pathname.startsWith("/verify-otp");
+
+  // Allow verify-otp without redirect loop
+  if (isVerifyOtpRoute) {
+    return NextResponse.next();
+  }
+
+  // Redirect authenticated user away from login/register to dashboard
+  if (sessionCookie && isAuthRoute) {
+    const redirectUrl = new URL("/dashboard", request.url);
+    const response = NextResponse.redirect(redirectUrl);
+    response.headers.set("x-nextjs-redirect", redirectUrl.pathname);
+    return response;
+  }
+
+  // Redirect unauthenticated user to login for protected dashboard routes (exclude API routes)
+  if (!sessionCookie && !isAuthRoute && !pathname.startsWith("/api/")) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    const response = NextResponse.redirect(loginUrl);
+    response.headers.set(
+      "x-nextjs-redirect",
+      loginUrl.pathname + loginUrl.search,
+    );
+    return response;
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match application paths:
+     * - Root (/)
+     * - Dashboard & features (/dashboard, /applications, /resumes, /cover-letters, /fit-analysis, /ats-checker, /wishlist, /job-market, /users, /profile, /settings)
+     * - Auth routes (/login, /register, /verify-otp)
+     *
+     * Excludes:
+     * - Static files (_next, favicon, icons, images, etc.)
+     * - API routes (/api)
+     */
+    "/",
+    "/dashboard/:path*",
+    "/applications/:path*",
+    "/resumes/:path*",
+    "/cover-letters/:path*",
+    "/fit-analysis/:path*",
+    "/ats-checker/:path*",
+    "/wishlist/:path*",
+    "/job-market/:path*",
+    "/users/:path*",
+    "/profile/:path*",
+    "/settings/:path*",
+    "/pricing/:path*",
+    "/login",
+    "/register",
+    "/verify-otp",
+    "/forget-password",
+    "/reset-password",
+    "/api/:path*",
+  ],
+};
