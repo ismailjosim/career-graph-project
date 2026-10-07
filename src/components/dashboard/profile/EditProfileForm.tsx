@@ -2,10 +2,9 @@
 
 import { Briefcase, Loader2, Pencil, Save, X } from "lucide-react";
 import { EXPERIENCE_RANGES } from "@/lib/validation";
-import { CoreSkillsSelect } from "./CoreSkillsSelect";
 import { EducationFormSection } from "./EducationFormSection";
-import { TechnicalSkillsSection } from "./TechnicalSkillsSection";
 import type { ProfileFormData } from "./types";
+import { UnifiedSkillsSection } from "./UnifiedSkillsSection";
 
 interface EditProfileFormProps {
   formData: ProfileFormData;
@@ -81,7 +80,7 @@ export function EditProfileForm({
             className="input text-xs sm:text-sm font-medium"
           />
           <p className="text-[10px] text-slate-400 mt-1">
-            Used in cover letter salutations and subject header.
+            Used in cover letter salutations and job matching.
           </p>
         </div>
       </div>
@@ -132,7 +131,7 @@ export function EditProfileForm({
 
       {/* Overall Years of Experience Range */}
       <div>
-        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 items-center gap-1.5">
+        <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
           <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
           <span>Total Years of Experience (Industry Range)</span>
         </label>
@@ -168,26 +167,17 @@ export function EditProfileForm({
             />
           )}
         </div>
-        <p className="text-[10px] text-slate-400 mt-1">
-          Standardized experience brackets match recruiter filtering criteria on
-          top job boards.
-        </p>
       </div>
 
-      {/* Core Skills (Powered by react-select with maximum limit) */}
-      <CoreSkillsSelect
+      {/* Merged Single Solution: Unified Skills & Technical Stack */}
+      <UnifiedSkillsSection
         skills={formData.skills}
-        onChange={(skills) => onChange("skills", skills)}
-        maxSkills={15}
+        technicalSkills={formData.technicalSkills}
+        onChange={(newSkills, newTechSkills) => {
+          onChange("skills", newSkills);
+          onChange("technicalSkills", newTechSkills);
+        }}
       />
-
-      {/* Technical Skills with Years of Experience */}
-      <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-        <TechnicalSkillsSection
-          skills={formData.technicalSkills}
-          onChange={(skills) => onChange("technicalSkills", skills)}
-        />
-      </div>
 
       {/* Expanded Education Section */}
       <div className="pt-2 border-t border-slate-100 dark:border-slate-800">

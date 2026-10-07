@@ -36,6 +36,35 @@ export function ProfileOverviewCard({ user }: ProfileOverviewCardProps) {
         })()
       : [];
 
+  // Combine into unified skills display
+  const unifiedSkillsMap = new Map<
+    string,
+    { name: string; yearsOfExperience?: string; proficiency?: string }
+  >();
+
+  for (const t of parsedTechSkills) {
+    if (t.name?.trim()) {
+      unifiedSkillsMap.set(t.name.trim().toLowerCase(), {
+        name: t.name.trim(),
+        yearsOfExperience: t.yearsOfExperience
+          ? String(t.yearsOfExperience)
+          : undefined,
+        proficiency: t.proficiency,
+      });
+    }
+  }
+
+  for (const s of parsedSkills) {
+    if (typeof s === "string" && s.trim()) {
+      const lower = s.trim().toLowerCase();
+      if (!unifiedSkillsMap.has(lower)) {
+        unifiedSkillsMap.set(lower, { name: s.trim() });
+      }
+    }
+  }
+
+  const allSkills = Array.from(unifiedSkillsMap.values());
+
   const parsedEducation: EducationEntry[] = Array.isArray(user.education)
     ? user.education
     : typeof user.education === "string" &&
@@ -90,53 +119,35 @@ export function ProfileOverviewCard({ user }: ProfileOverviewCardProps) {
         )}
       </div>
 
-      {/* Core Skills Chips */}
-      {parsedSkills.length > 0 && (
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-            Core Skills ({parsedSkills.length})
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {parsedSkills.map((s) => (
-              <span
-                key={s}
-                className="px-2.5 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-200/60 dark:border-indigo-800/40 shadow-2xs"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Technical Skills with Years of Experience */}
-      {parsedTechSkills.length > 0 && (
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          <div className="flex items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5 text-indigo-500" />
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-              Technical Stack & Experience ({parsedTechSkills.length})
+      {/* Unified Skills & Capabilities Section */}
+      {allSkills.length > 0 && (
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Wrench className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Skills & Capabilities ({allSkills.length})</span>
             </span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-            {parsedTechSkills.map((t, idx) => (
+
+          <div className="flex flex-wrap gap-2">
+            {allSkills.map((s) => (
               <div
-                key={t.id || `${t.name}-${idx}`}
-                className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-xs"
+                key={s.name}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs shadow-2xs"
               >
-                <span className="font-semibold text-slate-800 dark:text-slate-200 truncate pr-2">
-                  {t.name}
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
+                  {s.name}
                 </span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="px-1.5 py-0.2 rounded bg-indigo-100/70 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold">
-                    {t.yearsOfExperience}
+                {s.yearsOfExperience && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-100/70 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                    {s.yearsOfExperience}
                   </span>
-                  {t.proficiency && (
-                    <span className="text-[10px] text-slate-400 capitalize hidden sm:inline">
-                      {t.proficiency}
-                    </span>
-                  )}
-                </div>
+                )}
+                {s.proficiency && (
+                  <span className="text-[10px] text-slate-400 capitalize hidden sm:inline">
+                    • {s.proficiency}
+                  </span>
+                )}
               </div>
             ))}
           </div>

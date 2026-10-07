@@ -11,7 +11,7 @@ import type {
 } from "@/interfaces";
 import { useSession } from "@/lib/auth-client";
 
-export function useProfile() {
+export function useProfile(initialData?: ProfileData | null) {
   const searchParams = useSearchParams();
   const targetUserId = searchParams.get("userId");
   const isPromptingSetup =
@@ -24,10 +24,10 @@ export function useProfile() {
     "job_seeker";
   const currentOperatorId = session?.user?.id || "";
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialData);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<ProfileData | null>(null);
+  const [data, setData] = useState<ProfileData | null>(initialData || null);
 
   // Edit Mode state
   const [isEditing, setIsEditing] = useState(false);
@@ -37,18 +37,45 @@ export function useProfile() {
   } | null>(null);
 
   // Form Fields
-  const [formData, setFormData] = useState<ProfileFormData>({
-    name: "",
-    headline: "",
-    phone: "",
-    location: "",
-    bio: "",
-    skills: [],
-    technicalSkills: [],
-    website: "",
-    linkedin: "",
-    experience: "",
-    education: [],
+  const [formData, setFormData] = useState<ProfileFormData>(() => {
+    if (initialData?.user) {
+      const u = initialData.user;
+      return {
+        name: u.name || "",
+        headline: u.headline || "",
+        phone: u.phone || "",
+        location: u.location || "",
+        bio: u.bio || "",
+        skills: Array.isArray(u.skills)
+          ? u.skills
+          : typeof u.skills === "string"
+            ? u.skills
+                .split(",")
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+            : [],
+        technicalSkills: Array.isArray(u.technicalSkills)
+          ? u.technicalSkills
+          : [],
+        website: u.website || "",
+        linkedin: u.linkedin || "",
+        experience: u.experience || "",
+        education: Array.isArray(u.education) ? u.education : [],
+      };
+    }
+    return {
+      name: "",
+      headline: "",
+      phone: "",
+      location: "",
+      bio: "",
+      skills: [],
+      technicalSkills: [],
+      website: "",
+      linkedin: "",
+      experience: "",
+      education: [],
+    };
   });
 
   const isViewingOtherUser = Boolean(
@@ -106,8 +133,10 @@ export function useProfile() {
   }, [targetUserId, isViewingOtherUser]);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (!initialData) {
+      fetchProfile();
+    }
+  }, [fetchProfile, initialData]);
 
   const handleFormFieldChange = <K extends keyof ProfileFormData>(
     field: K,

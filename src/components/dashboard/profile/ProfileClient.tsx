@@ -6,16 +6,21 @@ import {
   ProfileError,
   ProfileHeader,
   ProfileLoading,
-  ProfileOnboardingBanner,
   ProfileOverviewCard,
+  ProfileProgressCard,
   ProfileResumesCard,
   ProfileReviewCard,
   ProfileStatsGrid,
 } from "@/components/dashboard/profile";
 import { UsersFeedbackBanner } from "@/components/dashboard/users";
 import { useProfile } from "@/hooks";
+import type { ProfileData } from "./types";
 
-export function ProfileClient() {
+interface ProfileClientProps {
+  initialData?: ProfileData | null;
+}
+
+export function ProfileClient({ initialData }: ProfileClientProps) {
   const {
     data,
     loading,
@@ -32,12 +37,11 @@ export function ProfileClient() {
     handleAdminStatusChange,
     handleAdminVerifyToggle,
     isViewingOtherUser,
-    isPromptingSetup,
     currentOperatorRole,
     refreshProfile,
-  } = useProfile();
+  } = useProfile(initialData);
 
-  if (loading) {
+  if (loading && !data) {
     return <ProfileLoading />;
   }
 
@@ -61,16 +65,17 @@ export function ProfileClient() {
         onAvatarUpdated={refreshProfile}
       />
 
-      {/* Onboarding Callout Banner for Incomplete Profiles */}
-      <ProfileOnboardingBanner
-        isVisible={
-          (!user.isProfileComplete || isPromptingSetup) && !isViewingOtherUser
-        }
-        onStartEditing={() => setIsEditing(true)}
-      />
-
       {/* Action Feedback Banner */}
       <UsersFeedbackBanner feedback={feedback} onDismiss={dismissFeedback} />
+
+      {/* Profile Completion & Readiness Progress (Issue #5) */}
+      {!isViewingOtherUser && (
+        <ProfileProgressCard
+          data={data}
+          onStartEditing={() => setIsEditing(true)}
+          isEditing={isEditing}
+        />
+      )}
 
       {/* Metrics Summary Grid */}
       <ProfileStatsGrid stats={stats} />
@@ -88,7 +93,7 @@ export function ProfileClient() {
 
       {/* Main Details & Documents Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
-        {/* Left Column: Profile Pitch, Skills & Background */}
+        {/* Left Column: Profile Pitch, Unified Skills & Background */}
         <div className="space-y-6">
           <ProfileOverviewCard user={user} />
           {!isViewingOtherUser && <ProfileReviewCard />}
