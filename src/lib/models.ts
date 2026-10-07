@@ -4,11 +4,14 @@ import type {
   CoverLetter as ICoverLetter,
   JobApplication as IJobApplication,
   JobMarket as IJobMarket,
+  JobMatchSuggestion as IJobMatchSuggestion,
   JobPosting as IJobPosting,
   MonthlyStats as IMonthlyStats,
   Resume as IResume,
   ResumeTemplate as IResumeTemplate,
   Review as IReview,
+  ScrapedJob as IScrapedJob,
+  ScraperRun as IScraperRun,
   Wishlist as IWishlist,
 } from "@/lib/validation";
 
@@ -507,3 +510,115 @@ const analyticsEventSchema = new mongoose.Schema<IAnalyticsEvent>(
 export const AnalyticsEvent =
   mongoose.models.AnalyticsEvent ||
   mongoose.model<IAnalyticsEvent>("AnalyticsEvent", analyticsEventSchema);
+
+// Scraped Job Model
+const scrapedJobSchema = new mongoose.Schema<IScrapedJob>(
+  {
+    externalId: { type: String, required: true, unique: true, index: true },
+    title: { type: String, required: true, trim: true },
+    company: { type: String, required: true, trim: true },
+    location: { type: String, required: true, trim: true },
+    jobType: { type: String, default: "remote" },
+    salary: { type: String, default: "Competitive" },
+    description: { type: String, required: true },
+    requirements: { type: [String], default: [] },
+    skills: { type: [String], default: [], index: true },
+    source: { type: String, default: "Web Scraper", index: true },
+    applyUrl: { type: String, required: true },
+    scrapedAt: { type: Date, default: Date.now, index: true },
+    isActive: { type: Boolean, default: true, index: true },
+  },
+  { timestamps: true },
+);
+
+if (mongoose.models.ScrapedJob) {
+  delete (mongoose.models as Record<string, unknown>).ScrapedJob;
+}
+
+export const ScrapedJob =
+  mongoose.models.ScrapedJob ||
+  mongoose.model<IScrapedJob>("ScrapedJob", scrapedJobSchema);
+
+// Daily AI Job Match Suggestion Model (Stores 10-15 matched jobs per user)
+const jobMatchSuggestionSchema = new mongoose.Schema<IJobMatchSuggestion>(
+  {
+    userId: { type: String, required: true, index: true },
+    jobId: { type: String, required: true, index: true },
+    jobTitle: { type: String, required: true },
+    company: { type: String, required: true },
+    location: { type: String, required: true },
+    salary: { type: String, default: "Competitive" },
+    applyUrl: { type: String, required: true },
+    source: { type: String, default: "LinkedIn" },
+    matchScore: { type: Number, required: true, min: 0, max: 100 },
+    matchedSkills: { type: [String], default: [] },
+    missingSkills: { type: [String], default: [] },
+    matchReason: { type: String, default: "" },
+    status: {
+      type: String,
+      enum: ["new", "viewed", "applied", "saved", "dismissed"],
+      default: "new",
+      index: true,
+    },
+    suggestedDate: { type: String, required: true, index: true },
+  },
+  { timestamps: true },
+);
+
+jobMatchSuggestionSchema.index({ userId: 1, suggestedDate: -1 });
+jobMatchSuggestionSchema.index({ userId: 1, jobId: 1 }, { unique: true });
+
+if (mongoose.models.JobMatchSuggestion) {
+  delete (mongoose.models as Record<string, unknown>).JobMatchSuggestion;
+}
+
+export const JobMatchSuggestion =
+  mongoose.models.JobMatchSuggestion ||
+  mongoose.model<IJobMatchSuggestion>(
+    "JobMatchSuggestion",
+    jobMatchSuggestionSchema,
+  );
+
+// Scraper Run Model (Audit log of Apify scraper executions)
+const scraperRunSchema = new mongoose.Schema<IScraperRun>(
+  {
+    adminId: { type: String, required: true, index: true },
+    adminEmail: { type: String },
+    platform: {
+      type: String,
+      required: true,
+      enum: ["linkedin", "indeed", "google_jobs", "glassdoor", "all"],
+      index: true,
+    },
+    targetRole: { type: String, required: true, trim: true },
+    location: { type: String, default: "Remote" },
+    targetCount: { type: Number, default: 50 },
+    scrapedCount: { type: Number, default: 0 },
+    newJobsCount: { type: Number, default: 0 },
+    duplicateCount: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["queued", "running", "completed", "failed"],
+      default: "queued",
+      index: true,
+    },
+    apifyActorId: { type: String },
+    apifyRunId: { type: String },
+    apifyDatasetId: { type: String },
+    error: { type: String },
+    startedAt: { type: Date, default: Date.now, index: true },
+    finishedAt: { type: Date },
+    durationSeconds: { type: Number },
+  },
+  { timestamps: true, bufferCommands: false },
+);
+
+scraperRunSchema.index({ createdAt: -1 });
+
+if (mongoose.models.ScraperRun) {
+  delete (mongoose.models as Record<string, unknown>).ScraperRun;
+}
+
+export const ScraperRun =
+  mongoose.models.ScraperRun ||
+  mongoose.model<IScraperRun>("ScraperRun", scraperRunSchema);

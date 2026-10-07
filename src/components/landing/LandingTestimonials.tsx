@@ -108,10 +108,10 @@ export function LandingTestimonials() {
   const marqueeItems = [...reviews, ...reviews];
 
   return (
-    <section className="py-20 sm:py-28 relative overflow-hidden">
+    <section className="py-16 sm:py-20 lg:py-24 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold tracking-wider mb-4">
             <div className="flex items-center gap-1 text-amber-400">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />

@@ -6,6 +6,7 @@ export interface ResumeFormData {
   fileUrl: string;
   cloudinaryPublicId?: string;
   fileSize?: number;
+  rawText?: string;
 }
 
 export interface ResumeHeaderProps {

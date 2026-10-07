@@ -1,8 +1,19 @@
 "use client";
 
-import { LogIn } from "lucide-react";
+import {
+  ChevronUp,
+  LogIn,
+  LogOut,
+  Moon,
+  Settings,
+  Sun,
+  User,
+} from "lucide-react";
 import Link from "next/link";
-import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useRef, useState } from "react";
+import { signOut, useSession } from "@/lib/auth-client";
 
 interface SidebarUserProfileProps {
   isCollapsed: boolean;
@@ -13,12 +24,41 @@ export function SidebarUserProfile({
   isCollapsed,
   mobileOpen,
 }: SidebarUserProfileProps) {
+  const router = useRouter();
   const { data: session, isPending } = useSession();
+  const { theme, setTheme } = useTheme();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      setDropdownOpen(false);
+      await signOut();
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   if (isPending) {
     return (
       <div
-        className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 animate-pulse ${
+        className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 animate-pulse ${
           isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
         }`}
       >
@@ -41,32 +81,104 @@ export function SidebarUserProfile({
 
   if (session?.user) {
     return (
-      <div className="relative group">
-        <div
-          className={`flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 ${
-            isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
-          }`}
-        >
-          <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
-            {userInitial}
-          </div>
-          {(!isCollapsed || mobileOpen) && (
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+      <div className="relative" ref={dropdownRef}>
+        {/* Dropdown Menu (Opens upwards above user card) */}
+        {dropdownOpen && (
+          <div
+            className={`absolute bottom-full mb-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 p-1.5 transition-all animate-fade-in ${
+              isCollapsed && !mobileOpen ? "left-0" : "left-0 right-0 w-full"
+            }`}
+          >
+            {/* Header info */}
+            <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
                 {session.user.name || "User"}
               </p>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                 {session.user.email}
               </p>
             </div>
-          )}
-        </div>
-        {isCollapsed && !mobileOpen && (
-          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-            <p className="font-semibold">{session.user.name || "User"}</p>
-            <p className="text-[10px] opacity-75">{session.user.email}</p>
+
+            {/* Links */}
+            <div className="py-1 space-y-0.5">
+              <Link
+                href="/profile"
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <User className="w-3.5 h-3.5 text-blue-600" />
+                <span>My Profile & Skills</span>
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-500" />
+                <span>Account Settings</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  {theme === "dark" ? (
+                    <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-blue-600" />
+                  )}
+                  <span>Theme</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                  {theme === "dark" ? "Dark" : "Light"}
+                </span>
+              </button>
+            </div>
+
+            {/* Logout */}
+            <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Trigger Button */}
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className={`w-full flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-600 transition-colors cursor-pointer text-left shadow-xs ${
+            isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
+          }`}
+        >
+          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+            {userInitial}
+          </div>
+          {(!isCollapsed || mobileOpen) && (
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {session.user.name || "User"}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {session.user.email}
+                </p>
+              </div>
+              <ChevronUp
+                className={`w-4 h-4 text-slate-400 transition-transform ${
+                  dropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </>
+          )}
+        </button>
       </div>
     );
   }
@@ -83,11 +195,6 @@ export function SidebarUserProfile({
         <LogIn className="w-4 h-4 shrink-0" />
         {(!isCollapsed || mobileOpen) && <span>Sign In</span>}
       </Link>
-      {isCollapsed && !mobileOpen && (
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2.5 px-2.5 py-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap">
-          Sign In
-        </div>
-      )}
     </div>
   );
 }

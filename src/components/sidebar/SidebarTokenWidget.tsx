@@ -2,6 +2,7 @@
 
 import { Coins } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useTokens } from "@/context/tokens-context";
 
 interface SidebarTokenWidgetProps {
@@ -16,6 +17,13 @@ export function SidebarTokenWidget({
   onNavigate,
 }: SidebarTokenWidgetProps) {
   const { tokens, isLoaded, loading } = useTokens();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showSkeleton = !mounted || (!isLoaded && loading);
 
   return (
     <div className="relative group">
@@ -32,7 +40,7 @@ export function SidebarTokenWidget({
         {(!isCollapsed || mobileOpen) && (
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              {!isLoaded && loading ? (
+              {showSkeleton ? (
                 <div className="h-3.5 w-16 bg-amber-500/25 dark:bg-amber-400/25 rounded-md animate-pulse my-0.5" />
               ) : (
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-mono">

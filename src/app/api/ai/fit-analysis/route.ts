@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
+import { extractProfileFromText, GEMINI_MODELS } from "@/lib/resume-analyzer";
+import { extractResumeTextUniversal } from "@/lib/resume-text-extractor";
 import {
   blockedAccountResponse,
   deductUserTokens,
@@ -12,7 +14,7 @@ import {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
   /^["']|["']$/g,
   "",
-).trim();
+)?.trim();
 
 interface FitAnalysisResult {
   fitScore: number;
@@ -143,19 +145,18 @@ export async function POST(request: NextRequest) {
       }
 
       savedResumeId = savedDoc._id.toString();
-      if (savedDoc.rawText && savedDoc.rawText.length > 20) {
-        resumeText = savedDoc.rawText;
-      } else if (savedDoc.fileUrl) {
-        // If fileUrl is a data URL (e.g. data:application/pdf;base64,...)
-        if (savedDoc.fileUrl.startsWith("data:application/pdf;base64,")) {
-          inlinePdfData = {
-            mimeType: "application/pdf",
-            data: savedDoc.fileUrl.replace("data:application/pdf;base64,", ""),
-          };
-        } else {
-          // Fallback text with resume title/name
-          resumeText = `Resume Name: ${savedDoc.name}\nFile: ${savedDoc.fileName}\n(Content reference: ${savedDoc.fileUrl})`;
-        }
+      const extracted = await extractResumeTextUniversal({
+        rawText: savedDoc.rawText,
+        fileUrl: savedDoc.fileUrl,
+        builderData: savedDoc.builderData,
+        fileName: savedDoc.fileName,
+      });
+      resumeText = extracted.text;
+      inlinePdfData = extracted.inlinePdfData;
+
+      if (!savedDoc.rawText && resumeText) {
+        savedDoc.rawText = resumeText;
+        await savedDoc.save().catch(() => {});
       }
     } else if (resume?.mode === "upload") {
       if (!resume.fileBase64) {
@@ -165,22 +166,15 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const mimeType = resume.mimeType || "application/pdf";
+      const mimeType =
+        resume.fileBase64.match(/^data:([^;]+);/)?.[1] || "application/pdf";
       const cleanBase64 = resume.fileBase64.replace(/^data:[^;]+;base64,/, "");
-
-      if (mimeType.includes("pdf")) {
-        inlinePdfData = {
-          mimeType: "application/pdf",
-          data: cleanBase64,
-        };
-      } else {
-        // Decode base64 text file
-        try {
-          resumeText = Buffer.from(cleanBase64, "base64").toString("utf-8");
-        } catch {
-          resumeText = cleanBase64;
-        }
-      }
+      const extracted = await extractResumeTextUniversal({
+        fileBase64: resume.fileBase64,
+        fileName: resume.fileName,
+      });
+      resumeText = extracted.text;
+      inlinePdfData = extracted.inlinePdfData;
 
       // If user chose to save this resume to their account
       if (resume.saveToAccount) {
@@ -288,91 +282,76 @@ Return ONLY valid JSON strictly matching this structure without any markdown wra
       });
     }
 
-    const MODELS = [
-      "gemini-2.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemini-3.6-flash",
-      "gemini-flash-latest",
-    ];
-
     let rawOutput = "";
     let lastError = "";
 
-    for (const modelName of MODELS) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-        const geminiRes = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts }],
-            generationConfig: {
-              responseMimeType: "application/json",
-              temperature: 0.2,
-            },
-          }),
-        });
+    if (GEMINI_API_KEY) {
+      for (const modelName of GEMINI_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const geminiRes = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts }],
+              generationConfig: {
+                responseMimeType: "application/json",
+                temperature: 0.2,
+              },
+            }),
+          });
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          rawOutput =
-            geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          if (rawOutput) break;
-        } else {
-          lastError = await geminiRes.text();
-          console.warn(
-            `[Fit Analysis] ${modelName} returned status ${geminiRes.status}:`,
-            lastError,
-          );
+          if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            rawOutput =
+              geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (rawOutput) break;
+          } else {
+            lastError = await geminiRes.text();
+            console.warn(
+              `[Fit Analysis] ${modelName} returned status ${geminiRes.status}:`,
+              lastError,
+            );
+          }
+        } catch (err: unknown) {
+          lastError = err instanceof Error ? err.message : String(err);
+          console.warn(`[Fit Analysis] ${modelName} threw:`, lastError);
         }
-      } catch (err: unknown) {
-        lastError = err instanceof Error ? err.message : String(err);
-        console.warn(`[Fit Analysis] ${modelName} threw:`, lastError);
       }
     }
 
     let result: FitAnalysisResult;
 
     if (!rawOutput) {
-      // Robust heuristic fallback when AI model is unauthenticated or rate-limited
-      const rLower = (resumeText || "").toLowerCase();
-      const jdLower = (jobDescription || "").toLowerCase();
+      // Dynamic candidate-specific fit analysis based on actual resume and job post
+      const profile = extractProfileFromText(resumeText);
+      const jdProfile = extractProfileFromText(jobDescription);
 
-      // Common tech keywords
-      const commonTech = [
-        "react",
-        "next.js",
-        "typescript",
-        "javascript",
-        "node",
-        "python",
-        "api",
-        "database",
-        "mongodb",
-        "postgresql",
-        "docker",
-        "cloud",
-        "aws",
-        "tailwind",
-        "redis",
-        "graphql",
-        "agile",
-        "ci/cd",
-        "cursor",
-        "copilot",
-      ];
+      const resumeSkills = new Set(
+        profile.detectedSkills.map((s) => s.toLowerCase()),
+      );
+      const jdSkills = jdProfile.detectedSkills;
 
-      const foundInJd = commonTech.filter((w) => jdLower.includes(w));
-      const matchedSkills = foundInJd.filter((w) => rLower.includes(w));
-      const missingSkills = foundInJd.filter((w) => !rLower.includes(w));
+      const matchedSkills = jdSkills.filter((s) =>
+        resumeSkills.has(s.toLowerCase()),
+      );
+      const missingSkills = jdSkills.filter(
+        (s) => !resumeSkills.has(s.toLowerCase()),
+      );
 
       const matchRatio =
-        foundInJd.length > 0 ? matchedSkills.length / foundInJd.length : 0.75;
+        jdSkills.length > 0
+          ? matchedSkills.length / jdSkills.length
+          : profile.detectedSkills.length > 0
+            ? 0.75
+            : 0.5;
+
       const calculatedScore = Math.min(
-        92,
-        Math.max(50, Math.round(55 + matchRatio * 35)),
+        95,
+        Math.max(45, Math.round(50 + matchRatio * 42)),
       );
+
+      const candidateTitle = profile.detectedTitle || "candidate";
 
       result = {
         fitScore: calculatedScore,
@@ -389,63 +368,69 @@ Return ONLY valid JSON strictly matching this structure without any markdown wra
               : calculatedScore >= 60
                 ? "Good Fit - Minor Keyword Tailoring Needed"
                 : "Reach Opportunity - Highlight Transferable Strengths",
-          rationale: `You demonstrate solid foundational qualifications for this ${jobTitle} position at ${company}. Prioritize highlighting key matched competencies in your summary to pass initial recruiter screenings.`,
+          rationale: `As a ${candidateTitle}, your demonstrated qualifications align well with key aspects of the ${jobTitle} position at ${company}. Addressing missing competencies will maximize interview probability.`,
         },
         scoreBreakdown: {
-          skillsMatch: Math.round(matchRatio * 100) || 75,
-          experienceMatch: 80,
+          skillsMatch: Math.round(matchRatio * 100) || 70,
+          experienceMatch: profile.actionVerbCount >= 6 ? 85 : 72,
           requirementsMatch: calculatedScore,
         },
-        executiveSummary: `Analysis completed comparing your resume against the ${jobTitle} opening at ${company}. Your technical trajectory aligns well with core expectations, with opportunities to address specific framework proficiencies.`,
+        executiveSummary: `Fit analysis completed comparing your resume against the ${jobTitle} opening at ${company}. Your background demonstrates solid experience in ${profile.detectedSkills.slice(0, 3).join(", ") || "core domain requirements"}, with targeted opportunities to highlight ${missingSkills.slice(0, 2).join(", ") || "supplementary tools"}.`,
         strengths:
           matchedSkills.length > 0
             ? matchedSkills.map(
                 (s) =>
-                  `Demonstrated hands-on proficiency with ${s.toUpperCase()} required by the job posting.`,
+                  `Demonstrated proficiency in ${s}, directly matching requirements for ${jobTitle}.`,
               )
-            : [
-                "Directly applicable core software engineering and architectural trajectory.",
-                "Experience with end-to-end full stack development lifecycle.",
-                "Collaborative agile workflow competencies and cross-functional team delivery.",
-              ],
+            : profile.detectedSkills.length > 0
+              ? profile.detectedSkills
+                  .slice(0, 4)
+                  .map(
+                    (s) =>
+                      `Strong background in ${s} provides transferable technical capability for this position.`,
+                  )
+              : [
+                  "Directly applicable professional experience and foundational competencies.",
+                  "Experience managing full delivery lifecycles in collaborative environments.",
+                  "Strong communication and cross-functional team execution.",
+                ],
         missingSkills:
           missingSkills.length > 0
             ? missingSkills.map(
-                (s) =>
-                  `${s.toUpperCase()} (mentioned in target job requirements)`,
+                (s) => `${s} (specified in ${company} job requirements)`,
               )
             : [
-                "Cursor / AI-assisted engineering workflows",
-                "Distributed caching and performance SLAs",
+                "Cursor / Modern AI productivity toolchains",
+                "Advanced CI/CD automation & observability",
               ],
         resumeAdjustments: [
           {
             section: "Professional Summary",
             issue:
               "Your summary should open with direct alignment to the target job title.",
-            suggestion: `Tailor opening statement: 'Senior Full Stack Engineer with expertise in modern web architectures and scalable API development tailored for ${company}.'`,
+            suggestion: `Tailor opening statement: '${candidateTitle || "Professional"} experienced in ${matchedSkills.slice(0, 2).join(", ") || "scalable execution"} applying for ${jobTitle} at ${company}.'`,
             impact: "high",
           },
           {
             section: "Core Skills",
             issue:
-              "Target job keywords should appear prominently in your top skills matrix.",
-            suggestion: `Incorporate prominent keywords: ${missingSkills.slice(0, 3).join(", ").toUpperCase() || "Next.js, TypeScript, Cloud Architecture"}.`,
+              "Target job requirements should appear prominently in your top skills matrix.",
+            suggestion: `Incorporate key requirements: ${missingSkills.slice(0, 3).join(", ") || matchedSkills.slice(0, 3).join(", ") || "Domain proficiencies"}.`,
             impact: "high",
           },
           {
             section: "Experience / Work History",
             issue:
-              "Highlight business outcomes and quantifiable metrics rather than routine responsibilities.",
+              "Highlight measurable business outcomes and quantitative metrics.",
             suggestion:
-              "Include metrics showing latency improvements, user growth, or cycle-time velocity for your most recent projects.",
+              "Incorporate quantifiable outcomes (e.g. latency, revenue, conversion %, time saved) in your top achievement bullets.",
             impact: "medium",
           },
         ],
         interviewTips: [
-          `Prepare to articulate how your experience directly solves challenges faced by ${company}.`,
-          "Prepare 2 STAR method examples showcasing how you diagnosed complex production bottlenecks.",
-          "Demonstrate familiarity with modern AI-accelerated workflows (e.g. Cursor, GitHub Copilot) to highlight engineering velocity.",
+          `Articulate how your experience with ${matchedSkills.slice(0, 2).join(", ") || "core systems"} solves key operational objectives at ${company}.`,
+          "Prepare 2 concrete STAR method examples showcasing how you resolved challenging project blockers.",
+          "Demonstrate familiarity with modern 2026 AI workflows (e.g. Cursor, GitHub Copilot) to highlight delivery velocity.",
         ],
       };
     } else {

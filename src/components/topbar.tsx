@@ -146,6 +146,13 @@ export function TopBar() {
   const pathname = usePathname();
   const { isCollapsed, toggleCollapse, toggleMobile } = useSidebar();
   const { tokens, isLoaded, loading } = useTokens();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showSkeleton = !mounted || (!isLoaded && loading);
 
   // Match title or check nested routes
   let currentMeta = pageTitles[pathname] || {
@@ -219,7 +226,7 @@ export function TopBar() {
           </div>
           <div className="flex flex-col text-left leading-none">
             <div className="flex items-center gap-1">
-              {!isLoaded && loading ? (
+              {showSkeleton ? (
                 <div className="h-3.5 w-10 bg-amber-500/30 dark:bg-amber-400/30 rounded-md animate-pulse my-0.5" />
               ) : (
                 <span className="text-xs sm:text-sm font-bold tracking-tight font-mono text-slate-900 dark:text-white">

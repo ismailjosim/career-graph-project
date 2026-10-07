@@ -8,12 +8,18 @@ import { Sidebar } from "./sidebar";
 import { SidebarProvider, useSidebar } from "./sidebar-context";
 import { TopBar } from "./topbar";
 
-function DashboardLayoutContent({ children }: { children: ReactNode }) {
+function DashboardLayoutContent({
+  children,
+  userRole,
+}: {
+  children: ReactNode;
+  userRole?: string;
+}) {
   const { isCollapsed } = useSidebar();
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 transition-colors">
-      <Sidebar />
+      <Sidebar userRole={userRole} />
 
       {/* Main Content Area smoothly shifting with sidebar collapse */}
       <div
@@ -250,7 +256,9 @@ export function DashboardLayoutClient({
 
   return (
     <SidebarProvider>
-      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+      <DashboardLayoutContent userRole={initialUser?.role}>
+        {children}
+      </DashboardLayoutContent>
     </SidebarProvider>
   );
 }

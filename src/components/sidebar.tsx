@@ -1,6 +1,12 @@
 "use client";
 
-import { LayoutTemplate, MessageSquareQuote, Users, X } from "lucide-react";
+import {
+  Bot,
+  LayoutTemplate,
+  MessageSquareQuote,
+  Users,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,20 +14,25 @@ import { useSession } from "@/lib/auth-client";
 import {
   type MenuGroup,
   menuGroups,
-  SidebarFooterActions,
   SidebarNav,
   SidebarTokenWidget,
   SidebarUserProfile,
 } from "./sidebar/index";
 import { useSidebar } from "./sidebar-context";
 
-export function Sidebar() {
+export function Sidebar({ userRole }: { userRole?: string } = {}) {
   const { isCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { data: session } = useSession();
 
-  const [verifiedRole, setVerifiedRole] = useState<string | null>(null);
+  const [verifiedRole, setVerifiedRole] = useState<string | null>(
+    userRole || null,
+  );
 
   useEffect(() => {
+    if (userRole) {
+      setVerifiedRole(userRole);
+      return;
+    }
     if (session?.user) {
       fetch("/api/users/me")
         .then((res) => (res.ok ? res.json() : null))
@@ -32,10 +43,12 @@ export function Sidebar() {
         })
         .catch(() => {});
     }
-  }, [session?.user]);
+  }, [session?.user, userRole]);
 
   const activeRole =
-    verifiedRole || (session?.user as unknown as Record<string, unknown>)?.role;
+    userRole ||
+    verifiedRole ||
+    (session?.user as unknown as Record<string, unknown>)?.role;
   const isAdmin = activeRole === "admin" || activeRole === "super_admin";
 
   const visibleGroups: MenuGroup[] = [
@@ -55,6 +68,11 @@ export function Sidebar() {
                 icon: MessageSquareQuote,
                 label: "Feedback & Reviews",
                 href: "/admin/reviews",
+              },
+              {
+                icon: Bot,
+                label: "Job Scrapper",
+                href: "/scrapper",
               },
               {
                 icon: LayoutTemplate,
@@ -142,7 +160,7 @@ export function Sidebar() {
           onNavigate={() => setMobileOpen(false)}
         />
 
-        {/* Footer Area: Token Balance Widget, User Profile, Theme Toggle & Logout */}
+        {/* Footer Area: Token Balance Widget & User Profile with Dropdown Menu */}
         <div className="p-3 border-t border-slate-200 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-950/30">
           <SidebarTokenWidget
             isCollapsed={isCollapsed}
@@ -151,11 +169,6 @@ export function Sidebar() {
           />
 
           <SidebarUserProfile
-            isCollapsed={isCollapsed}
-            mobileOpen={mobileOpen}
-          />
-
-          <SidebarFooterActions
             isCollapsed={isCollapsed}
             mobileOpen={mobileOpen}
           />

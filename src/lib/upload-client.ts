@@ -7,6 +7,7 @@ export interface UploadResponse {
   fileName: string;
   fileSize: number;
   format: string;
+  extractedText?: string;
 }
 
 export type UploadProgressCallback = (

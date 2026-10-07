@@ -24,6 +24,15 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardLayoutClient initialUser={user}>{children}</DashboardLayoutClient>
+    <DashboardLayoutClient
+      initialUser={{
+        email: user.email,
+        emailVerified: user.emailVerified,
+        status: user.status,
+        role: user.role,
+      }}
+    >
+      {children}
+    </DashboardLayoutClient>
   );
 }

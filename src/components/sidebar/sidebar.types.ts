@@ -51,6 +51,12 @@ export const menuGroups: MenuGroup[] = [
     items: [
       {
         icon: Sparkles,
+        label: "Daily AI Matches",
+        href: "/daily-matches",
+        badge: "New",
+      },
+      {
+        icon: Briefcase,
         label: "Job Portal",
         href: "/jobs",
       },

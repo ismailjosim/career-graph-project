@@ -220,6 +220,7 @@ export function useAtsChecker() {
             fileUrl: uploadRes.url,
             cloudinaryPublicId: uploadRes.publicId,
             fileSize: uploadRes.fileSize || uploadedFile.size,
+            rawText: uploadRes.extractedText,
           }),
         });
 

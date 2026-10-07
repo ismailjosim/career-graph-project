@@ -1,6 +1,7 @@
 export { LandingAiShowcase } from "./LandingAiShowcase";
 export { LandingComparison } from "./LandingComparison";
 export { LandingCta } from "./LandingCta";
+export { LandingDailyMatchesPreview } from "./LandingDailyMatchesPreview";
 export { LandingFooter } from "./LandingFooter";
 export { LandingHero } from "./LandingHero";
 export { LandingMarketplaceGrid } from "./LandingMarketplaceGrid";

@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
+import { GEMINI_MODELS } from "@/lib/resume-analyzer";
 import {
   blockedAccountResponse,
   deductUserTokens,
@@ -92,37 +93,39 @@ Return ONLY valid JSON matching this schema:
   ]
 }`;
 
-        try {
-          const geminiRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  temperature: 0.3,
-                  responseMimeType: "application/json",
-                },
-              }),
-            },
-          );
+        for (const modelName of GEMINI_MODELS) {
+          try {
+            const geminiRes = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }],
+                  generationConfig: {
+                    temperature: 0.3,
+                    responseMimeType: "application/json",
+                  },
+                }),
+              },
+            );
 
-          if (geminiRes.ok) {
-            const data = await geminiRes.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              const parsed = JSON.parse(text);
-              if (parsed.questions && parsed.questions.length > 0) {
-                return NextResponse.json({
-                  questions: parsed.questions,
-                  source: "ai",
-                });
+            if (geminiRes.ok) {
+              const data = await geminiRes.json();
+              const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                const parsed = JSON.parse(text);
+                if (parsed.questions && parsed.questions.length > 0) {
+                  return NextResponse.json({
+                    questions: parsed.questions,
+                    source: "ai",
+                  });
+                }
               }
             }
+          } catch (_err) {
+            // Try next model
           }
-        } catch (_err) {
-          // Fall through to deterministic fallback
         }
       }
 
@@ -217,32 +220,34 @@ Return ONLY valid JSON adhering to this schema:
   "pacingInsight": "string (estimated words, clarity, and conciseness note)"
 }`;
 
-        try {
-          const geminiRes = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                  temperature: 0.2,
-                  responseMimeType: "application/json",
-                },
-              }),
-            },
-          );
+        for (const modelName of GEMINI_MODELS) {
+          try {
+            const geminiRes = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }],
+                  generationConfig: {
+                    temperature: 0.2,
+                    responseMimeType: "application/json",
+                  },
+                }),
+              },
+            );
 
-          if (geminiRes.ok) {
-            const data = await geminiRes.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-              const parsed = JSON.parse(text);
-              return NextResponse.json({ evaluation: parsed, source: "ai" });
+            if (geminiRes.ok) {
+              const data = await geminiRes.json();
+              const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (text) {
+                const parsed = JSON.parse(text);
+                return NextResponse.json({ evaluation: parsed, source: "ai" });
+              }
             }
+          } catch (_err) {
+            // Try next model
           }
-        } catch (_err) {
-          // Fall through to heuristic evaluation
         }
       }
 

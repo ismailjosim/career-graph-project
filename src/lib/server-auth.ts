@@ -85,20 +85,22 @@ export async function getSessionUser(): Promise<AuthenticatedUser | null> {
           ? ((session.user as Record<string, unknown>).tokens as number)
           : 50;
 
+    const { _id, ...cleanDbDetails } = dbDetails;
+
     return {
       ...session.user,
-      ...dbDetails,
-      id: session.user.id,
-      name: (dbDetails.name as string) || session.user.name,
-      email: (dbDetails.email as string) || session.user.email,
+      ...cleanDbDetails,
+      id: session.user.id || (_id ? String(_id) : ""),
+      name: (cleanDbDetails.name as string) || session.user.name,
+      email: (cleanDbDetails.email as string) || session.user.email,
       emailVerified:
-        dbDetails.emailVerified !== undefined
-          ? Boolean(dbDetails.emailVerified)
+        cleanDbDetails.emailVerified !== undefined
+          ? Boolean(cleanDbDetails.emailVerified)
           : session.user.emailVerified,
       role,
       status,
       tokens: rawTokens,
-      verifiedBonusGiven: Boolean(dbDetails.verifiedBonusGiven),
+      verifiedBonusGiven: Boolean(cleanDbDetails.verifiedBonusGiven),
     } as AuthenticatedUser;
   } catch (error) {
     if (

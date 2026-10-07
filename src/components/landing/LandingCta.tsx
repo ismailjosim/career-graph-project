@@ -12,7 +12,7 @@ import Link from "next/link";
 
 export function LandingCta() {
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-16 sm:py-20 lg:py-24 bg-slate-50/50 dark:bg-slate-900/40 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative rounded-3xl p-8 sm:p-12 lg:p-16 bg-linear-to-br from-slate-900 via-indigo-950 to-blue-950 text-white overflow-hidden shadow-2xl border border-blue-500/20">
           {/* Glowing background shapes */}

@@ -3,6 +3,7 @@
 import { Eye, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AdminDashboardOverview } from "@/components/dashboard/admin-overview";
+import { CuratedDailyMatchesCard } from "@/components/dashboard/CuratedDailyMatchesCard";
 import {
   AddApplicationModal,
   buildMetricsChartData,
@@ -145,6 +146,9 @@ export function DashboardClient() {
 
       {/* Top 4 Real-time Stat Cards */}
       <DashboardStatsGrid metrics={metrics} />
+
+      {/* Today's Curated AI Matches Section */}
+      <CuratedDailyMatchesCard maxItems={3} showFullPageLink={true} />
 
       {/* Performance Charts & Quick Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

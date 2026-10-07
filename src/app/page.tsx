@@ -1,61 +1,49 @@
 import type { Metadata } from "next";
 import {
-  LandingAiShowcase,
-  LandingComparison,
   LandingCta,
+  LandingDailyMatchesPreview,
   LandingFooter,
   LandingHero,
   LandingMarketplaceGrid,
   LandingNavbar,
   LandingPipelinePreview,
   LandingPricing,
-  LandingRolesSection,
-  LandingTestimonials,
 } from "@/components/landing";
 
 export const metadata: Metadata = {
-  title: "Career Graph - Track. Apply. Grow.",
+  title: "Career Graph - Find Jobs Matched to Your Resume Daily",
   description:
-    "Discover high-fit roles, run 4-pillar ATS resume checks, generate custom cover letters, and track applications with our fair pay-as-you-go token economy. 50 free tokens on signup.",
+    "Discover high-fit roles scraped daily from top job boards. Get 10–15 curated matches delivered directly to your resume with automated tracking.",
 };
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 selection:bg-blue-500 selection:text-white">
-      {/* Sticky Top Navigation */}
+    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 selection:bg-blue-600 selection:text-white">
+      {/* Top Navigation */}
       <LandingNavbar />
 
       {/* Main Content Sections */}
       <main className="flex-1">
-        {/* Hero Section with Marketplace Search & Match Bar */}
+        {/* Minimalist Indeed-style Job Search Hero */}
         <LandingHero />
 
-        {/* AI Superpowers Showcase (Fit Analyzer, Extractor, Cover Letters, Resumes) */}
-        <LandingAiShowcase />
+        {/* Daily Scraped 10-15 Matches Feature Showcase */}
+        <LandingDailyMatchesPreview />
 
-        {/* Curated Job Marketplace Directory Preview */}
+        {/* Live Marketplace Directory Preview */}
         <LandingMarketplaceGrid />
 
-        {/* Application Pipeline Kanban Preview */}
+        {/* Kanban Application Pipeline Tracker */}
         <LandingPipelinePreview />
 
-        {/* Traditional Job Search vs Career Graph Comparison */}
-        <LandingComparison />
-
-        {/* Role-Based Workflows (Seeker, Recruiter, Employer, Admin) */}
-        <LandingRolesSection />
-
-        {/* Transparent Pay-As-You-Go Pricing & Token Economy */}
+        {/* Transparent Monthly Subscription Pricing */}
         <LandingPricing />
 
-        {/* Social Proof & Testimonials */}
-        <LandingTestimonials />
-
-        {/* High-Converting Call to Action */}
+        {/* Clean Call to Action */}
         <LandingCta />
       </main>
 
-      {/* Comprehensive Marketplace Footer */}
+      {/* Clean Footer */}
       <LandingFooter />
     </div>
   );

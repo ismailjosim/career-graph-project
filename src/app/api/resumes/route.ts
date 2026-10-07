@@ -61,6 +61,29 @@ export async function POST(request: NextRequest) {
       userId,
     });
 
+    if (
+      !validatedData.rawText &&
+      (validatedData.fileUrl || validatedData.builderData)
+    ) {
+      try {
+        const { extractResumeTextUniversal } = await import(
+          "@/lib/resume-text-extractor"
+        );
+        const extracted = await extractResumeTextUniversal({
+          fileUrl: validatedData.fileUrl,
+          builderData: validatedData.builderData,
+        });
+        if (extracted.text && extracted.text.length > 20) {
+          validatedData.rawText = extracted.text;
+        }
+      } catch (err) {
+        console.warn(
+          "Failed to automatically extract text for new resume:",
+          err,
+        );
+      }
+    }
+
     const resume = new Resume(validatedData);
     await resume.save();
 

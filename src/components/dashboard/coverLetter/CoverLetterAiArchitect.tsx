@@ -31,8 +31,26 @@ export function CoverLetterAiArchitect({
     initialJobDescription,
   );
   const [aiTone, setAiTone] = useState("confident and professional");
+  const [savedResumes, setSavedResumes] = useState<
+    Array<{ _id: string; name: string; fileName?: string; isDefault?: boolean }>
+  >([]);
+  const [selectedResumeId, setSelectedResumeId] = useState<string>("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  // Fetch saved resumes for candidate to select
+  useState(() => {
+    fetch("/api/resumes")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data.resumes || [];
+        setSavedResumes(list);
+        const def =
+          list.find((r: { isDefault?: boolean }) => r.isDefault) || list[0];
+        if (def) setSelectedResumeId(def._id);
+      })
+      .catch(() => {});
+  });
 
   const handleGenerateWithAi = async () => {
     if (!aiJobTitle.trim()) {
@@ -63,6 +81,7 @@ export function CoverLetterAiArchitect({
           company: aiCompany.trim(),
           jobDescription: aiJobDescription.trim(),
           tone: aiTone,
+          resumeId: selectedResumeId || undefined,
         }),
       });
 
@@ -187,31 +206,50 @@ export function CoverLetterAiArchitect({
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Letter Tone & Voice
-                  </label>
-                  <select
-                    value={aiTone}
-                    onChange={(e) => setAiTone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
-                  >
-                    <option value="confident and professional">
-                      Confident & Professional (Standard)
-                    </option>
-                    <option value="enthusiastic, high-energy, and ambitious">
-                      Enthusiastic & High-Energy
-                    </option>
-                    <option value="executive, strategic, and metric-oriented">
-                      Executive & Strategic
-                    </option>
-                    <option value="conversational, modern, and personable">
-                      Conversational & Modern
-                    </option>
-                    <option value="formal and traditional">
-                      Formal & Academic
-                    </option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Tailor from Resume
+                    </label>
+                    <select
+                      value={selectedResumeId}
+                      onChange={(e) => setSelectedResumeId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                    >
+                      <option value="">Default Resume / Profile</option>
+                      {savedResumes.map((r) => (
+                        <option key={r._id} value={r._id}>
+                          {r.name} {r.isDefault ? "(Default)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Letter Tone & Voice
+                    </label>
+                    <select
+                      value={aiTone}
+                      onChange={(e) => setAiTone(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-indigo-500 outline-hidden"
+                    >
+                      <option value="confident and professional">
+                        Confident & Professional (Standard)
+                      </option>
+                      <option value="enthusiastic, high-energy, and ambitious">
+                        Enthusiastic & High-Energy
+                      </option>
+                      <option value="executive, strategic, and metric-oriented">
+                        Executive & Strategic
+                      </option>
+                      <option value="conversational, modern, and personable">
+                        Conversational & Modern
+                      </option>
+                      <option value="formal and traditional">
+                        Formal & Academic
+                      </option>
+                    </select>
+                  </div>
                 </div>
 
                 {aiError && (

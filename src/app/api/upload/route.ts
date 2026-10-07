@@ -139,6 +139,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    let extractedText = "";
+    if (
+      uploadType !== "avatar" &&
+      (file.type === "application/pdf" ||
+        file.name.toLowerCase().endsWith(".pdf"))
+    ) {
+      try {
+        const { extractTextFromPdfBuffer } = await import(
+          "@/lib/resume-text-extractor"
+        );
+        extractedText = await extractTextFromPdfBuffer(buffer);
+      } catch (err) {
+        console.warn("Failed to extract text from uploaded PDF buffer:", err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       url: uploadResult.secureUrl,
@@ -146,6 +162,7 @@ export async function POST(req: NextRequest) {
       fileName: file.name,
       fileSize,
       format: uploadResult.format,
+      extractedText: extractedText || undefined,
     });
   } catch (error) {
     console.error("Upload API error:", error);

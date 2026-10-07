@@ -2,6 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import {
+  GEMINI_MODELS,
+  generateDeterministicAtsAudit,
+} from "@/lib/resume-analyzer";
+import { extractResumeTextUniversal } from "@/lib/resume-text-extractor";
+import {
   blockedAccountResponse,
   deductUserTokens,
   getSessionUser,
@@ -11,7 +16,7 @@ import {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
   /^["']|["']$/g,
   "",
-).trim();
+)?.trim();
 
 import type { AtsAiReadiness, AtsAnalysisResult } from "@/interfaces/ats";
 export type { AtsAnalysisResult, AtsAiReadiness };
@@ -79,17 +84,18 @@ export async function POST(request: NextRequest) {
       }
 
       resumeTitle = savedDoc.name || savedDoc.fileName || "Saved Resume";
-      if (savedDoc.rawText && savedDoc.rawText.length > 20) {
-        resumeText = savedDoc.rawText;
-      } else if (savedDoc.fileUrl) {
-        if (savedDoc.fileUrl.startsWith("data:application/pdf;base64,")) {
-          inlinePdfData = {
-            mimeType: "application/pdf",
-            data: savedDoc.fileUrl.replace("data:application/pdf;base64,", ""),
-          };
-        } else {
-          resumeText = `Resume Title: ${savedDoc.name}\nFile: ${savedDoc.fileName}\n(Content reference: ${savedDoc.fileUrl})`;
-        }
+      const extracted = await extractResumeTextUniversal({
+        rawText: savedDoc.rawText,
+        fileUrl: savedDoc.fileUrl,
+        builderData: savedDoc.builderData,
+        fileName: savedDoc.fileName,
+      });
+      resumeText = extracted.text;
+      inlinePdfData = extracted.inlinePdfData;
+
+      if (!savedDoc.rawText && resumeText) {
+        savedDoc.rawText = resumeText;
+        await savedDoc.save().catch(() => {});
       }
     } else if (resume.mode === "upload") {
       if (!resume.fileBase64) {
@@ -98,23 +104,13 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
       }
-
-      const mimeType = resume.mimeType || "application/pdf";
-      const cleanBase64 = resume.fileBase64.replace(/^data:[^;]+;base64,/, "");
       resumeTitle = resume.fileName || "Uploaded Resume";
-
-      if (mimeType.includes("pdf")) {
-        inlinePdfData = {
-          mimeType: "application/pdf",
-          data: cleanBase64,
-        };
-      } else {
-        try {
-          resumeText = Buffer.from(cleanBase64, "base64").toString("utf-8");
-        } catch {
-          resumeText = cleanBase64;
-        }
-      }
+      const extracted = await extractResumeTextUniversal({
+        fileBase64: resume.fileBase64,
+        fileName: resume.fileName,
+      });
+      resumeText = extracted.text;
+      inlinePdfData = extracted.inlinePdfData;
     } else if (resume.mode === "text") {
       if (!resume.text || resume.text.trim().length < 20) {
         return NextResponse.json(
@@ -128,16 +124,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Invalid resume input method" },
         { status: 400 },
-      );
-    }
-
-    if (!GEMINI_API_KEY) {
-      return NextResponse.json(
-        {
-          error:
-            "Gemini API key is not configured. Please set GEMINI_API_KEY in your environment.",
-        },
-        { status: 503 },
       );
     }
 
@@ -272,193 +258,56 @@ The JSON must adhere precisely to this schema:
       parts: partsPayload,
     });
 
-    const modelsToTry = [
-      "gemini-2.5-flash",
-      "gemini-3.5-flash-lite",
-      "gemini-3.5-flash",
-      "gemini-3.6-flash",
-      "gemini-flash-latest",
-    ];
-
     let rawOutput = "";
     let lastError = "";
 
-    for (const modelName of modelsToTry) {
-      try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: contentsPayload,
-              generationConfig: {
-                temperature: 0.1,
-                topP: 0.95,
-                maxOutputTokens: 8192,
-                responseMimeType: "application/json",
-              },
-            }),
-          },
-        );
+    if (GEMINI_API_KEY) {
+      for (const modelName of GEMINI_MODELS) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: contentsPayload,
+                generationConfig: {
+                  temperature: 0.1,
+                  topP: 0.95,
+                  maxOutputTokens: 8192,
+                  responseMimeType: "application/json",
+                },
+              }),
+            },
+          );
 
-        if (geminiRes.ok) {
-          const geminiData = await geminiRes.json();
-          rawOutput =
-            geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-          if (rawOutput) break;
-        } else {
-          lastError = await geminiRes.text();
-          console.warn(`[ATS Checker] ${modelName} error:`, lastError);
+          if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            rawOutput =
+              geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (rawOutput) break;
+          } else {
+            lastError = await geminiRes.text();
+            console.warn(`[ATS Checker] ${modelName} error:`, lastError);
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : String(err);
+          console.warn(`[ATS Checker] ${modelName} threw:`, lastError);
         }
-      } catch (err) {
-        lastError = err instanceof Error ? err.message : String(err);
-        console.warn(`[ATS Checker] ${modelName} threw:`, lastError);
       }
     }
 
     let parsedResult: AtsAnalysisResult;
 
     if (!rawOutput) {
-      // Robust heuristic ATS audit fallback when external AI model returns 401 or rate-limits
-      const text = (resumeText || resumeTitle).toLowerCase();
-      const hasNumbers = /\d+|%|\$|k\b|m\b/.test(text);
-      const hasAi = /ai|gpt|copilot|cursor|agent|llm|claude/i.test(text);
-      const actionCount = (
-        text.match(
-          /developed|built|managed|led|designed|created|optimized|implemented|delivered/g,
-        ) || []
-      ).length;
-
-      const regionNotes: Record<string, string> = {
-        us_canada:
-          "Evaluated according to US & Canada ATS compliance (Strict single-column layout, anti-bias guidelines).",
-        uk_commonwealth:
-          "Evaluated according to UK & Commonwealth CV standards (Two-page format, detailed academic credentials).",
-        european_europass:
-          "Evaluated according to European Union Europass conventions (Modular layout, language proficiencies).",
-        apac_global:
-          "Evaluated according to Global Remote & APAC hiring standards (Cross-border remote tooling, async velocity).",
-      };
-
-      const baseScore = Math.min(
-        88,
-        Math.max(
-          58,
-          62 +
-            (hasNumbers ? 10 : 0) +
-            (hasAi ? 8 : 0) +
-            Math.min(8, actionCount),
-        ),
-      );
-
-      parsedResult = {
-        overallScore: baseScore,
-        rating:
-          baseScore >= 80
-            ? "excellent"
-            : baseScore >= 68
-              ? "good"
-              : "needs_improvement",
-        badge:
-          baseScore >= 80
-            ? "Enterprise Ready Candidate"
-            : "Strong ATS Candidate",
-        executiveSummary: `Authoritative audit completed for ${resumeTitle}. ${regionNotes[regionStandard] || ""} The resume demonstrates solid technical experience with actionable room to strengthen quantifiable business metrics.`,
-        quickWins: [
-          "Prepend your strongest achievement metrics (%, $, time saved) to the first bullet of each role.",
-          "Add modern AI engineering & productivity tooling (Cursor, Copilot, LLM workflows) to your skills matrix.",
-          "Ensure all section headers (Experience, Education, Skills) follow single-column standardized naming.",
-        ],
-        categoryScores: {
-          formatting: 85,
-          keywords: 78,
-          contentImpact: hasNumbers ? 80 : 65,
-          structure: 82,
-        },
-        categoryFeedback: {
-          formatting:
-            "Clean, parseable section structure adhering to enterprise ATS parsers.",
-          keywords:
-            "Solid industry-standard technical terminology with opportunities for 2026 AI skills.",
-          contentImpact: hasNumbers
-            ? "Good inclusion of metrics."
-            : "Bullet points should include measurable business outcomes.",
-          structure:
-            "Clear chronological trajectory with comprehensive role listings.",
-        },
-        criticalIssues: [
-          {
-            id: "issue-1",
-            section: "Impact & Metrics",
-            severity: hasNumbers ? "medium" : "high",
-            title: "Quantifiable Impact & Metrics",
-            issue:
-              "Several bullet points describe day-to-day responsibilities rather than measurable business outcomes.",
-            recommendation:
-              "Rewrite bullet points using Google's X-Y-Z formula: Accomplished [X] as measured by [Y], by doing [Z].",
-          },
-          {
-            id: "issue-2",
-            section: "Modern & AI Skills",
-            severity: hasAi ? "low" : "medium",
-            title: "2026 Modern AI Tooling Gap",
-            issue:
-              "Modern high-velocity engineering teams look for familiarity with AI-accelerated workflows.",
-            recommendation:
-              "Explicitly highlight tools like Cursor, GitHub Copilot, v0, or LLM-assisted toolchains in your Technical Proficiencies.",
-          },
-          {
-            id: "issue-3",
-            section: "Regional Standard Compliance",
-            severity: "low",
-            title: `${regionStandard === "us_canada" ? "US/Canada Anti-Bias Compliance" : regionStandard === "uk_commonwealth" ? "UK Two-Page Standard" : regionStandard === "european_europass" ? "Europass Framework Alignment" : "Global Remote Competencies"}`,
-            issue:
-              "Confirm layout conforms strictly to target jurisdiction hiring norms.",
-            recommendation:
-              regionStandard === "us_canada"
-                ? "Ensure no headshots, personal demographic details (age, marital status, nationality) appear to prevent automatic compliance filtering."
-                : "Ensure your location and international work authorization are stated clearly.",
-          },
-        ],
-        detectedKeywords: [
-          "TypeScript",
-          "React",
-          "Next.js",
-          "API Integration",
-          "Database Architecture",
-          "Agile",
-        ],
-        missingKeywords: [
-          "Cursor / Copilot",
-          "Autonomous Agent Workflows",
-          "Prompt Engineering",
-          "CI/CD Pipeline Optimization",
-        ],
-        actionVerbCount: actionCount || 12,
-        quantifiableMetricsScore: hasNumbers ? 82 : 60,
-        regionStandard:
-          regionStandard as unknown as AtsAnalysisResult["regionStandard"],
-        aiReadiness: {
-          score: hasAi ? 82 : 55,
-          level: hasAi ? "ai_augmented" : "emerging",
-          headline: hasAi
-            ? "Demonstrated adoption of contemporary AI workflows."
-            : "Opportunity to showcase 2026 AI-assisted productivity tools.",
-          detectedAiSkills: hasAi
-            ? ["AI Assistants", "Automated Workflows"]
-            : [],
-          missingModernSkills: [
-            "Cursor / Windsurf",
-            "Autonomous Agent Workflows",
-            "LLM APIs & Prompt Engineering",
-          ],
-          suggestions: [
-            "Add modern AI-assisted engineering tools to your skills matrix to align with 2026 hiring standards.",
-            "Quantify how you leverage generative tooling to increase velocity and maintain software quality.",
-          ],
-        },
-      };
+      // Dynamic ATS audit analyzing candidate's actual extracted resume text
+      parsedResult = generateDeterministicAtsAudit({
+        resumeText: resumeText || resumeTitle,
+        resumeTitle,
+        targetJobTitle,
+        targetJobDesc,
+        regionStandard,
+      });
     } else {
       // Robust JSON Parser & Sanitizer
       try {

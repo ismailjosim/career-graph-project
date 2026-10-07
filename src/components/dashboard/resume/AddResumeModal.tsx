@@ -74,6 +74,7 @@ export function AddResumeModal({
         fileUrl: res.url,
         cloudinaryPublicId: res.publicId,
         fileSize: res.fileSize,
+        rawText: res.extractedText || undefined,
       };
     });
     setError(null);

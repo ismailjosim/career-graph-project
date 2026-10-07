@@ -480,3 +480,70 @@ export const reviewSchema = z.object({
 });
 
 export type Review = z.infer<typeof reviewSchema>;
+
+// Scraped Job Schema
+export const scrapedJobSchema = z.object({
+  _id: z.string().optional(),
+  externalId: z.string(),
+  title: z.string(),
+  company: z.string(),
+  location: z.string(),
+  jobType: z.string().default("remote"),
+  salary: z.string().default("Competitive"),
+  description: z.string(),
+  requirements: z.array(z.string()).default([]),
+  skills: z.array(z.string()).default([]),
+  source: z.string().default("Web Scraper"),
+  applyUrl: z.string(),
+  scrapedAt: z.date().default(() => new Date()),
+  isActive: z.boolean().default(true),
+});
+export type ScrapedJob = z.infer<typeof scrapedJobSchema>;
+
+// Daily AI Job Match Suggestion Schema
+export const jobMatchSuggestionSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string(),
+  jobId: z.string(),
+  jobTitle: z.string(),
+  company: z.string(),
+  location: z.string(),
+  salary: z.string().default("Competitive"),
+  applyUrl: z.string(),
+  source: z.string().default("LinkedIn"),
+  matchScore: z.number().min(0).max(100),
+  matchedSkills: z.array(z.string()).default([]),
+  missingSkills: z.array(z.string()).default([]),
+  matchReason: z.string().default(""),
+  status: z
+    .enum(["new", "viewed", "applied", "saved", "dismissed"])
+    .default("new"),
+  suggestedDate: z.string(), // e.g. YYYY-MM-DD
+  createdAt: z.date().default(() => new Date()),
+});
+export type JobMatchSuggestion = z.infer<typeof jobMatchSuggestionSchema>;
+
+// Scraper Run Audit Schema
+export const scraperRunSchema = z.object({
+  _id: z.string().optional(),
+  adminId: z.string(),
+  adminEmail: z.string().optional(),
+  platform: z.enum(["linkedin", "indeed", "google_jobs", "glassdoor", "all"]),
+  targetRole: z.string(),
+  location: z.string().default("Remote"),
+  targetCount: z.number().default(50),
+  scrapedCount: z.number().default(0),
+  newJobsCount: z.number().default(0),
+  duplicateCount: z.number().default(0),
+  status: z
+    .enum(["queued", "running", "completed", "failed"])
+    .default("queued"),
+  apifyActorId: z.string().optional(),
+  apifyRunId: z.string().optional(),
+  apifyDatasetId: z.string().optional(),
+  error: z.string().optional(),
+  startedAt: z.date().default(() => new Date()),
+  finishedAt: z.date().optional(),
+  durationSeconds: z.number().optional(),
+});
+export type ScraperRun = z.infer<typeof scraperRunSchema>;

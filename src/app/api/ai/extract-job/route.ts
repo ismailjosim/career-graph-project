@@ -6,8 +6,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
   "",
 ).trim();
 
-const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+import { GEMINI_MODELS } from "@/lib/resume-analyzer";
 
 const cleanHtml = (html: string): string => {
   return html
@@ -34,7 +33,6 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return unauthorizedResponse();
     }
-    // const userId = user.id;
 
     const body = await request.json();
     const { url } = body;
@@ -57,6 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     let pageText = "";
+    let rawHtml = "";
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
@@ -84,8 +83,8 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const html = await response.text();
-      pageText = cleanHtml(html).slice(0, 15000);
+      rawHtml = await response.text();
+      pageText = cleanHtml(rawHtml).slice(0, 15000);
     } catch (_fetchErr) {
       return NextResponse.json(
         {
@@ -108,8 +107,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Gemini to parse and extract structured job info
-    const prompt = `You are an expert AI parser. Below is the text scraped from a job post URL (${parsedUrl.hostname}).
+    // Heuristic fallbacks from HTML metadata
+    const extractMeta = (pattern: RegExp) => {
+      const match = rawHtml.match(pattern);
+      return match ? match[1]?.trim() : "";
+    };
+
+    const titleMeta =
+      extractMeta(
+        /<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i,
+      ) || extractMeta(/<title>([^<]+)<\/title>/i);
+    const descMeta =
+      extractMeta(
+        /<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i,
+      ) ||
+      extractMeta(
+        /<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i,
+      );
+
+    let cleanTitle = titleMeta
+      ? titleMeta.replace(/(\||-|–|at|by).*$/i, "").trim()
+      : "Job Posting";
+    if (!cleanTitle || cleanTitle.length < 3) cleanTitle = "Job Posting";
+
+    let cleanCompany = "Company";
+    const companyMatch =
+      titleMeta?.match(/at\s+([A-Za-z0-9\s&]+)/i) ||
+      rawHtml.match(
+        /"hiringOrganization":\s*\{\s*"@type":\s*"Organization",\s*"name":\s*"([^"]+)"/i,
+      );
+    if (companyMatch) {
+      cleanCompany = companyMatch[1].trim();
+    } else {
+      const hostParts = parsedUrl.hostname.split(".");
+      if (hostParts.length >= 2) {
+        cleanCompany = hostParts[hostParts.length - 2].toUpperCase();
+      }
+    }
+
+    // Try Gemini if key is valid
+    if (GEMINI_API_KEY && !GEMINI_API_KEY.startsWith("AQ.")) {
+      const prompt = `You are an expert AI parser. Below is the text scraped from a job post URL (${parsedUrl.hostname}).
 Extract the key job details into a clean JSON object.
 
 Text:
@@ -126,43 +164,58 @@ Return a JSON object with this exact structure:
   "description": "Comprehensive job description including role overview, responsibilities, technical requirements, and qualifications."
 }`;
 
-    const geminiRes = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.1,
-        },
-      }),
-    });
+      for (const modelName of GEMINI_MODELS) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                  responseMimeType: "application/json",
+                  temperature: 0.1,
+                },
+              }),
+            },
+          );
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error("[Extract Job] Gemini call failed:", errText);
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Failed to extract job details via AI. Please paste manually.",
-        },
-        { status: 200 },
-      );
+          if (geminiRes.ok) {
+            const geminiData = await geminiRes.json();
+            const rawContent =
+              geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+            const parsed = JSON.parse(rawContent);
+
+            if (parsed.title || parsed.description) {
+              return NextResponse.json({
+                success: true,
+                data: {
+                  title: parsed.title || cleanTitle,
+                  company: parsed.company || cleanCompany,
+                  location: parsed.location || "Not specified",
+                  employmentType: parsed.employmentType || "Full-time",
+                  description:
+                    parsed.description || descMeta || pageText.slice(0, 1500),
+                },
+              });
+            }
+          }
+        } catch (err) {
+          console.warn(`[Extract Job] ${modelName} call failed:`, err);
+        }
+      }
     }
 
-    const geminiData = await geminiRes.json();
-    const rawContent =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-    const parsed = JSON.parse(rawContent);
-
+    // Heuristic Fallback
     return NextResponse.json({
       success: true,
       data: {
-        title: parsed.title || "Job Posting",
-        company: parsed.company || "Company",
-        location: parsed.location || "Not specified",
-        employmentType: parsed.employmentType || "Full-time",
-        description: parsed.description || pageText.slice(0, 1000),
+        title: cleanTitle,
+        company: cleanCompany,
+        location: "Remote / Hybrid",
+        employmentType: "Full-time",
+        description: descMeta || pageText.slice(0, 2000),
       },
     });
   } catch (error) {

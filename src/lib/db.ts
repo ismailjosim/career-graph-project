@@ -22,13 +22,19 @@ if (!global.mongooseCache) {
 const cached: MongooseCache = global.mongooseCache;
 
 export async function connectDB() {
-  if (cached.conn) {
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
+  if (
+    !cached.promise ||
+    mongoose.connection.readyState === 0 ||
+    mongoose.connection.readyState === 3
+  ) {
+    cached.conn = null;
+    const opts: mongoose.ConnectOptions = {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 15000,
     };
 
     cached.promise = mongoose
@@ -41,6 +47,7 @@ export async function connectDB() {
   try {
     cached.conn = await cached.promise;
   } catch (e) {
+    cached.conn = null;
     cached.promise = null;
     throw e;
   }

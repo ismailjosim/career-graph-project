@@ -2,6 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Resume } from "@/lib/models";
 import {
+  GEMINI_MODELS,
+  generateDeterministicCoverLetter,
+} from "@/lib/resume-analyzer";
+import { extractResumeTextUniversal } from "@/lib/resume-text-extractor";
+import {
   blockedAccountResponse,
   deductUserTokens,
   getSessionUser,
@@ -11,15 +16,7 @@ import {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.replace(
   /^["']|["']$/g,
   "",
-).trim();
-
-const CANDIDATE_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-3.5-flash-lite",
-  "gemini-3.5-flash",
-  "gemini-3.6-flash",
-  "gemini-flash-latest",
-];
+)?.trim();
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,15 +65,27 @@ export async function POST(request: NextRequest) {
 
     // Pull background from selected/default resume or user profile
     let backgroundText = "";
+    let resumeDoc = null;
+
     if (resumeId) {
-      const resumeDoc = await Resume.findOne({ _id: resumeId, userId });
-      if (resumeDoc?.rawText) {
-        backgroundText = resumeDoc.rawText.slice(0, 5000);
-      }
+      resumeDoc = await Resume.findOne({ _id: resumeId, userId });
     } else {
-      const defaultResume = await Resume.findOne({ userId, isDefault: true });
-      if (defaultResume?.rawText) {
-        backgroundText = defaultResume.rawText.slice(0, 5000);
+      resumeDoc =
+        (await Resume.findOne({ userId, isDefault: true })) ||
+        (await Resume.findOne({ userId }).sort({ uploadedAt: -1 }));
+    }
+
+    if (resumeDoc) {
+      const extracted = await extractResumeTextUniversal({
+        rawText: resumeDoc.rawText,
+        fileUrl: resumeDoc.fileUrl,
+        builderData: resumeDoc.builderData,
+        fileName: resumeDoc.fileName,
+      });
+      backgroundText = extracted.text ? extracted.text.slice(0, 6000) : "";
+      if (!resumeDoc.rawText && extracted.text) {
+        resumeDoc.rawText = extracted.text;
+        await resumeDoc.save().catch(() => {});
       }
     }
 
@@ -118,75 +127,60 @@ GUIDELINES:
     let generatedLetter = "";
     let _lastError: unknown = null;
 
-    for (const modelName of CANDIDATE_MODELS) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 2048,
-            },
-          }),
-        });
+    if (GEMINI_API_KEY) {
+      for (const modelName of GEMINI_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048,
+              },
+            }),
+          });
 
-        if (!response.ok) {
-          const errText = await response.text();
-          console.warn(
-            `[Cover Letter] ${modelName} error (${response.status}):`,
-            errText,
-          );
-          continue;
+          if (!response.ok) {
+            const errText = await response.text();
+            console.warn(
+              `[Cover Letter] ${modelName} error (${response.status}):`,
+              errText,
+            );
+            continue;
+          }
+
+          const data = await response.json();
+          const candidateText =
+            data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+          if (candidateText && candidateText.length > 100) {
+            generatedLetter = candidateText
+              .replace(/^```[a-z]*\s*/i, "")
+              .replace(/```$/g, "")
+              .trim();
+            break;
+          }
+        } catch (err) {
+          _lastError = err;
+          console.warn(`[Cover Letter] failed with ${modelName}:`, err);
         }
-
-        const data = await response.json();
-        const candidateText =
-          data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-        if (candidateText && candidateText.length > 100) {
-          generatedLetter = candidateText
-            .replace(/^```[a-z]*\s*/i, "")
-            .replace(/```$/g, "")
-            .trim();
-          break;
-        }
-      } catch (err) {
-        _lastError = err;
-        console.warn(`[Cover Letter] failed with ${modelName}:`, err);
       }
     }
 
     if (!generatedLetter) {
-      // High-quality deterministic fallback tailored to candidate and job
-      const candidateName = user.name || "Candidate";
-      const candidateEmail = user.email || "";
-      const dateStr = new Date().toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
+      // Dynamic, high-quality letter tailored to the candidate's actual background and target role
+      generatedLetter = generateDeterministicCoverLetter({
+        candidateName: user.name || "Candidate",
+        candidateEmail: user.email || "",
+        jobTitle,
+        company: company || "your team",
+        tone,
+        jobDescription,
+        resumeText: backgroundText,
       });
-
-      generatedLetter = `${dateStr}
-
-Hiring Team
-${company || "Hiring Organization"}
-
-Dear Hiring Manager,
-
-I am writing to express my strong interest in the ${jobTitle} position at ${company}. Having reviewed the requirements and technical objectives of your team, I am confident that my background, hands-on development expertise, and focus on scalable engineering will make an immediate contribution to ${company}.
-
-Throughout my trajectory, I have specialized in building robust software solutions, optimizing full-stack performance, and collaborating closely with cross-functional product teams to deliver measurable business impact. Whether tackling challenging system architecture or shipping high-velocity features, I place deep emphasis on code quality, testing reliability, and user-centric craftsmanship.
-
-${body.customInstructions ? `In particular alignment with your focus on: ${body.customInstructions}\n\n` : ""}I am eager to bring my problem-solving energy and dedication to excellence to the ${jobTitle} role at ${company}. I welcome the opportunity to discuss my background and how my capabilities align with your upcoming roadmap.
-
-Thank you very much for your time and consideration.
-
-Sincerely,
-${candidateName}
-${candidateEmail}`;
     }
 
     // Deduct 20 tokens

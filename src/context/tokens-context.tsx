@@ -30,21 +30,19 @@ const TokensContext = createContext<TokensContextType>({
 export function TokensProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending } = useSession();
 
-  // Instant hydration from memory or sessionStorage
-  const [tokens, setTokens] = useState<number>(() => {
-    const cached = clientCache.get<number>("user_tokens");
-    return typeof cached?.data === "number" ? cached.data : 50;
-  });
+  const [tokens, setTokens] = useState<number>(50);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const [isLoaded, setIsLoaded] = useState<boolean>(() => {
+  // Restore cached tokens immediately after client mount without breaking SSR hydration
+  useEffect(() => {
     const cached = clientCache.get<number>("user_tokens");
-    return typeof cached?.data === "number";
-  });
-
-  const [loading, setLoading] = useState<boolean>(() => {
-    const cached = clientCache.get<number>("user_tokens");
-    return !cached || cached.isStale;
-  });
+    if (typeof cached?.data === "number") {
+      setTokens(cached.data);
+      setIsLoaded(true);
+      setLoading(Boolean(cached.isStale));
+    }
+  }, []);
 
   const refreshTokens = useCallback(async () => {
     if (!session?.user) {

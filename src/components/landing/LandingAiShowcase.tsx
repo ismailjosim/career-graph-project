@@ -18,7 +18,7 @@ export function LandingAiShowcase() {
   return (
     <section
       id="ai-features"
-      className="py-20 sm:py-28 bg-slate-50/50 dark:bg-slate-900/40 relative"
+      className="py-16 sm:py-20 lg:py-24 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800 relative"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

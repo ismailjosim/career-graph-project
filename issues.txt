@@ -11,6 +11,14 @@ Ai analysis for job analysis -
 5. profile page e user profile er updating part ta progress hisebe dekhate hobe. 
 6. ekhane core skill and technical skill ei 2ta part ke merge kore ekta solution e aste hobe.
 
+demoseeker@careergraph.com
+12345678
 
 cloudeflare R2 Storage - 10GB per months
 
+Paste Reference code link: C:\Users\ismai\OneDrive\Desktop\Projects\Health-Care-App
+
+analyze the above project and it's coding style.
+see it manage and refactor the full code.
+ 
+Refactor the full code. keep the main component as server component. refactor the code. if any component exceeds more than 300 lines, split it into smaller components and always try to follow this rules but that is not fully strict that you have to finished within 300 lines. try to make it clean and maintainable. try to make it user-friendly and easy to understand.
