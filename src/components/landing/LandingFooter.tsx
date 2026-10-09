@@ -7,7 +7,7 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 text-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 sm:gap-10">
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-3">
@@ -143,10 +143,59 @@ export function LandingFooter() {
             </ul>
           </div>
 
-          {/* Account & Community */}
+          {/* Legal & Trust */}
           <div className="space-y-3">
             <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider font-space-grotesk">
-              Account & Community
+              Legal & Trust
+            </h4>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <Link
+                  href="/privacy"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/refund"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Refund Policy (7-Day)
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium text-blue-600 dark:text-blue-400"
+                >
+                  Contact & Support
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/reviews"
+                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Verified Reviews
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider font-space-grotesk">
+              Account
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
@@ -169,10 +218,10 @@ export function LandingFooter() {
               </li>
               <li>
                 <Link
-                  href="/reviews"
+                  href="/dashboard"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  User Reviews & Wall of Love
+                  Candidate Dashboard
                 </Link>
               </li>
               <li>
@@ -191,17 +240,20 @@ export function LandingFooter() {
         <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <p>
             &copy; {new Date().getFullYear()} Career Graph. All rights reserved.
-            Powered by DeepMind & AI.
+            Secure payments via Polar.sh.
           </p>
-          <div className="flex items-center gap-4">
-            <Link href="#marketplace" className="hover:underline">
-              Job Market
+          <div className="flex items-center gap-4 flex-wrap">
+            <Link href="/privacy" className="hover:underline">
+              Privacy
             </Link>
-            <Link href="#ai-features" className="hover:underline">
-              AI Features
+            <Link href="/terms" className="hover:underline">
+              Terms
             </Link>
-            <Link href="/login" prefetch={false} className="hover:underline">
-              Portal
+            <Link href="/refund" className="hover:underline">
+              Refunds
+            </Link>
+            <Link href="/contact" className="hover:underline">
+              Contact
             </Link>
           </div>
         </div>

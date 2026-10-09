@@ -29,6 +29,7 @@ export function AdminPackageModal({
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState<number>(1);
+  const [category, setCategory] = useState<"bundle" | "token_only">("bundle");
   const [polarProductId, setPolarProductId] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,12 @@ export function AdminPackageModal({
       setIsPopular(Boolean(packageData.isPopular));
       setIsActive(packageData.isActive !== false);
       setSortOrder(packageData.sortOrder || 1);
+      setCategory(
+        packageData.category ||
+          (packageData.name.toLowerCase().includes("refill")
+            ? "token_only"
+            : "bundle"),
+      );
       setPolarProductId(packageData.polarProductId || "");
     } else {
       setName("");
@@ -58,6 +65,7 @@ export function AdminPackageModal({
       setIsPopular(false);
       setIsActive(true);
       setSortOrder(1);
+      setCategory("bundle");
       setPolarProductId("");
     }
     setError(null);
@@ -94,6 +102,7 @@ export function AdminPackageModal({
           isPopular,
           isActive,
           sortOrder: Number(sortOrder),
+          category,
           polarProductId: polarProductId.trim() || undefined,
         }),
       });
@@ -224,6 +233,26 @@ export function AdminPackageModal({
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-hidden"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Package Type / Category
+            </label>
+            <select
+              value={category}
+              onChange={(e) =>
+                setCategory(e.target.value as "bundle" | "token_only")
+              }
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-hidden cursor-pointer"
+            >
+              <option value="bundle">
+                Career Bundle (Includes Daily Scraping + Lifetime Tokens)
+              </option>
+              <option value="token_only">
+                Token-Only Refill (Tokens Only, No Daily Scraping)
+              </option>
+            </select>
           </div>
 
           <div>

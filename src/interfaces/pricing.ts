@@ -9,6 +9,7 @@ export interface TokenPackageData {
   isPopular?: boolean;
   isActive: boolean;
   sortOrder: number;
+  category?: "bundle" | "token_only";
   polarProductId?: string;
   createdAt: string;
   updatedAt: string;

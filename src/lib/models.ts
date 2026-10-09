@@ -289,6 +289,7 @@ export interface ITokenPackage {
   isPopular?: boolean;
   isActive: boolean;
   sortOrder: number;
+  category?: "bundle" | "token_only";
   polarProductId?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -305,6 +306,11 @@ const tokenPackageSchema = new mongoose.Schema<ITokenPackage>(
     isPopular: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    category: {
+      type: String,
+      enum: ["bundle", "token_only"],
+      default: "bundle",
+    },
     polarProductId: { type: String, trim: true },
   },
   { timestamps: true },

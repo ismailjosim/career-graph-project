@@ -111,7 +111,79 @@ export function PackageCard({
           <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
             Included in this pack:
           </p>
-          <ul className="space-y-2.5">
+
+          {/* Automated Daily Matches & Lifetime Tokens Highlight */}
+          {(() => {
+            const isRefill =
+              pkg.category === "token_only" ||
+              pkg.name.toLowerCase().includes("refill");
+            const isAnnual =
+              pkg.name.toLowerCase().includes("annual") ||
+              pkg.tokens >= 6000 ||
+              pkg.price >= 50;
+            const isUltra =
+              pkg.name.toLowerCase().includes("ultra") || pkg.tokens >= 2000;
+
+            if (isRefill) {
+              return (
+                <div className="p-2.5 rounded-lg bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 space-y-1 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-300">
+                    <Coins className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <span>Token-Only Top-Up (No Daily Scraping)</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Tokens never expire. Instant balance credit for ATS audits &
+                    custom cover letters.
+                  </p>
+                </div>
+              );
+            }
+
+            if (isAnnual) {
+              return (
+                <div className="p-2.5 rounded-lg bg-indigo-50/90 dark:bg-indigo-950/50 border border-indigo-200/70 dark:border-indigo-800/50 space-y-1 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-indigo-700 dark:text-indigo-300">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Includes 365 Days of Daily AI Matches (1 Year)</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    VIP priority scraper delivery + 20 matches/day. Lifetime
+                    token validity!
+                  </p>
+                </div>
+              );
+            }
+
+            if (isUltra) {
+              return (
+                <div className="p-2.5 rounded-lg bg-blue-50/90 dark:bg-blue-950/50 border border-blue-200/70 dark:border-blue-800/50 space-y-1 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>Includes 30 Days VIP Daily AI Matches</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Top priority queue & up to 20 matches/day. Lifetime token
+                    validity!
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="p-2.5 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 space-y-1 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>Includes 30 Days of Daily AI Matches</span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Automated scraping tailored to your target role. Lifetime
+                  token validity!
+                </p>
+              </div>
+            );
+          })()}
+
+          <ul className="space-y-2.5 pt-1">
             {pkg.features?.map((feat, idx) => (
               <li
                 key={`${pkg._id}-feat-${idx}`}

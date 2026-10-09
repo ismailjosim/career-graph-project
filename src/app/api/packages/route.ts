@@ -23,6 +23,7 @@ const DEFAULT_PACKAGES = [
       "Tokens never expire (Lifetime validity)",
     ],
     isActive: true,
+    category: "bundle",
     sortOrder: 1,
   },
   {
@@ -43,6 +44,7 @@ const DEFAULT_PACKAGES = [
       "Tokens never expire (Lifetime validity)",
     ],
     isActive: true,
+    category: "bundle",
     sortOrder: 2,
   },
   {
@@ -63,7 +65,69 @@ const DEFAULT_PACKAGES = [
       "Tokens never expire (Lifetime validity)",
     ],
     isActive: true,
+    category: "bundle",
     sortOrder: 3,
+  },
+  {
+    name: "Annual VIP Pass",
+    tokens: 7000,
+    price: 50,
+    polarProductId: "",
+    description:
+      "All-in-one 365-day pass with 7,000 Lifetime Tokens and 1 Full Year of VIP Priority Daily AI Job Scraping (Save 58%).",
+    badge: "1 Year VIP • Save 58%",
+    isPopular: false,
+    features: [
+      "~175 Complete Application Suites",
+      "7,000 AI Diamond Tokens (+75% Mega Bonus)",
+      "365 Days of Daily AI Job Matches (1 Full Year)",
+      "Top VIP Priority in Daily Scraper Queue",
+      "Up to 20 Tailored Matches Per Day",
+      "Tokens never expire (Lifetime validity)",
+    ],
+    isActive: true,
+    category: "bundle",
+    sortOrder: 4,
+  },
+  {
+    name: "Token Mini Refill",
+    tokens: 200,
+    price: 2,
+    polarProductId: "",
+    description:
+      "Instant token top-up for ATS resume checks & tailored cover letters (Tokens only, no daily scraping).",
+    badge: "Quick Top-Up",
+    category: "token_only",
+    isPopular: false,
+    features: [
+      "200 AI Diamond Tokens",
+      "20 Deep ATS Resume Audits (10 tokens each)",
+      "10 AI Tailored Cover Letters (20 tokens each)",
+      "Tokens never expire (Lifetime validity)",
+      "Instant balance credit",
+    ],
+    isActive: true,
+    sortOrder: 10,
+  },
+  {
+    name: "Token Pro Refill",
+    tokens: 600,
+    price: 5,
+    polarProductId: "",
+    description:
+      "High-volume token refill for active applicants focusing on resume audits and cover letters (+20% Bonus).",
+    badge: "Best Value Refill",
+    category: "token_only",
+    isPopular: false,
+    features: [
+      "600 AI Diamond Tokens (+100 Free Bonus)",
+      "60 Deep ATS Resume Audits (10 tokens each)",
+      "30 AI Tailored Cover Letters (20 tokens each)",
+      "Tokens never expire (Lifetime validity)",
+      "Instant balance credit",
+    ],
+    isActive: true,
+    sortOrder: 11,
   },
 ];
 
@@ -76,6 +140,36 @@ export async function GET() {
       await TokenPackage.insertMany(DEFAULT_PACKAGES);
       count = DEFAULT_PACKAGES.length;
     } else {
+      // Ensure Annual VIP Pass exists in DB
+      const existingAnnual = await TokenPackage.findOne({
+        name: "Annual VIP Pass",
+      });
+      if (!existingAnnual) {
+        await TokenPackage.create(DEFAULT_PACKAGES[3]);
+      }
+
+      // Ensure Token Mini Refill exists in DB
+      const existingMini = await TokenPackage.findOne({
+        name: "Token Mini Refill",
+      });
+      if (!existingMini) {
+        await TokenPackage.create(DEFAULT_PACKAGES[4]);
+      }
+
+      // Ensure Token Pro Refill exists in DB
+      const existingProRefill = await TokenPackage.findOne({
+        name: "Token Pro Refill",
+      });
+      if (!existingProRefill) {
+        await TokenPackage.create(DEFAULT_PACKAGES[5]);
+      }
+
+      // Set category to 'token_only' for refill packages if missing
+      await TokenPackage.updateMany(
+        { name: /refill/i, category: { $ne: "token_only" } },
+        { $set: { category: "token_only" } },
+      );
+
       // Auto-migrate existing database records that don't have polarProductId yet
       const missingPolar = await TokenPackage.find({
         $or: [
@@ -163,6 +257,7 @@ export async function POST(request: NextRequest) {
       isPopular,
       isActive,
       sortOrder,
+      category,
       polarProductId,
     } = body;
 
@@ -223,6 +318,7 @@ export async function POST(request: NextRequest) {
       isPopular: Boolean(isPopular),
       isActive: isActive === undefined ? true : Boolean(isActive),
       sortOrder: Number(sortOrder) || 0,
+      category: category === "token_only" ? "token_only" : "bundle",
       polarProductId: resolvedPolarProductId || undefined,
     });
 

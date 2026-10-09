@@ -29,6 +29,7 @@ export function WishlistClient() {
   );
 
   // Reset to page 1 on filter/search change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filter/search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterStatus]);

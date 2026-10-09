@@ -18,57 +18,81 @@ interface Plan {
 
 const plans: Plan[] = [
   {
-    id: "free",
-    name: "Free Explorer",
-    price: "$0",
-    period: "forever",
-    description: "Essential tools for casual job seekers and portfolio review.",
+    id: "starter",
+    name: "Starter Pack",
+    price: "$5",
+    period: "one-time bundle",
+    description:
+      "Essential bundle to kickstart applications with lifetime tokens + 30 days of daily scraping.",
+    badge: "Starter",
     features: [
-      "Access to public job directory",
-      "Upload 1 resume & portfolio link",
-      "Manual job application tracking (up to 15 jobs)",
-      "Standard community support",
+      "500 AI Tokens (Lifetime Validity — Never Expire)",
+      "30 Days of Automated Daily AI Scraped Matches",
+      "~12 Complete Application Suites",
+      "50 Deep ATS Resume Audits (10 tokens each)",
+      "25 AI Tailored Cover Letters (20 tokens each)",
+      "2 Saved Resumes & Full Application Tracker",
     ],
-    ctaText: "Get Started Free",
-    ctaHref: "/signup",
+    ctaText: "Get Starter Pack ($5)",
+    ctaHref: "/pricing",
   },
   {
-    id: "monthly-pro",
-    name: "Job Hunter Pro",
-    price: "$3",
-    period: "per month",
+    id: "pro",
+    name: "Pro Pack",
+    price: "$10",
+    period: "one-time bundle (+15% Bonus)",
     description:
-      "Full automated companion that hunts and matches jobs for you daily.",
-    badge: "Recommended",
+      "Our most popular package for serious job seekers targeting top roles.",
+    badge: "Most Popular",
     highlighted: true,
     features: [
-      "Daily automated web scraping from 10+ platforms (LinkedIn, Indeed, Otta)",
-      "10 to 15 AI-matched job suggestions delivered daily to your dashboard",
-      "High-fit scoring & missing skill breakdown against your resume",
-      "Unlimited Kanban job application pipeline",
-      "Automated interview date tracker & calendar reminders",
-      "ATS keyword scan & custom cover letter generator",
+      "1,150 AI Tokens (+150 Bonus, Lifetime Validity)",
+      "30 Days Full Daily AI Scraped Matches (10–15 jobs/day)",
+      "~28 Complete Application Suites",
+      "115 Deep ATS Resume Audits (10 tokens each)",
+      "57 AI Tailored Cover Letters (20 tokens each)",
+      "High-Priority AI Speed & 5 Saved Resumes",
     ],
-    ctaText: "Start Pro Monthly",
-    ctaHref: "/signup?plan=pro-monthly",
+    ctaText: "Get Pro Pack ($10)",
+    ctaHref: "/pricing",
   },
   {
-    id: "annual-pro",
-    name: "Career Pass (Annual)",
-    price: "$24",
-    period: "per year ($2/mo)",
+    id: "ultra",
+    name: "Ultra Career Pack",
+    price: "$20",
+    period: "one-time bundle (+30% Bonus)",
     description:
-      "Best value for long-term career growth, promotions & role transitions.",
-    badge: "Save 33%",
+      "Maximum acceleration: 2,600 lifetime tokens + VIP priority in daily scraper delivery queue.",
+    badge: "Best Value",
     features: [
-      "Everything in Job Hunter Pro",
-      "Priority AI matchmaking engine queue",
-      "Multi-resume support (Tailor for multiple roles)",
-      "Direct recruiter contact intelligence",
-      "365 days of active job hunting automation",
+      "2,600 AI Tokens (+600 Bonus, Lifetime Validity)",
+      "30 Days VIP Priority Daily AI Scraped Matches",
+      "~65 Complete Application Suites",
+      "260 Deep ATS Audits or 130 Cover Letters",
+      "Scraper Top-Queue Delivery Every Morning",
+      "Unlimited Saved Resumes & Deadline Alerts",
     ],
-    ctaText: "Get Annual Pass",
-    ctaHref: "/signup?plan=pro-annual",
+    ctaText: "Get Ultra Pack ($20)",
+    ctaHref: "/pricing",
+  },
+  {
+    id: "annual",
+    name: "Annual VIP Pass",
+    price: "$50",
+    period: "full 1-year pass (Save 58%)",
+    description:
+      "All-in-one VIP access: 7,000 lifetime tokens + 365 days of automated daily scraping delivery.",
+    badge: "1 Year VIP • Best Value",
+    features: [
+      "7,000 AI Tokens (+75% Mega Bonus, Lifetime Validity)",
+      "365 Days of Automated Daily AI Scraped Matches",
+      "~175 Complete Application Suites",
+      "Top VIP Priority in Daily Scraper Queue (20 jobs/day)",
+      "1-Click Tailored Cover Letters & Instant ATS Checks",
+      "Unlimited Resumes & Priority Support",
+    ],
+    ctaText: "Get Annual VIP ($50)",
+    ctaHref: "/pricing",
   },
 ];
 
@@ -80,23 +104,26 @@ export function LandingPricing() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="max-w-2xl mx-auto text-center mb-10 sm:mb-12">
+        <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/40 text-blue-700 dark:text-blue-400 text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Simple Monthly Subscription</span>
+            <span>Combined Career Acceleration Bundles</span>
           </div>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-            Transparent Pricing for Serious Job Seekers
+            Transparent Pricing with Lifetime Tokens & Daily AI Matches
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
-            No expensive $50/mo agency fees. Pay a tiny monthly flat fee to let
-            our system scrape, analyze, and deliver 10–15 perfectly matched jobs
-            directly to your portfolio every single day.
+            Zero token expiration. Every bundle gives you lifetime AI tokens for
+            ATS audits and custom cover letters, plus{" "}
+            <strong className="text-slate-900 dark:text-white">
+              automated daily web scraping
+            </strong>{" "}
+            delivering up to 20 tailored job matches directly to your dashboard.
           </p>
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {plans.map((plan) => {
             const isHighlight = plan.highlighted;
             return (
@@ -188,11 +215,14 @@ export function LandingPricing() {
         </div>
 
         {/* Guarantee Callout */}
-        <div className="mt-12 text-center flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-          <ShieldCheck className="w-4 h-4 text-blue-600" />
+        <div className="mt-12 text-center flex flex-col sm:flex-row items-center justify-center gap-2 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>100% Lifetime Token Guarantee:</span>
+          </div>
           <span>
-            Cancel anytime in one click. No hidden contracts or long-term
-            commitments.
+            Your AI tokens never expire even after your active scraping window.
+            Renew anytime to resume daily scraped job matching.
           </span>
         </div>
       </div>

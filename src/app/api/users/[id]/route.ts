@@ -325,6 +325,21 @@ export async function PUT(
       await db.collection("session").deleteMany({ userId: targetUserId });
     }
 
+    // Re-score scraped jobs against updated target role or skills
+    if (
+      validatedData.headline !== undefined ||
+      validatedData.skills !== undefined ||
+      validatedData.technicalSkills !== undefined
+    ) {
+      import("@/lib/job-match-engine")
+        .then(({ generateUserDailyMatches }) => {
+          generateUserDailyMatches(targetUserId).catch((e) => {
+            console.warn("Background rematching on profile update error:", e);
+          });
+        })
+        .catch(() => {});
+    }
+
     const updatedUser = await userCollection.findOne({ _id: targetUser._id });
 
     return NextResponse.json({

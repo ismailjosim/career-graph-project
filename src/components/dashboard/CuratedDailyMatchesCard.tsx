@@ -4,12 +4,15 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
+  Crown,
   ExternalLink,
+  FileText,
   Filter,
   MapPin,
   RefreshCw,
   Search,
   Sparkles,
+  UploadCloud,
   X,
   Zap,
 } from "lucide-react";
@@ -76,6 +79,12 @@ export function CuratedDailyMatchesCard({
   showFullPageLink = true,
 }: CuratedDailyMatchesCardProps) {
   const [matches, setMatches] = useState<JobMatchSuggestion[]>([]);
+  const [hasResume, setHasResume] = useState<boolean>(true);
+  const [hasDailyAiMatchesPlan, setHasDailyAiMatchesPlan] =
+    useState<boolean>(true);
+  const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [isVip, setIsVip] = useState<boolean>(false);
+  const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [targetRole, setTargetRole] = useState("Full-Stack Engineer");
   const [syncedTime, setSyncedTime] = useState("Synced today at 06:00 AM");
   const [loading, setLoading] = useState(true);
@@ -94,6 +103,21 @@ export function CuratedDailyMatchesCard({
       if (res.ok) {
         const data = await res.json();
         setMatches(data.matches || []);
+        if (typeof data.hasResume === "boolean") {
+          setHasResume(data.hasResume);
+        }
+        if (typeof data.hasDailyAiMatchesPlan === "boolean") {
+          setHasDailyAiMatchesPlan(data.hasDailyAiMatchesPlan);
+        }
+        if (typeof data.isExpired === "boolean") {
+          setIsExpired(data.isExpired);
+        }
+        if (typeof data.isVip === "boolean") {
+          setIsVip(data.isVip);
+        }
+        if (data.daysRemaining !== undefined) {
+          setDaysRemaining(data.daysRemaining);
+        }
         if (data.targetRole) setTargetRole(data.targetRole);
         if (data.date) {
           setSyncedTime(
@@ -116,12 +140,40 @@ export function CuratedDailyMatchesCard({
     try {
       setRefreshing(true);
       const res = await fetch("/api/jobs/daily-matches", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        const data = await res.json();
         setMatches(data.matches || []);
-        toast.success(
-          "Generated fresh candidate matches based on your latest profile!",
+        if (typeof data.hasResume === "boolean") {
+          setHasResume(data.hasResume);
+        }
+        if (typeof data.hasDailyAiMatchesPlan === "boolean") {
+          setHasDailyAiMatchesPlan(data.hasDailyAiMatchesPlan);
+        }
+        if (typeof data.isExpired === "boolean") {
+          setIsExpired(data.isExpired);
+        }
+        if (typeof data.isVip === "boolean") {
+          setIsVip(data.isVip);
+        }
+        if (data.daysRemaining !== undefined) {
+          setDaysRemaining(data.daysRemaining);
+        }
+        if (data.hasResume === false) {
+          toast.info(
+            "Please upload your resume first to generate real matches.",
+          );
+        } else {
+          toast.success(
+            "Generated fresh candidate matches based on your latest profile!",
+          );
+        }
+      } else if (data.code === "PLAN_REQUIRED") {
+        toast.info(
+          data.message ||
+            "Automated match re-generation is reserved for Daily AI Matches plan members. Upgrade to Pro to unlock continuous daily delivery.",
         );
+      } else {
+        toast.error(data.message || "Failed to re-sync candidate matches");
       }
     } catch {
       toast.error("Failed to re-sync candidate matches");
@@ -253,10 +305,32 @@ export function CuratedDailyMatchesCard({
                 Today&apos;s Curated Matches (
                 {matches.length > 0 ? `${matches.length} New Jobs` : "Active"})
               </h2>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </span>
+              {hasDailyAiMatchesPlan ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  {isVip ? (
+                    <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                      <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
+                      VIP Priority •{" "}
+                      {daysRemaining ? `${daysRemaining}d left` : "Active"}
+                    </span>
+                  ) : daysRemaining ? (
+                    `Live • ${daysRemaining}d left`
+                  ) : (
+                    "Live • Plan Active"
+                  )}
+                </span>
+              ) : isExpired ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 dark:bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/25">
+                  <Crown className="w-3 h-3 text-rose-500" />
+                  30-Day Scraping Ended
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25">
+                  <Crown className="w-3 h-3 text-amber-500" />
+                  Plan Required for Daily Sync
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Target Profile:{" "}
@@ -291,6 +365,60 @@ export function CuratedDailyMatchesCard({
           )}
         </div>
       </div>
+
+      {/* Daily AI Matches Plan Upgrade/Renewal Banner */}
+      {hasResume && !hasDailyAiMatchesPlan && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-violet-600/10 border border-indigo-500/30 p-5 sm:p-6 space-y-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1.5 max-w-xl">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+                <Sparkles className="w-3 h-3" />
+                <span>
+                  {isExpired
+                    ? "Renew Scraping Delivery"
+                    : "Daily AI Matches (30 Days)"}
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                {isExpired
+                  ? "Your 30-Day Automated Scraping Period Has Ended"
+                  : "Automated Daily Scraped Job Delivery"}
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                {isExpired
+                  ? `Your unused AI tokens have lifetime validity and stay in your account balance. Renew any package to resume 30 days of automated scraped jobs tailored to ${targetRole}.`
+                  : `When new jobs are scraped, members receive freshly curated recommendations tailored to their target role (${targetRole}) and skills. Every package includes 30 days of scraping + lifetime AI tokens.`}
+              </p>
+            </div>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 shrink-0 transition-transform hover:scale-[1.02] cursor-pointer"
+            >
+              <Crown className="w-4 h-4 text-amber-300" />
+              <span>
+                {isExpired
+                  ? "Renew Scraping Plan"
+                  : "Upgrade to Daily AI Matches"}
+              </span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-indigo-500/15 text-xs text-slate-600 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>AI Tokens never expire (Lifetime)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>30 Days automated scraping delivery</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>Target Role & Skill matching</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Full Page Filters & Search Bar */}
       {!showFullPageLink && matches.length > 0 && (
@@ -399,23 +527,71 @@ export function CuratedDailyMatchesCard({
       {/* Matched Job Cards */}
       <div className="space-y-3.5">
         {matches.length === 0 ? (
-          <div className="py-12 text-center rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/60 p-6">
-            <Sparkles className="w-10 h-10 mx-auto text-blue-600 dark:text-blue-400 mb-2 opacity-60" />
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Generating Personalized Job Matches
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-              Our background engine is syncing new web jobs across hiring
-              platforms. Click below to generate your initial AI match
-              recommendations.
-            </p>
-            <button
-              onClick={handleRefresh}
-              className="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-colors cursor-pointer shadow-xs"
-            >
-              Sync Matches Now
-            </button>
-          </div>
+          !hasResume ? (
+            <div className="py-12 text-center rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/60 p-6 sm:p-8 space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                No Resume Uploaded Yet
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                To calculate genuine AI match scores and recommend jobs aligned
+                with your experience, please upload or create your resume first.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/resumes"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition-all shadow-xs cursor-pointer"
+                >
+                  <UploadCloud className="w-4 h-4" />
+                  <span>Upload Your Resume</span>
+                </Link>
+              </div>
+            </div>
+          ) : !hasDailyAiMatchesPlan ? (
+            <div className="py-12 text-center rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/60 p-6 sm:p-8 space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Crown className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Daily AI Matches Plan Required
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                Automated continuous daily job matching is reserved for Daily AI
+                Matches plan members. Upgrade to have our scraper engine deliver
+                fresh recommendations directly aligned with your target role (
+                {targetRole}) and skills.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white transition-all shadow-xs cursor-pointer"
+                >
+                  <Crown className="w-4 h-4 text-amber-300" />
+                  <span>View Plans & Upgrade</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 text-center rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800/60 p-6">
+              <Sparkles className="w-10 h-10 mx-auto text-blue-600 dark:text-blue-400 mb-2 opacity-60" />
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Generating Personalized Job Matches
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+                Our background engine is syncing new web jobs across hiring
+                platforms. Click below to generate your initial AI match
+                recommendations based on your resume.
+              </p>
+              <button
+                onClick={handleRefresh}
+                className="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white transition-colors cursor-pointer shadow-xs"
+              >
+                Sync Matches Now
+              </button>
+            </div>
+          )
         ) : paginatedMatches.length === 0 ? (
           <div className="py-12 text-center rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-800 p-6 space-y-3">
             <Filter className="w-8 h-8 mx-auto text-slate-400" />
@@ -435,111 +611,142 @@ export function CuratedDailyMatchesCard({
             </button>
           </div>
         ) : (
-          paginatedMatches.map((job) => {
-            const deadlineInfo = getDeadlineStatus(job.deadline);
-            return (
-              <div
-                key={job.jobId || job.jobTitle}
-                className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 hover:bg-slate-100/90 dark:bg-slate-800/40 dark:hover:bg-slate-800/70 border border-slate-200/80 hover:border-slate-300 dark:border-slate-700/60 dark:hover:border-slate-600 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group shadow-2xs hover:shadow-xs"
-              >
-                <div className="space-y-2 flex-1 min-w-0">
-                  {/* Meta platform, deadline & status line */}
-                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                    <span className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
-                      {job.company}
-                    </span>
-                    <span>•</span>
-                    <span>Recently active</span>
-                    <span>•</span>
-                    <span className="px-2 py-0.5 rounded-md bg-slate-200/70 dark:bg-slate-700/60 text-[11px] text-slate-700 dark:text-slate-300 font-medium">
-                      via {job.source || "LinkedIn Jobs"}
-                    </span>
-                    {deadlineInfo && (
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
-                          deadlineInfo.isUrgent
-                            ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 animate-pulse"
-                            : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25"
-                        }`}
-                        title={`Application deadline: ${deadlineInfo.detail}`}
-                      >
-                        <Clock className="w-3 h-3 shrink-0" />
-                        <span>{deadlineInfo.text}</span>
+          <>
+            {!hasDailyAiMatchesPlan && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/50 text-xs">
+                <span className="text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>
+                    {isExpired
+                      ? "Daily automated scraping paused • Your AI tokens remain safe. Renew any package to resume daily scraped jobs."
+                      : "Showing One-Time Preview Matches (Max 7) • Every package includes 30 days of automated scraping + lifetime AI tokens."}
+                  </span>
+                </span>
+                <Link
+                  href="/pricing"
+                  className="text-blue-600 dark:text-blue-400 hover:underline font-bold shrink-0 ml-1"
+                >
+                  {isExpired ? "Renew Plan →" : "View Packages →"}
+                </Link>
+              </div>
+            )}
+            {paginatedMatches.map((job) => {
+              const deadlineInfo = getDeadlineStatus(job.deadline);
+              return (
+                <div
+                  key={job.jobId || job.jobTitle}
+                  className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 hover:bg-slate-100/90 dark:bg-slate-800/40 dark:hover:bg-slate-800/70 border border-slate-200/80 hover:border-slate-300 dark:border-slate-700/60 dark:hover:border-slate-600 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group shadow-2xs hover:shadow-xs"
+                >
+                  <div className="space-y-2 flex-1 min-w-0">
+                    {/* Meta platform, deadline & status line */}
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
+                      <span className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                        {job.company}
                       </span>
-                    )}
-                  </div>
-
-                  {/* Role Title */}
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                    {job.jobTitle}
-                  </h3>
-
-                  {/* Location & Compensation */}
-                  <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 flex-wrap">
-                    <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{job.location || "Remote (Worldwide)"}</span>
-                    </span>
-                    <span>•</span>
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                      {job.salary || "Competitive Market Rate"}
-                    </span>
-                  </div>
-
-                  {/* Matched Skills Chips */}
-                  {job.matchedSkills && job.matchedSkills.length > 0 && (
-                    <div className="flex items-center flex-wrap gap-1.5 pt-1">
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mr-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Matched Skills:
+                      <span>•</span>
+                      <span>Recently active</span>
+                      <span>•</span>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-200/70 dark:bg-slate-700/60 text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+                        via {job.source || "LinkedIn Jobs"}
                       </span>
-                      {job.matchedSkills.slice(0, 5).map((skill) => (
+                      {deadlineInfo && (
                         <span
-                          key={skill}
-                          className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-200/70 dark:bg-slate-700/60 border border-slate-300/80 dark:border-slate-600/60 text-slate-700 dark:text-slate-200"
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold transition-all ${
+                            deadlineInfo.isUrgent
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 animate-pulse"
+                              : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25"
+                          }`}
+                          title={`Application deadline: ${deadlineInfo.detail}`}
                         >
-                          {skill}
-                        </span>
-                      ))}
-                      {job.matchedSkills.length > 5 && (
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                          +{job.matchedSkills.length - 5}
+                          <Clock className="w-3 h-3 shrink-0" />
+                          <span>{deadlineInfo.text}</span>
                         </span>
                       )}
                     </div>
-                  )}
-                </div>
 
-                {/* Match Score & Action Button */}
-                <div className="flex items-center md:flex-col justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 md:pl-5">
-                  <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                        Resume Match
-                      </div>
-                      <div className="text-lg md:text-xl font-extrabold text-blue-600 dark:text-blue-400 font-mono">
-                        {job.matchScore}%
-                      </div>
+                    {/* Role Title */}
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                      {job.jobTitle}
+                    </h3>
+
+                    {/* Location & Compensation */}
+                    <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 flex-wrap">
+                      <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span>{job.location || "Remote (Worldwide)"}</span>
+                      </span>
+                      <span>•</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {job.salary || "Competitive Market Rate"}
+                      </span>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                      <Zap className="w-4 h-4 fill-blue-600 dark:fill-blue-400" />
-                    </div>
+
+                    {/* Matched Skills Chips */}
+                    {job.matchedSkills && job.matchedSkills.length > 0 && (
+                      <div className="flex items-center flex-wrap gap-1.5 pt-1">
+                        <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mr-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Matched Skills:
+                        </span>
+                        {job.matchedSkills.slice(0, 5).map((skill) => (
+                          <span
+                            key={skill}
+                            className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-200/70 dark:bg-slate-700/60 border border-slate-300/80 dark:border-slate-600/60 text-slate-700 dark:text-slate-200"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {job.matchedSkills.length > 5 && (
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                            +{job.matchedSkills.length - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <a
-                    href={job.applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => handleTrackApply(job)}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs cursor-pointer whitespace-nowrap"
-                  >
-                    <span>Apply / Track</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  {/* Match Score & Action Button */}
+                  <div className="flex items-center md:flex-col justify-between md:justify-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 md:pl-5">
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          Resume Match
+                        </div>
+                        <div className="text-lg md:text-xl font-extrabold text-blue-600 dark:text-blue-400 font-mono">
+                          {job.matchScore}%
+                        </div>
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                        <Zap className="w-4 h-4 fill-blue-600 dark:fill-blue-400" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/cover-letters?title=${encodeURIComponent(job.jobTitle)}&company=${encodeURIComponent(job.company)}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-slate-100 dark:bg-slate-700/80 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 transition-colors shadow-2xs cursor-pointer whitespace-nowrap"
+                        title="Draft an ATS-optimized tailored cover letter for this role"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                        <span>Tailor Letter</span>
+                      </Link>
+
+                      <a
+                        href={job.applyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => handleTrackApply(job)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-xs cursor-pointer whitespace-nowrap"
+                      >
+                        <span>Apply / Track</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
       </div>
 

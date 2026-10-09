@@ -38,6 +38,7 @@ export function JobMarketClient() {
   const PAGE_SIZE = 9;
 
   // Reset page when filter changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when filter/search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, showFavoritesOnly, sortBy]);

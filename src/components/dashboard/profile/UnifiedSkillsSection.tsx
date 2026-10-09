@@ -159,7 +159,7 @@ export function UnifiedSkillsSection({
       <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
         <label className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
           <Wrench className="w-4 h-4 text-indigo-500" />
-          <span>Unified Skills & Technical Expertise</span>
+          <span>Skills Portfolio (Powers Scraped Job Matching)</span>
         </label>
         <span className="text-xs text-slate-400 font-semibold">
           {mergedSkills.length}/{maxSkills} Skills
@@ -167,8 +167,9 @@ export function UnifiedSkillsSection({
       </div>
 
       <p className="text-xs text-slate-500 dark:text-slate-400 -mt-1">
-        Add your tech stack, languages, and frameworks. Used for AI match score
-        calculations and cover letter tailoring.
+        Skills auto-extracted from your uploaded resume. You can add more skills
+        or adjust proficiency below. Scraped jobs in the database will be
+        matched and recommended based on these competencies.
       </p>
 
       {/* Add Skill Form Input */}

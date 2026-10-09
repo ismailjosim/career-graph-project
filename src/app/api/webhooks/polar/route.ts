@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
               description: `Purchased ${packageName} (${tokens} tokens via Polar)`,
               packageId,
               metadata: {
+                packageName,
                 polarCheckoutId: checkoutId,
                 polarProductId: data.product_id,
                 source: "webhook_checkout_updated",
@@ -161,6 +162,7 @@ export async function POST(request: NextRequest) {
               description: `Purchased ${packageName} (${tokens} tokens via Polar)`,
               packageId,
               metadata: {
+                packageName,
                 polarOrderId: orderId,
                 polarCheckoutId: checkoutId,
                 polarProductId: data.product_id,

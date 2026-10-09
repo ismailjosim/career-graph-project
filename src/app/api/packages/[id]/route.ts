@@ -26,6 +26,7 @@ export async function PUT(
       isPopular,
       isActive,
       sortOrder,
+      category,
       polarProductId,
     } = body;
 
@@ -69,6 +70,9 @@ export async function PUT(
     if (isPopular !== undefined) updates.isPopular = Boolean(isPopular);
     if (isActive !== undefined) updates.isActive = Boolean(isActive);
     if (sortOrder !== undefined) updates.sortOrder = Number(sortOrder) || 0;
+    if (category !== undefined) {
+      updates.category = category === "token_only" ? "token_only" : "bundle";
+    }
     if (polarProductId !== undefined) {
       updates.polarProductId =
         typeof polarProductId === "string" && polarProductId.trim()

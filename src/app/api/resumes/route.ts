@@ -107,6 +107,88 @@ export async function POST(request: NextRequest) {
     const resume = new Resume(validatedData);
     await resume.save();
 
+    // Auto-extract skills & target role to sync directly to user profile
+    try {
+      const { extractSkillsAndRoleFromResume } = await import(
+        "@/lib/resume-skills-extractor"
+      );
+      const extracted = extractSkillsAndRoleFromResume({
+        rawText: validatedData.rawText,
+        builderData: validatedData.builderData as Record<
+          string,
+          unknown
+        > | null,
+        name: validatedData.name,
+      });
+
+      const mongoose = await connectDB();
+      const db = mongoose.connection.db;
+      if (db) {
+        const { ObjectId } = await import("mongodb");
+        let userQuery: Record<string, unknown> = { id: userId };
+        try {
+          userQuery = {
+            $or: [
+              { _id: new ObjectId(userId) },
+              { _id: userId },
+              { id: userId },
+            ],
+          };
+        } catch {
+          userQuery = { $or: [{ _id: userId }, { id: userId }] };
+        }
+
+        const existingUser = await db.collection("user").findOne(userQuery);
+        const updateFields: Record<string, unknown> = {};
+
+        // If user doesn't have a headline set, or it's default, update it
+        if (
+          (!existingUser?.headline ||
+            existingUser.headline === "Job Seeker" ||
+            existingUser.headline === "Full Stack Developer") &&
+          (extracted.detectedRole || validatedData.name)
+        ) {
+          updateFields.headline = extracted.detectedRole || validatedData.name;
+        }
+
+        // Merge newly extracted skills with existing profile skills
+        if (extracted.skills.length > 0) {
+          const existingSkills: string[] = Array.isArray(existingUser?.skills)
+            ? existingUser.skills
+            : typeof existingUser?.skills === "string"
+              ? existingUser.skills.split(",").map((s) => s.trim())
+              : [];
+
+          const existingLower = new Set(
+            existingSkills.map((s) => s.toLowerCase()),
+          );
+          const newToAdd = extracted.skills.filter(
+            (s) => !existingLower.has(s.toLowerCase()),
+          );
+
+          if (newToAdd.length > 0) {
+            updateFields.skills = [...existingSkills, ...newToAdd];
+          }
+        }
+
+        if (Object.keys(updateFields).length > 0) {
+          await db.collection("user").updateOne(userQuery, {
+            $set: updateFields,
+          });
+        }
+
+        // Generate initial job matches based on scraped jobs in database
+        const { generateUserDailyMatches } = await import(
+          "@/lib/job-match-engine"
+        );
+        generateUserDailyMatches(userId).catch((genErr) => {
+          console.warn("Initial job match generation error:", genErr);
+        });
+      }
+    } catch (extractErr) {
+      console.warn("Failed to auto-sync skills to user profile:", extractErr);
+    }
+
     return NextResponse.json(resume, { status: 201 });
   } catch (error) {
     console.error("Error creating resume:", error);

@@ -73,6 +73,7 @@ export function CoverLettersClient() {
   );
 
   // Reset to page 1 on search change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset page when searchTerm changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);

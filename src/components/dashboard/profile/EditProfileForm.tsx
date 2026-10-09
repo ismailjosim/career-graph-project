@@ -68,19 +68,23 @@ export function EditProfileForm({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-            Target Headline / Job Title *
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1 flex items-center justify-between">
+            <span>Target Seeking Role / Job Title *</span>
+            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold normal-case">
+              Powers Daily Matches
+            </span>
           </label>
           <input
             type="text"
             required
-            placeholder="e.g. Senior Software Engineer"
+            placeholder="e.g. Full Stack Developer, React Engineer, DevOps"
             value={formData.headline}
             onChange={(e) => onChange("headline", e.target.value)}
             className="input text-xs sm:text-sm font-medium"
           />
-          <p className="text-[10px] text-slate-400 mt-1">
-            Used in cover letter salutations and job matching.
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+            Specify the role you are actively looking for. Scraped jobs will be
+            matched and recommended based on this position.
           </p>
         </div>
       </div>
