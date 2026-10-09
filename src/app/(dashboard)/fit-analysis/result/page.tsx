@@ -13,7 +13,7 @@ export default function FitAnalysisResultPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full max-w-5xl mx-auto py-20 text-center space-y-4">
+        <div className="w-full py-20 text-center space-y-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto" />
           <p className="text-slate-600 dark:text-slate-400 text-sm">
             Loading your analysis report...

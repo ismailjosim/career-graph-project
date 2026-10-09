@@ -218,7 +218,7 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-7 animate-fade-in pb-20">
+    <div className="w-full space-y-7 animate-fade-in pb-20">
       {/* Back navigation */}
       <div className="flex items-center justify-between">
         <Link

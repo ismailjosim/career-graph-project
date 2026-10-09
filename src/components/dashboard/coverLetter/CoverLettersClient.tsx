@@ -11,8 +11,11 @@ import {
   CoverLetterModal,
   filterCoverLetters,
 } from "@/components/dashboard/coverLetter";
+import { PaginationControl } from "@/components/ui/PaginationControl";
 import { useCoverLetters } from "@/hooks/useApi";
 import type { CoverLetter } from "@/lib/validation";
+
+const PAGE_SIZE = 8;
 
 export function CoverLettersClient() {
   const searchParams = useSearchParams();
@@ -32,6 +35,7 @@ export function CoverLettersClient() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingLetter, setEditingLetter] = useState<CoverLetter | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [initialAiData, setInitialAiData] = useState<{
     jobTitle?: string;
     company?: string;
@@ -68,6 +72,17 @@ export function CoverLettersClient() {
     [coverLetters, searchTerm],
   );
 
+  // Reset to page 1 on search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const totalPages = Math.ceil(filteredLetters.length / PAGE_SIZE) || 1;
+  const paginatedLetters = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredLetters.slice(start, start + PAGE_SIZE);
+  }, [filteredLetters, currentPage]);
+
   const handleOpenCreate = () => {
     setEditingLetter(null);
     setInitialAiData(null);
@@ -103,13 +118,24 @@ export function CoverLettersClient() {
       {loading ? (
         <CoverLetterLoading />
       ) : (
-        <CoverLetterList
-          letters={filteredLetters}
-          onEdit={handleOpenEdit}
-          onDelete={deleteCoverLetter}
-          onResetSearch={searchTerm ? () => setSearchTerm("") : undefined}
-          onNewLetter={handleOpenCreate}
-        />
+        <div className="space-y-6">
+          <CoverLetterList
+            letters={paginatedLetters}
+            onEdit={handleOpenEdit}
+            onDelete={deleteCoverLetter}
+            onResetSearch={searchTerm ? () => setSearchTerm("") : undefined}
+            onNewLetter={handleOpenCreate}
+          />
+
+          <PaginationControl
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredLetters.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setCurrentPage}
+            itemName="cover letters"
+          />
+        </div>
       )}
 
       <CoverLetterModal

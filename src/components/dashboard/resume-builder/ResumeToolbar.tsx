@@ -141,12 +141,12 @@ export function ResumeToolbar({
             />
           </button>
 
-          {/* Load Sample Demo Data */}
+          {/* Load Example Professional Data */}
           <button
             type="button"
             onClick={onLoadDemoData}
             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Pre-fill with rich dummy experience, skills, and projects"
+            title="Pre-fill with example professional experience, skills, and projects"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <span className="hidden md:inline">Sample Data</span>

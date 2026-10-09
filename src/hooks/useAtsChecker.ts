@@ -206,8 +206,9 @@ export function useAtsChecker() {
         // proceed
       }
 
+      let uploadToastId: string | number | undefined;
       try {
-        const uploadToast = toast.loading("Saving resume to your account...");
+        uploadToastId = toast.loading("Saving resume to your account...");
         const uploadRes = await uploadFileWithProgress(uploadedFile, "resume");
         const createRes = await fetch("/api/resumes", {
           method: "POST",
@@ -226,23 +227,36 @@ export function useAtsChecker() {
 
         if (!createRes.ok) {
           const errData = await createRes.json().catch(() => ({}));
+          toast.dismiss(uploadToastId);
           if (
             createRes.status === 403 ||
             errData.code === "PLAN_LIMIT_REACHED"
           ) {
-            toast.dismiss(uploadToast);
             setShowLimitModal(true);
             return;
           }
+          const serverErr =
+            errData.error ||
+            "Failed to save resume. Please upload a valid resume.";
+          setError(serverErr);
+          toast.error(serverErr);
+          return;
         } else {
           toast.success(`"${uploadedFile.name}" saved to your account!`, {
-            id: uploadToast,
+            id: uploadToastId,
           });
           clientCache.invalidate("resumes");
           fetchSavedResumes();
         }
-      } catch (err) {
-        console.warn("Failed to auto-save resume:", err);
+      } catch (err: unknown) {
+        if (uploadToastId) toast.dismiss(uploadToastId);
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "The uploaded document is invalid or could not be processed.";
+        setError(msg);
+        toast.error(msg);
+        return;
       }
     }
 
@@ -301,6 +315,7 @@ export function useAtsChecker() {
           ? err.message
           : "An unexpected error occurred during ATS audit.";
       setError(msg);
+      setAnalysisProgress(0);
       toast.error(msg, { id: toastId });
     } finally {
       setAnalyzing(false);

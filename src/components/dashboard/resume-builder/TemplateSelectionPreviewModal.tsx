@@ -46,8 +46,8 @@ export function TemplateSelectionPreviewModal({
               <span>Full Preview: {currentTemplate?.name || "Template"}</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Interactive ATS document rendered with realistic candidate dummy
-              data.
+              Interactive ATS document rendered with sample professional
+              candidate layout.
             </p>
           </div>
           <div className="flex items-center gap-2">

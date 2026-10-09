@@ -127,6 +127,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Strict Resume Validation: Verify document content before AI audit or token deduction
+    const { validateResumeContent } = await import("@/lib/resume-validator");
+    const validation = validateResumeContent(resumeText);
+    if (!validation.isValid) {
+      return NextResponse.json(
+        {
+          error:
+            validation.reason ||
+            "The uploaded document does not appear to be a valid resume or CV. Please upload a PDF document that clearly includes your work experience, education, and skills.",
+          code: "INVALID_RESUME_DOCUMENT",
+          validationScore: validation.score,
+          matchedCategories: validation.matchedCategories,
+        },
+        { status: 400 },
+      );
+    }
+
     // Optional target job details & regional standards
     const targetJobTitle = targetJob?.title?.trim() || "";
     const targetJobDesc = targetJob?.description?.trim() || "";

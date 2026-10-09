@@ -498,6 +498,7 @@ export const scrapedJobSchema = z.object({
   skills: z.array(z.string()).default([]),
   source: z.string().default("Web Scraper"),
   applyUrl: z.string(),
+  deadline: z.coerce.date().optional(),
   scrapedAt: z.date().default(() => new Date()),
   isActive: z.boolean().default(true),
 });
@@ -514,6 +515,7 @@ export const jobMatchSuggestionSchema = z.object({
   salary: z.string().default("Competitive"),
   applyUrl: z.string(),
   source: z.string().default("LinkedIn"),
+  deadline: z.coerce.date().optional(),
   matchScore: z.number().min(0).max(100),
   matchedSkills: z.array(z.string()).default([]),
   missingSkills: z.array(z.string()).default([]),

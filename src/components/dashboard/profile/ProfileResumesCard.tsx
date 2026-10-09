@@ -58,6 +58,7 @@ export function ProfileResumesCard({
           fileUrl: result.url,
           cloudinaryPublicId: result.publicId,
           fileSize: result.fileSize,
+          rawText: result.extractedText,
           isDefault: resumes.length === 0,
         }),
       });

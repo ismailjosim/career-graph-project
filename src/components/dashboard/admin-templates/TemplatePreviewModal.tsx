@@ -183,7 +183,7 @@ export function TemplatePreviewModal({
           </div>
         </div>
 
-        {/* Dummy Data Banner Notification */}
+        {/* Sample Candidate Banner Notification */}
         <div className="px-5 py-2 bg-indigo-50/80 dark:bg-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/40 flex items-center justify-between text-xs text-indigo-900 dark:text-indigo-300 shrink-0">
           <div className="flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />

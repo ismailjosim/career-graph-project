@@ -15,10 +15,10 @@ export function PublicReviewsClient() {
   const { data: session } = useSession();
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [stats, setStats] = useState<ReviewStats>({
-    totalReviews: 12,
-    averageRating: 4.9,
-    roleCounts: { all: 12, job_seeker: 6, recruiter: 3, employer: 3 },
-    ratingCounts: { 5: 11, 4: 1, 3: 0, 2: 0, 1: 0 },
+    totalReviews: 0,
+    averageRating: 0,
+    roleCounts: { all: 0, job_seeker: 0, recruiter: 0, employer: 0 },
+    ratingCounts: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
   });
   const [loading, setLoading] = useState(true);
 

@@ -56,6 +56,50 @@ function getSourceBadgeStyle(source: string) {
   return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20";
 }
 
+function getScrapedJobDeadline(deadlineDate?: string) {
+  if (!deadlineDate) {
+    return {
+      text: "Rolling",
+      badgeClass:
+        "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+    };
+  }
+  const deadline = new Date(deadlineDate);
+  const now = new Date();
+  const diffMs = deadline.getTime() - now.getTime();
+  if (diffMs <= 0) {
+    return {
+      text: "Expired",
+      badgeClass:
+        "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    };
+  }
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const dateStr = deadline.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  if (diffDays <= 3) {
+    return {
+      text: `${dateStr} (${diffDays}d left)`,
+      badgeClass:
+        "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 animate-pulse font-semibold",
+    };
+  }
+  if (diffDays <= 7) {
+    return {
+      text: `${dateStr} (${diffDays}d left)`,
+      badgeClass:
+        "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 font-semibold",
+    };
+  }
+  return {
+    text: `${dateStr} (${diffDays}d left)`,
+    badgeClass:
+      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  };
+}
+
 interface ScraperRunRecord {
   _id: string;
   platform: string;
@@ -84,6 +128,7 @@ interface ScrapedJobItem {
   skills: string[];
   source: string;
   applyUrl: string;
+  deadline?: string;
   scrapedAt: string;
 }
 
@@ -516,7 +561,7 @@ export default function ScrapperClient() {
   }
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-16">
+    <div className="w-full space-y-8 pb-16">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
         <div>
@@ -632,7 +677,7 @@ export default function ScrapperClient() {
                     <RefreshCw className="w-3 h-3 text-blue-400 animate-spin" />
                   )}
                   <span>
-                    {demandData?.totalJobSeekers || 10} Job Seekers Active
+                    {demandData?.totalJobSeekers ?? 0} Job Seekers Active
                   </span>
                 </span>
               </div>
@@ -661,104 +706,84 @@ export default function ScrapperClient() {
         </div>
 
         {/* Demand Clusters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(
-            demandData?.clusters || [
-              {
-                roleName: "React Developer",
-                userCount: 5,
-                topSkills: [
-                  "React 19",
-                  "Next.js",
-                  "TypeScript",
-                  "Tailwind CSS",
-                  "Redux",
-                ],
-                sampleSearchQuery: "React Developer Remote",
-              },
-              {
-                roleName: "Full Stack Developer",
-                userCount: 2,
-                topSkills: [
-                  "Node.js",
-                  "Express",
-                  "React",
-                  "MongoDB",
-                  "PostgreSQL",
-                ],
-                sampleSearchQuery: "Full Stack Developer Remote",
-              },
-              {
-                roleName: "AI / ML Engineer",
-                userCount: 5,
-                topSkills: ["Python", "PyTorch", "LangChain", "OpenAI", "LLMs"],
-                sampleSearchQuery: "AI Engineer Remote",
-              },
-            ]
-          ).map((cluster) => {
-            const isCurrentlySelected =
-              targetRole.toLowerCase() === cluster.roleName.toLowerCase();
-            return (
-              <div
-                key={cluster.roleName}
-                className={`p-4 rounded-2xl border transition-all flex flex-col justify-between group ${
-                  isCurrentlySelected
-                    ? "bg-blue-900/30 border-blue-500/50 shadow-md ring-1 ring-blue-500/40"
-                    : "bg-slate-900/70 border-slate-800 hover:border-slate-700"
-                }`}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
-                      <span className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
-                        Candidate Target Role
-                      </span>
-                      <h3 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors">
-                        {cluster.roleName}
-                      </h3>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-blue-500/15 text-blue-300 border border-blue-500/30">
-                      {cluster.userCount}{" "}
-                      {cluster.userCount === 1 ? "User" : "Users"}
-                    </span>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 mb-2">
-                    Top skillset keywords from resumes:
-                  </p>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {cluster.topSkills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-800 text-slate-200 border border-slate-700/80"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleSelectDemandCluster(cluster)}
-                  className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+        {demandData?.clusters && demandData.clusters.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {demandData.clusters.map((cluster) => {
+              const isCurrentlySelected =
+                targetRole.toLowerCase() === cluster.roleName.toLowerCase();
+              return (
+                <div
+                  key={cluster.roleName}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between group ${
                     isCurrentlySelected
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                      ? "bg-blue-900/30 border-blue-500/50 shadow-md ring-1 ring-blue-500/40"
+                      : "bg-slate-900/70 border-slate-800 hover:border-slate-700"
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                  <span>
-                    {isCurrentlySelected
-                      ? "Targeting This Role in Scraper"
-                      : `Select for Scraping (${cluster.userCount} Users)`}
-                  </span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div>
+                        <span className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider">
+                          Candidate Target Role
+                        </span>
+                        <h3 className="text-base font-bold text-white group-hover:text-blue-300 transition-colors">
+                          {cluster.roleName}
+                        </h3>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-xl text-xs font-extrabold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                        {cluster.userCount}{" "}
+                        {cluster.userCount === 1 ? "User" : "Users"}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-slate-400 mb-2">
+                      Top skillset keywords from resumes:
+                    </p>
+
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {cluster.topSkills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-800 text-slate-200 border border-slate-700/80"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectDemandCluster(cluster)}
+                    className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      isCurrentlySelected
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200"
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                    <span>
+                      {isCurrentlySelected
+                        ? "Targeting This Role in Scraper"
+                        : `Select for Scraping (${cluster.userCount} Users)`}
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8 rounded-2xl border border-slate-800 bg-slate-900/40 text-center space-y-2">
+            <p className="text-sm font-semibold text-slate-300">
+              No Candidate Demand Clusters Detected Yet
+            </p>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              As active candidates submit their profiles, target roles, and
+              resumes, the AI engine will automatically group candidate demand
+              clusters here to guide intelligent scraper targeting.
+            </p>
+          </div>
+        )}
 
         <div className="flex items-start sm:items-center gap-2.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400">
           <Zap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
@@ -1130,6 +1155,7 @@ export default function ScrapperClient() {
                       <th className="py-3 px-3.5 min-w-25">Platform</th>
                       <th className="py-3 px-3.5 min-w-25">Compensation</th>
                       <th className="py-3 px-4 min-w-50">Skills Required</th>
+                      <th className="py-3 px-3.5 min-w-32">Deadline</th>
                       <th className="py-3 px-3.5 min-w-25">Scraped Date</th>
                       <th className="py-3 px-4 text-right min-w-25">Action</th>
                     </tr>
@@ -1162,6 +1188,9 @@ export default function ScrapperClient() {
                             </div>
                           </td>
                           <td className="py-3.5 px-3.5">
+                            <div className="h-5 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                          </td>
+                          <td className="py-3.5 px-3.5">
                             <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded" />
                           </td>
                           <td className="py-3.5 px-4 text-right">
@@ -1171,7 +1200,7 @@ export default function ScrapperClient() {
                       ))
                     ) : recentJobs.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-12 text-center">
+                        <td colSpan={9} className="py-12 text-center">
                           <Database className="w-10 h-10 mx-auto text-slate-400 mb-2 opacity-50" />
                           <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
                             No scraped jobs found
@@ -1256,6 +1285,21 @@ export default function ScrapperClient() {
                                   </span>
                                 )}
                               </div>
+                            </td>
+                            <td className="py-3 px-3.5 whitespace-nowrap">
+                              {(() => {
+                                const dInfo = getScrapedJobDeadline(
+                                  job.deadline,
+                                );
+                                return (
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] border ${dInfo.badgeClass}`}
+                                  >
+                                    <Clock className="w-3 h-3 shrink-0" />
+                                    <span>{dInfo.text}</span>
+                                  </span>
+                                );
+                              })()}
                             </td>
                             <td className="py-3 px-3.5 font-mono text-[11px] text-slate-500 dark:text-slate-400 whitespace-nowrap">
                               {job.scrapedAt

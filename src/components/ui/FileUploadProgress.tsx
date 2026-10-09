@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   type UploadResponse,
   uploadFileWithProgress,
@@ -103,11 +104,14 @@ export function FileUploadProgress({
         onSuccess(result);
       } catch (err: unknown) {
         const msg =
-          err instanceof Error
+          (err as { response?: { data?: { error?: string } } })?.response?.data
+            ?.error ||
+          (err instanceof Error
             ? err.message
-            : "Upload failed. Please check your connection and try again.";
+            : "Upload failed. Please check your connection and try again.");
         setError(msg);
         onError?.(msg);
+        toast.error(msg);
       } finally {
         setUploading(false);
       }

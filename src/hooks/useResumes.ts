@@ -89,6 +89,7 @@ export function useResumes() {
     fileUrl: string;
     cloudinaryPublicId?: string;
     fileSize?: number;
+    rawText?: string;
   }) => {
     if (!userId || !cacheKey) throw new Error("Authentication required");
 
@@ -101,7 +102,10 @@ export function useResumes() {
         },
         body: JSON.stringify({ ...data, userId }),
       });
-      if (!response.ok) throw new Error("Failed to add resume");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to add resume");
+      }
       const newResume = await response.json();
       setResumes((prev) => {
         const updated = [newResume, ...prev];

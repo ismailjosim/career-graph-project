@@ -31,6 +31,7 @@ export interface NormalizedScrapedJob {
   skills: string[];
   source: string;
   applyUrl: string;
+  deadline?: Date;
 }
 
 // Map platform to verified Apify Store actors
@@ -309,6 +310,27 @@ export function normalizeApifyJobItem(
   const skills = extractSkillsFromJobText(`${title} ${description}`);
   const requirements = extractRequirementsFromText(description);
 
+  // Application Deadline calculation
+  let deadline: Date;
+  const rawDeadline =
+    (item.validThrough as string) ||
+    (item.deadline as string) ||
+    (item.applicationDeadline as string) ||
+    (item.expiresAt as string);
+  if (rawDeadline) {
+    const parsed = new Date(rawDeadline);
+    deadline = !Number.isNaN(parsed.getTime())
+      ? parsed
+      : new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
+  } else {
+    deadline = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
+  }
+
+  // Discard expired jobs immediately
+  if (deadline.getTime() <= Date.now()) {
+    return null;
+  }
+
   return {
     externalId: safeId,
     title: title.trim(),
@@ -321,6 +343,7 @@ export function normalizeApifyJobItem(
     skills,
     source,
     applyUrl,
+    deadline,
   };
 }
 

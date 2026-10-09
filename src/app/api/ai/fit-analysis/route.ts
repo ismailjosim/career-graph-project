@@ -231,6 +231,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Strict Resume Validation: Verify document content before AI processing
+    const { validateResumeContent } = await import("@/lib/resume-validator");
+    const validation = validateResumeContent(resumeText);
+    if (!validation.isValid) {
+      return NextResponse.json(
+        {
+          error:
+            validation.reason ||
+            "The uploaded document does not appear to be a valid resume or CV. Please upload a PDF document that clearly includes your work experience, education, and skills.",
+          code: "INVALID_RESUME_DOCUMENT",
+          validationScore: validation.score,
+          matchedCategories: validation.matchedCategories,
+        },
+        { status: 400 },
+      );
+    }
+
     // Build Gemini prompt
     const systemPrompt = `You are a world-class Executive Career Strategist and ATS Resume Auditor.
 Your task is to conduct a meticulous, realistic Fit Analysis comparing a Candidate's Resume against a specific Job Posting.

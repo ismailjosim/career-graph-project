@@ -130,7 +130,7 @@ export function TemplateSelectionPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full space-y-6 pb-16">
       {/* Header and Filter Banner */}
       <TemplateSelectionHeader
         categoryFilter={categoryFilter}
@@ -236,7 +236,7 @@ export function TemplateSelectionPage() {
         </div>
       </div>
 
-      {/* Live Sample Preview Modal with Candidate Dummy Data */}
+      {/* Live Sample Preview Modal with Sample Candidate Data */}
       <TemplateSelectionPreviewModal
         previewTemplate={previewTemplate}
         templates={templates}

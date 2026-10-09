@@ -50,7 +50,7 @@ export function MockInterviewClient() {
   };
 
   return (
-    <div className="w-full space-y-8 animate-fade-in pb-20 max-w-7xl mx-auto">
+    <div className="w-full space-y-8 animate-fade-in pb-20">
       {/* Top Hero Section */}
       <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-linear-to-br from-white via-slate-50 to-blue-50/40 dark:from-slate-900 dark:via-slate-900/90 dark:to-blue-950/20 p-6 sm:p-10 shadow-sm">
         {/* Glow orb */}

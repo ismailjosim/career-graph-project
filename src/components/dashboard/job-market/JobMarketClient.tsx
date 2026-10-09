@@ -1,7 +1,7 @@
 "use client";
 
 import { Globe, Plus, SearchX } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   JobMarketCard,
@@ -12,6 +12,7 @@ import {
   type MarketCategory,
   type MarketSortOption,
 } from "@/components/dashboard/job-market";
+import { PaginationControl } from "@/components/ui/PaginationControl";
 import { useJobMarket } from "@/hooks/useApi";
 import { confirmAction } from "@/lib/alerts";
 import type { JobMarket } from "@/lib/validation";
@@ -33,6 +34,13 @@ export function JobMarketClient() {
     useState<MarketCategory>("all");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortBy, setSortBy] = useState<MarketSortOption>("popular");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 9;
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, showFavoritesOnly, sortBy]);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,6 +112,12 @@ export function JobMarketClient() {
 
     return result;
   }, [markets, selectedCategory, showFavoritesOnly, searchTerm, sortBy]);
+
+  const totalPages = Math.ceil(filteredMarkets.length / PAGE_SIZE) || 1;
+  const paginatedMarkets = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredMarkets.slice(start, start + PAGE_SIZE);
+  }, [filteredMarkets, currentPage]);
 
   const handleOpenAddModal = () => {
     setEditingMarket(null);
@@ -229,17 +243,28 @@ export function JobMarketClient() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {filteredMarkets.map((market) => (
-            <JobMarketCard
-              key={market._id || market.name}
-              market={market}
-              onVisit={visitMarket}
-              onToggleFavorite={toggleFavorite}
-              onEdit={handleOpenEditModal}
-              onDelete={handleDeleteMarket}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {paginatedMarkets.map((market) => (
+              <JobMarketCard
+                key={market._id || market.name}
+                market={market}
+                onVisit={visitMarket}
+                onToggleFavorite={toggleFavorite}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDeleteMarket}
+              />
+            ))}
+          </div>
+
+          <PaginationControl
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredMarkets.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setCurrentPage}
+            itemName="marketplaces"
+          />
         </div>
       )}
 

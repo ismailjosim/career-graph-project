@@ -82,8 +82,16 @@ export async function generateUserDailyMatches(
 
   const userSkills = extractUserSkills(resume);
 
-  // 2. Fetch all active scraped jobs
-  const scrapedJobs = await ScrapedJob.find({ isActive: true }).lean();
+  // 2. Fetch all active scraped jobs whose application deadline has not passed
+  const now = new Date();
+  const scrapedJobs = await ScrapedJob.find({
+    isActive: true,
+    $or: [
+      { deadline: { $exists: false } },
+      { deadline: null },
+      { deadline: { $gte: now } },
+    ],
+  }).lean();
 
   if (!scrapedJobs || scrapedJobs.length === 0) {
     return [];
@@ -249,6 +257,7 @@ export async function generateUserDailyMatches(
       salary: item.job.salary || "Competitive",
       applyUrl: item.job.applyUrl,
       source: item.job.source || "LinkedIn",
+      deadline: item.job.deadline,
       matchScore,
       matchedSkills,
       missingSkills,

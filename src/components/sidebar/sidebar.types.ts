@@ -2,15 +2,12 @@ import {
   BookOpen,
   Bot,
   Briefcase,
-  Coins,
   FileCheck,
   FileText,
   Globe,
   Heart,
   LayoutDashboard,
-  Settings,
   Sparkles,
-  User,
   Zap,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -101,27 +98,6 @@ export const menuGroups: MenuGroup[] = [
         label: "Mock Interview",
         href: "/mock-interview",
         badge: "AI",
-      },
-    ],
-  },
-  {
-    id: "account",
-    label: "Account & Billing",
-    items: [
-      {
-        icon: Coins,
-        label: "Tokens & Packages",
-        href: "/pricing",
-      },
-      {
-        icon: User,
-        label: "Profile",
-        href: "/profile",
-      },
-      {
-        icon: Settings,
-        label: "Settings",
-        href: "/settings",
       },
     ],
   },

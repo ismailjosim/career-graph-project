@@ -69,6 +69,18 @@ export function validateResumeContent(text: string): ResumeValidationResult {
     };
   }
 
+  // Upper bound check: Resumes are typically 1-4 pages (under 4,000 words or 28,000 chars)
+  // Textbooks, research papers, novels, and manuals exceed this limit
+  if (words.length > 4000 || cleanText.length > 28000) {
+    return {
+      isValid: false,
+      score: 10,
+      matchedCategories: [],
+      reason:
+        "The uploaded document is too long to be a standard resume (exceeds 1-4 page resume length). Please upload your actual 1-4 page resume or CV.",
+    };
+  }
+
   const matchedCategories: string[] = [];
 
   for (const [category, patterns] of Object.entries(RESUME_CATEGORY_PATTERNS)) {

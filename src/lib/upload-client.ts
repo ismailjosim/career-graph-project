@@ -28,21 +28,40 @@ export async function uploadFileWithProgress(
   formData.append("file", file);
   formData.append("type", type);
 
-  const response = await axios.post<UploadResponse>("/api/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-    onUploadProgress: (progressEvent) => {
-      if (progressEvent.total) {
-        const percentage = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total,
-        );
-        onProgress?.(percentage, progressEvent.loaded, progressEvent.total);
-      }
-    },
-  });
+  try {
+    const response = await axios.post<UploadResponse>("/api/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          onProgress?.(percentage, progressEvent.loaded, progressEvent.total);
+        }
+      },
+    });
 
-  return response.data;
+    return response.data;
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response?.data) {
+      const errorData = err.response.data as {
+        error?: string;
+        message?: string;
+        code?: string;
+      };
+      const serverError = errorData.error || errorData.message;
+      if (serverError) {
+        const enhancedError = new Error(serverError);
+        (enhancedError as unknown as { code?: string }).code = errorData.code;
+        (enhancedError as unknown as { response?: unknown }).response =
+          err.response;
+        throw enhancedError;
+      }
+    }
+    throw err;
+  }
 }
 
 /**

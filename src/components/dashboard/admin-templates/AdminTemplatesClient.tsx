@@ -149,7 +149,7 @@ export function AdminTemplatesClient() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full space-y-6 pb-16">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -237,7 +237,7 @@ export function AdminTemplatesClient() {
         initialData={selectedTemplate}
       />
 
-      {/* Live Sample Preview Modal filled with Dummy Data */}
+      {/* Live Sample Preview Modal filled with Sample Profile Data */}
       <TemplatePreviewModal
         isOpen={previewModalOpen}
         onClose={() => setPreviewModalOpen(false)}

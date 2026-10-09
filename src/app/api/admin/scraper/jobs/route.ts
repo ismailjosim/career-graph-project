@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
     const source = searchParams.get("source")?.trim();
 
     const filter: Record<string, unknown> = {};
+    if (source && source !== "all") {
+      filter.source = new RegExp(source, "i");
+    }
     if (query) {
       filter.$or = [
         { title: { $regex: query, $options: "i" } },
@@ -31,8 +34,23 @@ export async function GET(request: NextRequest) {
         { skills: { $in: [new RegExp(query, "i")] } },
       ];
     }
-    if (source && source !== "all") {
-      filter.source = { $regex: source, $options: "i" };
+    const showExpired = searchParams.get("showExpired") === "true";
+    if (!showExpired) {
+      filter.isActive = true;
+      const now = new Date();
+      const nonExpired = {
+        $or: [
+          { deadline: { $exists: false } },
+          { deadline: null },
+          { deadline: { $gte: now } },
+        ],
+      };
+      if (filter.$or) {
+        filter.$and = [{ $or: filter.$or }, nonExpired];
+        delete filter.$or;
+      } else {
+        filter.$or = nonExpired.$or;
+      }
     }
 
     const [jobs, total] = await Promise.all([

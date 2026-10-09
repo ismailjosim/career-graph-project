@@ -2,6 +2,7 @@
 
 import {
   ChevronUp,
+  Coins,
   LogIn,
   LogOut,
   Moon,
@@ -9,6 +10,7 @@ import {
   Sun,
   User,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -28,7 +30,30 @@ export function SidebarUserProfile({
   const { data: session, isPending } = useSession();
   const { theme, setTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | null>(
+    (session?.user as { image?: string | null })?.image || null,
+  );
+  const [imageError, setImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync avatar from session or DB
+  useEffect(() => {
+    const sessionImg = (session?.user as { image?: string | null })?.image;
+    if (sessionImg) {
+      setUserAvatar(sessionImg);
+      setImageError(false);
+    } else if (session?.user) {
+      fetch("/api/users/me")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user?.image) {
+            setUserAvatar(data.user.image);
+            setImageError(false);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [session?.user]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -85,38 +110,76 @@ export function SidebarUserProfile({
         {/* Dropdown Menu (Opens upwards above user card) */}
         {dropdownOpen && (
           <div
-            className={`absolute bottom-full mb-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 p-1.5 transition-all animate-fade-in ${
-              isCollapsed && !mobileOpen ? "left-0" : "left-0 right-0 w-full"
+            className={`absolute bottom-full mb-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 p-1.5 transition-all animate-fade-in ${
+              isCollapsed && !mobileOpen
+                ? "left-0 w-64"
+                : "left-0 right-0 w-full"
             }`}
           >
-            {/* Header info */}
-            <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                {session.user.name || "User"}
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {session.user.email}
-              </p>
+            {/* Header info with Avatar */}
+            <div className="flex items-center gap-2.5 px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+              {userAvatar && !imageError ? (
+                <Image
+                  src={userAvatar}
+                  alt={session.user.name || "User avatar"}
+                  width={36}
+                  height={36}
+                  unoptimized
+                  className="w-9 h-9 rounded-full object-cover shrink-0 shadow-xs border border-slate-200 dark:border-slate-700"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs">
+                  {userInitial}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                  {session.user.name || "User"}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {session.user.email}
+                </p>
+              </div>
             </div>
 
-            {/* Links */}
-            <div className="py-1 space-y-0.5">
-              <Link
-                href="/profile"
-                onClick={() => setDropdownOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <User className="w-3.5 h-3.5 text-blue-600" />
-                <span>My Profile & Skills</span>
-              </Link>
-              <Link
-                href="/settings"
-                onClick={() => setDropdownOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <Settings className="w-3.5 h-3.5 text-slate-500" />
-                <span>Account Settings</span>
-              </Link>
+            {/* Account & Billing Section */}
+            <div className="py-1">
+              <div className="px-3 pt-1.5 pb-1">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Account & Billing
+                </span>
+              </div>
+              <div className="space-y-0.5">
+                <Link
+                  href="/pricing"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Coins className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Tokens & Packages</span>
+                </Link>
+                <Link
+                  href="/profile"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <User className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Profile</span>
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-slate-500 shrink-0" />
+                  <span>Settings</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -124,9 +187,9 @@ export function SidebarUserProfile({
               >
                 <span className="flex items-center gap-2.5">
                   {theme === "dark" ? (
-                    <Sun className="w-3.5 h-3.5 text-amber-500" />
+                    <Sun className="w-4 h-4 text-amber-500 shrink-0" />
                   ) : (
-                    <Moon className="w-3.5 h-3.5 text-blue-600" />
+                    <Moon className="w-4 h-4 text-blue-600 shrink-0" />
                   )}
                   <span>Theme</span>
                 </span>
@@ -143,7 +206,7 @@ export function SidebarUserProfile({
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
               >
-                <LogOut className="w-3.5 h-3.5" />
+                <LogOut className="w-4 h-4 shrink-0" />
                 <span>Sign Out</span>
               </button>
             </div>
@@ -158,9 +221,22 @@ export function SidebarUserProfile({
             isCollapsed && !mobileOpen ? "justify-center p-1.5" : ""
           }`}
         >
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
-            {userInitial}
-          </div>
+          {userAvatar && !imageError ? (
+            <Image
+              src={userAvatar}
+              alt={session.user.name || "User avatar"}
+              width={32}
+              height={32}
+              unoptimized
+              className="w-8 h-8 rounded-full object-cover shrink-0 shadow-xs border border-slate-200 dark:border-slate-700"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-xs">
+              {userInitial}
+            </div>
+          )}
+
           {(!isCollapsed || mobileOpen) && (
             <>
               <div className="flex-1 min-w-0">

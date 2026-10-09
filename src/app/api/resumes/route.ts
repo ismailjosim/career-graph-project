@@ -32,9 +32,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const user = await getSessionUser();
+
     if (!user) {
       return unauthorizedResponse();
     }
+
     const userId = user.id;
 
     await connectDB();
@@ -80,6 +82,24 @@ export async function POST(request: NextRequest) {
         console.warn(
           "Failed to automatically extract text for new resume:",
           err,
+        );
+      }
+    }
+
+    if (validatedData.rawText) {
+      const { validateResumeContent } = await import("@/lib/resume-validator");
+      const validation = validateResumeContent(validatedData.rawText);
+      if (!validation.isValid) {
+        return NextResponse.json(
+          {
+            error:
+              validation.reason ||
+              "The uploaded document does not appear to be a valid resume or CV. Please upload a PDF document that clearly includes your work experience, education, and skills.",
+            code: "INVALID_RESUME_DOCUMENT",
+            validationScore: validation.score,
+            matchedCategories: validation.matchedCategories,
+          },
+          { status: 400 },
         );
       }
     }

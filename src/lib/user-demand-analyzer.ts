@@ -262,58 +262,15 @@ export async function analyzeCandidateDemand(): Promise<CandidateDemandSummary> 
     }
   }
 
-  // If no candidates exist in DB, provide realistic default clusters matching the requested spec
+  // If no candidates exist in DB, return empty cluster analytics
   if (candidateProfiles.length === 0) {
-    const sampleClusters: CandidateRoleCluster[] = [
-      {
-        roleName: "React Developer",
-        userCount: 5,
-        candidates: [],
-        topSkills: [
-          "React 19",
-          "Next.js",
-          "TypeScript",
-          "Tailwind CSS",
-          "Redux",
-        ],
-        recommendedPlatforms: ["LinkedIn", "Indeed", "Google Jobs"],
-        sampleSearchQuery: "React Developer Remote",
-      },
-      {
-        roleName: "Full Stack Developer",
-        userCount: 2,
-        candidates: [],
-        topSkills: ["Node.js", "Express", "React", "MongoDB", "PostgreSQL"],
-        recommendedPlatforms: ["LinkedIn", "Glassdoor", "Indeed"],
-        sampleSearchQuery: "Full Stack Developer Remote",
-      },
-      {
-        roleName: "AI / ML Engineer",
-        userCount: 5,
-        candidates: [],
-        topSkills: ["Python", "PyTorch", "LangChain", "OpenAI", "LLMs"],
-        recommendedPlatforms: ["LinkedIn", "Google Jobs", "Glassdoor"],
-        sampleSearchQuery: "AI Engineer Remote",
-      },
-    ];
-
     return {
-      totalJobSeekers: 12,
-      totalWithResumes: 10,
+      totalJobSeekers: 0,
+      totalWithResumes: 0,
       analyzedAt: new Date().toISOString(),
-      clusters: sampleClusters,
-      allExtractedRoles: [
-        "React Developer",
-        "Full Stack Developer",
-        "AI / ML Engineer",
-      ],
-      topGlobalSkills: [
-        { skill: "React", count: 7 },
-        { skill: "TypeScript", count: 6 },
-        { skill: "Python", count: 5 },
-        { skill: "Node.js", count: 5 },
-        { skill: "Next.js", count: 5 },
-      ],
+      clusters: [],
+      allExtractedRoles: [],
+      topGlobalSkills: [],
     };
   }
 

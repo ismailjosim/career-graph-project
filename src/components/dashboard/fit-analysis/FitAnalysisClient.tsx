@@ -44,7 +44,7 @@ export function FitAnalysisClient() {
   } = useFitAnalysis();
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 pb-16 animate-fade-in">
+    <div className="w-full space-y-8 pb-16 animate-fade-in">
       {/* Header */}
       <FitAnalysisHeader previousResult={previousResult} />
 

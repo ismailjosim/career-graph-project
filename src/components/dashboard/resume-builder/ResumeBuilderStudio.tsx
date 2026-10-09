@@ -55,7 +55,7 @@ export function ResumeBuilderStudio() {
     layoutDensity: "normal",
   });
   const [builderData, setBuilderData] =
-    useState<ResumeBuilderData>(DEMO_RESUME_DATA);
+    useState<ResumeBuilderData>(EMPTY_RESUME_DATA);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeMobileTab, setActiveMobileTab] = useState<"editor" | "preview">(

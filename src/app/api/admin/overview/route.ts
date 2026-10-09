@@ -253,21 +253,67 @@ export async function GET(request: NextRequest) {
     const reviewsTotal = reviewsMetricsRaw[0]?.total || 0;
     const reviewsAverageRating = reviewsMetricsRaw[0]?.avgRating
       ? Math.round(reviewsMetricsRaw[0].avgRating * 10) / 10
-      : 5.0;
+      : 0;
 
-    // Assemble 14-day dummy/extrapolated timeline for visualization
+    // Assemble real 14-day timeline from database
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setHours(0, 0, 0, 0);
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+
+    const [dailyUsersRaw, dailyAppsRaw] = await Promise.all([
+      userCollection
+        .aggregate<{ _id: string; count: number }>([
+          { $match: { createdAt: { $gte: fourteenDaysAgo } } },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: { $toDate: "$createdAt" },
+                },
+              },
+              count: { $sum: 1 },
+            },
+          },
+        ])
+        .toArray()
+        .catch(() => []),
+      JobApplication.aggregate<{ _id: string; count: number }>([
+        { $match: { appliedAt: { $gte: fourteenDaysAgo } } },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: { $toDate: "$appliedAt" },
+              },
+            },
+            count: { $sum: 1 },
+          },
+        },
+      ]).catch(() => []),
+    ]);
+
+    const userCountByDate = new Map(
+      (dailyUsersRaw || []).map((u) => [u._id, u.count]),
+    );
+    const appCountByDate = new Map(
+      (dailyAppsRaw || []).map((a) => [a._id, a.count]),
+    );
+
     const timelineData = Array.from({ length: 14 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (13 - i));
+      const d = new Date(fourteenDaysAgo);
+      d.setDate(d.getDate() + i);
+      const isoDateKey = d.toISOString().split("T")[0];
       const dateStr = d.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
       });
       return {
         date: dateStr,
-        users: Math.max(1, Math.round(totalUsers / 14 + (i % 3))),
-        applications: Math.max(0, Math.round(totalApplications / 14 + (i % 4))),
-        clicks: Math.max(0, Math.round(totalExternalClicks / 14 + (i % 2))),
+        users: userCountByDate.get(isoDateKey) || 0,
+        applications: appCountByDate.get(isoDateKey) || 0,
+        clicks: 0,
       };
     });
 

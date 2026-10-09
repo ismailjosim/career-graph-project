@@ -15,24 +15,43 @@ export async function GET() {
 
     const todayStr = new Date().toISOString().split("T")[0];
 
-    // Ensure we have active scraped jobs in the pool
-    const activeCount = await ScrapedJob.countDocuments({ isActive: true });
+    const now = new Date();
+
+    // Ensure we have active, non-expired scraped jobs in the pool
+    const activeCount = await ScrapedJob.countDocuments({
+      isActive: true,
+      $or: [
+        { deadline: { $exists: false } },
+        { deadline: null },
+        { deadline: { $gte: now } },
+      ],
+    });
     if (activeCount === 0) {
       await syncDailyScrapedJobs();
     }
 
-    // Check if matches for today already exist
-    let matches: unknown[] = await JobMatchSuggestion.find({
-      userId: user.id,
-      suggestedDate: todayStr,
-    })
+    // Check if non-expired matches for today already exist
+    let matches: Array<Record<string, unknown>> = await JobMatchSuggestion.find(
+      {
+        userId: user.id,
+        suggestedDate: todayStr,
+        $or: [
+          { deadline: { $exists: false } },
+          { deadline: null },
+          { deadline: { $gte: now } },
+        ],
+      },
+    )
       .sort({ matchScore: -1 })
       .limit(15)
       .lean();
 
     // If none exist for today yet, generate top 10-15 matches
     if (!matches || matches.length === 0) {
-      matches = await generateUserDailyMatches(user.id);
+      const generated = await generateUserDailyMatches(user.id);
+      matches = (generated as unknown as Array<Record<string, unknown>>).filter(
+        (m) => !m.deadline || new Date(m.deadline as string | Date) >= now,
+      );
     }
 
     const targetRole = user.headline || "Full Stack Developer";
