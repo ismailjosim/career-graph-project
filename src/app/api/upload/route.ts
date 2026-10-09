@@ -86,65 +86,10 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Prepare Cloudinary folder & resource type
-    const folder =
-      uploadType === "avatar"
-        ? "career-graph/avatars"
-        : "career-graph/documents";
-
-    const resourceType = uploadType === "avatar" ? "image" : "auto";
-
-    // Upload to Cloudinary
-    const uploadResult = await uploadToCloudinary(buffer, {
-      folder,
-      resourceType,
-    });
-
-    // If uploading an avatar, sync directly with Better-Auth user record
-    if (uploadType === "avatar") {
-      const mongoose = await connectDB();
-      const db = mongoose.connection.db;
-
-      if (db) {
-        const userCollection = db.collection("user");
-        const userQuery = {
-          $or: [
-            { email: user.email },
-            ...(ObjectId.isValid(user.id)
-              ? [{ _id: new ObjectId(user.id) }]
-              : []),
-          ],
-        };
-
-        // If user already had a previous Cloudinary avatar, delete it to keep storage clean
-        if (user.image) {
-          const oldPublicId = extractPublicIdFromUrl(user.image);
-          if (oldPublicId && oldPublicId !== uploadResult.publicId) {
-            deleteFromCloudinary(oldPublicId, "image").catch((err) => {
-              console.warn(
-                "Failed to delete previous avatar from Cloudinary:",
-                err,
-              );
-            });
-          }
-        }
-
-        // Update image in Better-Auth user record
-        await userCollection.updateOne(userQuery, {
-          $set: {
-            image: uploadResult.secureUrl,
-            updatedAt: new Date(),
-          },
-        });
-      }
-    }
-
     let extractedText = "";
-    if (
-      uploadType !== "avatar" &&
-      (file.type === "application/pdf" ||
-        file.name.toLowerCase().endsWith(".pdf"))
-    ) {
+
+    // For document/resume uploads, parse and validate content BEFORE storing
+    if (uploadType !== "avatar") {
       try {
         const { extractTextFromPdfBuffer } = await import(
           "@/lib/resume-text-extractor"
@@ -153,15 +98,104 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.warn("Failed to extract text from uploaded PDF buffer:", err);
       }
+
+      // Resume Content Verification
+      const { validateResumeContent } = await import("@/lib/resume-validator");
+      const validation = validateResumeContent(extractedText);
+
+      if (!validation.isValid) {
+        return NextResponse.json(
+          {
+            error:
+              validation.reason ||
+              "The uploaded document does not appear to be a valid resume or CV.",
+            code: "INVALID_RESUME_DOCUMENT",
+            validationScore: validation.score,
+            matchedCategories: validation.matchedCategories,
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Determine storage provider: Cloudflare R2 or Cloudinary
+    let fileUrl = "";
+    let publicId = "";
+    let storageProvider = "cloudinary";
+
+    const { isR2Configured, uploadToR2 } = await import("@/lib/r2-storage");
+
+    if (uploadType !== "avatar" && isR2Configured()) {
+      // Store in Cloudflare R2
+      const r2Result = await uploadToR2(buffer, {
+        fileName: file.name,
+        folder: "resumes",
+        contentType: mimeType || "application/pdf",
+      });
+      fileUrl = r2Result.url;
+      publicId = r2Result.key;
+      storageProvider = "cloudflare-r2";
+    } else {
+      // Store in Cloudinary (default for avatars and fallback for documents)
+      const folder =
+        uploadType === "avatar"
+          ? "career-graph/avatars"
+          : "career-graph/documents";
+      const resourceType = uploadType === "avatar" ? "image" : "auto";
+
+      const uploadResult = await uploadToCloudinary(buffer, {
+        folder,
+        resourceType,
+      });
+      fileUrl = uploadResult.secureUrl;
+      publicId = uploadResult.publicId;
+
+      // If uploading an avatar, sync directly with Better-Auth user record
+      if (uploadType === "avatar") {
+        const mongoose = await connectDB();
+        const db = mongoose.connection.db;
+
+        if (db) {
+          const userCollection = db.collection("user");
+          const userQuery = {
+            $or: [
+              { email: user.email },
+              ...(ObjectId.isValid(user.id)
+                ? [{ _id: new ObjectId(user.id) }]
+                : []),
+            ],
+          };
+
+          // If user already had a previous Cloudinary avatar, delete it
+          if (user.image) {
+            const oldPublicId = extractPublicIdFromUrl(user.image);
+            if (oldPublicId && oldPublicId !== uploadResult.publicId) {
+              deleteFromCloudinary(oldPublicId, "image").catch((err) => {
+                console.warn(
+                  "Failed to delete previous avatar from Cloudinary:",
+                  err,
+                );
+              });
+            }
+          }
+
+          await userCollection.updateOne(userQuery, {
+            $set: {
+              image: uploadResult.secureUrl,
+              updatedAt: new Date(),
+            },
+          });
+        }
+      }
     }
 
     return NextResponse.json({
       success: true,
-      url: uploadResult.secureUrl,
-      publicId: uploadResult.publicId,
+      url: fileUrl,
+      publicId,
+      storageProvider,
       fileName: file.name,
       fileSize,
-      format: uploadResult.format,
       extractedText: extractedText || undefined,
     });
   } catch (error) {
@@ -190,7 +224,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { publicId, resourceType = "image", isAvatar = false } = body;
+    const {
+      publicId,
+      resourceType = "image",
+      isAvatar = false,
+      storageProvider,
+    } = body;
 
     if (!publicId) {
       return NextResponse.json(
@@ -199,7 +238,22 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    await deleteFromCloudinary(publicId, resourceType as "image" | "raw");
+    if (
+      storageProvider === "cloudflare-r2" ||
+      publicId.startsWith("resumes/")
+    ) {
+      const { deleteFromR2 } = await import("@/lib/r2-storage");
+      await deleteFromR2(publicId).catch((err) => {
+        console.warn("Failed to delete from R2 storage:", err);
+      });
+    } else {
+      await deleteFromCloudinary(
+        publicId,
+        resourceType as "image" | "raw",
+      ).catch((err) => {
+        console.warn("Failed to delete from Cloudinary storage:", err);
+      });
+    }
 
     // If deleting user's avatar, clear it from Better-Auth record
     if (isAvatar) {

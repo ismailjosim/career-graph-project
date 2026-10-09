@@ -232,17 +232,77 @@ const defaultCuratedJobs: RawScrapedJob[] = [
 ];
 
 /**
+ * Fetches real-world active tech jobs from public remote feeds
+ */
+async function fetchLiveRemoteJobs(): Promise<RawScrapedJob[]> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    const res = await fetch("https://remoteok.com/api", {
+      headers: {
+        "User-Agent":
+          "CareerGraph-JobMatcher/1.0 (https://careergraph.ismailjosim.com)",
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+
+    // First item is legal metadata; subsequent items are jobs
+    const jobs = data.slice(1, 25);
+    const results: RawScrapedJob[] = [];
+
+    for (const j of jobs) {
+      if (j?.id && j.position && j.company) {
+        const rawTags: string[] = Array.isArray(j.tags) ? j.tags : [];
+        results.push({
+          externalId: `live-rok-${j.id}`,
+          title: String(j.position),
+          company: String(j.company),
+          location: j.location || "Remote",
+          jobType: "full-time",
+          salary: j.salary || "Competitive Market Rate",
+          description:
+            typeof j.description === "string"
+              ? j.description.slice(0, 1000)
+              : "",
+          requirements: rawTags.slice(0, 5),
+          skills: rawTags.slice(0, 8),
+          source: "RemoteOK Live",
+          applyUrl: j.url || j.apply_url || "https://remoteok.com",
+        });
+      }
+    }
+    return results;
+  } catch (err) {
+    console.warn(
+      "[Daily Scraper] Live feed fetch skipped, falling back to curated feed:",
+      err,
+    );
+    return [];
+  }
+}
+
+/**
  * Syncs the latest online scraped jobs into the database.
  * Deduplicates by externalId.
  */
 export async function syncDailyScrapedJobs(): Promise<{
   totalSynced: number;
   newAdded: number;
+  liveFetched: number;
 }> {
   await connectDB();
 
   let newAdded = 0;
-  for (const job of defaultCuratedJobs) {
+  const liveJobs = await fetchLiveRemoteJobs();
+  const allJobPool = [...liveJobs, ...defaultCuratedJobs];
+
+  for (const job of allJobPool) {
     const existing = await ScrapedJob.findOne({ externalId: job.externalId });
     if (!existing) {
       await ScrapedJob.create({
@@ -261,5 +321,5 @@ export async function syncDailyScrapedJobs(): Promise<{
   }
 
   const totalSynced = await ScrapedJob.countDocuments({ isActive: true });
-  return { totalSynced, newAdded };
+  return { totalSynced, newAdded, liveFetched: liveJobs.length };
 }

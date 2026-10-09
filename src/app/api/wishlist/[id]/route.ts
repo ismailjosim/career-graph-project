@@ -75,15 +75,34 @@ export async function PUT(
     return NextResponse.json(item);
   } catch (error) {
     console.error("Error updating wishlist item:", error);
-    const err = error as { name?: string; errors?: unknown };
-    if (err.name === "ZodError") {
+    const err = error as {
+      name?: string;
+      message?: string;
+      errors?: unknown;
+    };
+
+    if (err.name === "ZodError" && Array.isArray(err.errors)) {
+      const zodErrors = err.errors as Array<{
+        message: string;
+        path: string[];
+      }>;
+      const firstMessage = zodErrors[0]?.message || "Invalid update data";
       return NextResponse.json(
-        { error: "Validation error", details: err.errors },
+        { error: firstMessage, details: zodErrors },
         { status: 400 },
       );
     }
+
+    if (err.name === "ValidationError" && err.errors) {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return NextResponse.json(
+        { error: messages[0] || "Validation error", details: messages },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to update wishlist item" },
+      { error: err.message || "Failed to update wishlist item" },
       { status: 500 },
     );
   }

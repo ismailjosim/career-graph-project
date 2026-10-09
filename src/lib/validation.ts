@@ -197,9 +197,12 @@ export const wishlistSchema = z.object({
   jobMarketId: z.string().optional(),
   title: z.string().min(1, "Job title is required"),
   company: z.string().min(1, "Company name is required"),
-  description: z.string(),
-  link: z.string().url("Must be a valid URL"),
-  notes: z.string().optional(),
+  description: z.string().default(""),
+  link: z
+    .string()
+    .min(1, "Job link is required")
+    .url("Must be a valid URL (e.g. https://...)"),
+  notes: z.string().optional().default(""),
   savedAt: z.date().default(() => new Date()),
   status: z.enum(["saved", "reviewing", "decided"]).default("saved"),
 });

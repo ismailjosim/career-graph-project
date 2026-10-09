@@ -38,16 +38,47 @@ export function AddWishlistModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    const title = formData.title.trim();
+    const company = formData.company.trim();
+    let link = formData.link.trim();
+
+    if (!title) {
+      setError("Job title is required.");
+      return;
+    }
+
+    if (!company) {
+      setError("Company name is required.");
+      return;
+    }
+
+    if (!link) {
+      setError("Job link is required.");
+      return;
+    }
+
+    if (!link.startsWith("http://") && !link.startsWith("https://")) {
+      link = `https://${link}`;
+    }
+
+    try {
+      new URL(link);
+    } catch {
+      setError("Please provide a valid job posting URL (e.g. https://...)");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       await onAdd({
-        title: formData.title,
-        company: formData.company,
-        description: formData.description,
-        link: formData.link,
-        notes: formData.notes || undefined,
+        title,
+        company,
+        description: formData.description?.trim() || "",
+        link,
+        notes: formData.notes?.trim() || "",
         status: formData.status,
       });
       setFormData(initialFormState);

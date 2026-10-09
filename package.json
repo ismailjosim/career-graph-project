@@ -15,6 +15,7 @@
     "reset-db": "node --env-file=.env.local scripts/reset-and-seed.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1147.0",
     "@better-auth/mongo-adapter": "^1.7.3",
     "@hookform/resolvers": "^5.9.1",
     "@polar-sh/sdk": "^0.49.0",

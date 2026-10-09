@@ -136,7 +136,7 @@ export function UsersTable({
   return (
     <div className="card overflow-hidden border border-slate-200 dark:border-slate-800/80 shadow-xs">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs sm:text-sm min-w-[680px]">
+        <table className="w-full text-left text-xs sm:text-sm min-w-170">
           <thead className="bg-slate-50/80 dark:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
             <tr>
               <th className="px-5 py-3.5">User</th>

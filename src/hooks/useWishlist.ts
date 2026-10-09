@@ -95,7 +95,10 @@ export function useWishlist() {
         },
         body: JSON.stringify({ ...item, userId }),
       });
-      if (!response.ok) throw new Error("Failed to add wishlist item");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to add wishlist item");
+      }
       const newItem = await response.json();
       setWishlist((prev) => {
         const next = [newItem, ...prev];
@@ -116,7 +119,10 @@ export function useWishlist() {
         method: "DELETE",
         headers: { "x-user-id": userId },
       });
-      if (!response.ok) throw new Error("Failed to delete wishlist item");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to delete wishlist item");
+      }
       setWishlist((prev) => {
         const next = prev.filter((item) => item._id !== id);
         clientCache.set(cacheKey, next, 120_000, true);
@@ -139,7 +145,10 @@ export function useWishlist() {
         },
         body: JSON.stringify({ status }),
       });
-      if (!response.ok) throw new Error("Failed to update status");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update status");
+      }
       const updated = await response.json();
       setWishlist((prev) => {
         const next = prev.map((item) => (item._id === id ? updated : item));

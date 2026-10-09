@@ -157,7 +157,7 @@ const wishlistSchema = new mongoose.Schema<IWishlist>(
     jobMarketId: String,
     title: { type: String, required: true },
     company: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, default: "" },
     link: { type: String, required: true },
     notes: String,
     savedAt: { type: Date, default: Date.now },
@@ -169,6 +169,10 @@ const wishlistSchema = new mongoose.Schema<IWishlist>(
   },
   { timestamps: true },
 );
+
+if (mongoose.models.Wishlist) {
+  delete (mongoose.models as Record<string, unknown>).Wishlist;
+}
 
 export const Wishlist =
   mongoose.models.Wishlist ||

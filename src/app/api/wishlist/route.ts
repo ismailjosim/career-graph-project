@@ -39,8 +39,16 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
+    let link = (body.link || "").trim();
+    if (link && !link.startsWith("http://") && !link.startsWith("https://")) {
+      link = `https://${link}`;
+    }
+
     const validatedData = wishlistSchema.parse({
       ...body,
+      link,
+      description: typeof body.description === "string" ? body.description : "",
+      notes: typeof body.notes === "string" ? body.notes : "",
       userId,
     });
 
@@ -50,15 +58,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     console.error("Error creating wishlist item:", error);
-    const err = error as { name?: string; errors?: unknown };
-    if (err.name === "ZodError") {
+    const err = error as {
+      name?: string;
+      message?: string;
+      errors?: unknown;
+    };
+
+    if (err.name === "ZodError" && Array.isArray(err.errors)) {
+      const zodErrors = err.errors as Array<{
+        message: string;
+        path: string[];
+      }>;
+      const firstMessage = zodErrors[0]?.message || "Invalid input data";
       return NextResponse.json(
-        { error: "Validation error", details: err.errors },
+        { error: firstMessage, details: zodErrors },
         { status: 400 },
       );
     }
+
+    if (err.name === "ValidationError" && err.errors) {
+      const messages = Object.values(err.errors).map((e) => e.message);
+      return NextResponse.json(
+        { error: messages[0] || "Validation error", details: messages },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to create wishlist item" },
+      { error: err.message || "Failed to create wishlist item" },
       { status: 500 },
     );
   }
