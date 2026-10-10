@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import { toast } from "sonner";
 import {
   type UploadResponse,
   uploadFileWithProgress,

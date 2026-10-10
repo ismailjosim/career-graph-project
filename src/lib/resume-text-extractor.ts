@@ -99,7 +99,9 @@ export function compileResumeBuilderText(
 function decodePdfString(str: string): string {
   if (!str) return "";
   return str
-    .replace(/\\([0-7]{1,3})/g, (_, oct) => String.fromCharCode(parseInt(oct, 8)))
+    .replace(/\\([0-7]{1,3})/g, (_, oct) =>
+      String.fromCharCode(parseInt(oct, 8)),
+    )
     .replace(/\\n/g, "\n")
     .replace(/\\r/g, "\r")
     .replace(/\\t/g, "\t")
@@ -145,10 +147,7 @@ function extractTextFromPdfStreams(buffer: Buffer): string {
 
       // Find content start (skip 'stream\r\n' or 'stream\n')
       let contentStart = streamStart + 6;
-      if (
-        buffer[contentStart] === 0x0d &&
-        buffer[contentStart + 1] === 0x0a
-      ) {
+      if (buffer[contentStart] === 0x0d && buffer[contentStart + 1] === 0x0a) {
         contentStart += 2;
       } else if (
         buffer[contentStart] === 0x0a ||
