@@ -111,7 +111,6 @@ export function FileUploadProgress({
             : "Upload failed. Please check your connection and try again.");
         setError(msg);
         onError?.(msg);
-        toast.error(msg);
       } finally {
         setUploading(false);
       }

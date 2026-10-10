@@ -186,7 +186,7 @@ export function AddResumeModal({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
+            {error && uploadMode !== "file" && (
               <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 rounded-xl text-rose-700 dark:text-rose-300 text-sm">
                 {error}
               </div>

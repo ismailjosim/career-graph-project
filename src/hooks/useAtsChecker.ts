@@ -290,9 +290,35 @@ export function useAtsChecker() {
       clearInterval(progressTimer);
       setAnalysisProgress(100);
 
-      const data = await res.json();
+      let data: {
+        error?: string;
+        result?: AtsAnalysisResult;
+        resumeTitle?: string;
+        remainingTokens?: number;
+      } | null = null;
+
+      const rawText = await res.text();
+      try {
+        data = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        // Non-JSON response
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || "Failed to analyze resume.");
+        const errorMsg =
+          data?.error ||
+          (res.status === 504
+            ? "The analysis timed out. Please try again with a shorter resume."
+            : res.status === 413
+              ? "The uploaded file is too large to process."
+              : `Analysis failed (${res.status}). Please try again.`);
+        throw new Error(errorMsg);
+      }
+
+      if (!data?.result) {
+        throw new Error(
+          data?.error || "Could not retrieve audit results. Please try again.",
+        );
       }
 
       setResult(data.result);

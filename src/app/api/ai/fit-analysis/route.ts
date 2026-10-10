@@ -309,6 +309,7 @@ Return ONLY valid JSON strictly matching this structure without any markdown wra
           const geminiRes = await fetch(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(9000),
             body: JSON.stringify({
               contents: [{ role: "user", parts }],
               generationConfig: {

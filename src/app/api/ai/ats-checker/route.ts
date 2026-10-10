@@ -286,6 +286,7 @@ The JSON must adhere precisely to this schema:
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              signal: AbortSignal.timeout(9000),
               body: JSON.stringify({
                 contents: contentsPayload,
                 generationConfig: {
